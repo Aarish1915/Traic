@@ -1,0 +1,49 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --bg-0: #07080B;
+  --bg-1: #0D0F14;
+  --surface: #141821;
+  --border: #232838;
+  --text-1: #E8EAF0;
+  --text-2: #9AA3B5;
+  --accent: #FF9F1C;
+  --accent-2: #38BDF8;
+}
+
+body {
+  background-color: var(--bg-0);
+  color: var(--text-1);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+  overflow-x: hidden;
+}
+
+/* Subtle circuit grid pattern */
+.circuit-pattern {
+  background-image: radial-gradient(rgba(56, 189, 248, 0.08) 1px, transparent 1px),
+                    radial-gradient(rgba(255, 159, 28, 0.04) 1px, transparent 1px);
+  background-size: 32px 32px;
+  background-position: 0 0, 16px 16px;
+}
+
+/* Glassmorphic border */
+.glass-panel {
+  background: rgba(20, 24, 33, 0.7);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(35, 40, 56, 0.8);
+}
+
+.glass-panel:hover {
+  border-color: rgba(56, 189, 248, 0.3);
+}
+
+/* Glow effects */
+.glow-accent {
+  box-shadow: 0 0 25px rgba(255, 159, 28, 0.2);
+}
+
+.glow-cyan {
+  box-shadow: 0 0 25px rgba(56, 189, 248, 0.15);
+}

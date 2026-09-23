@@ -1,0 +1,50 @@
+# Dependencies
+node_modules/
+.pnpm-store/
+
+# Next.js
+.next/
+out/
+
+# Vite / Build outputs
+dist/
+build/
+
+# Turborepo
+.turbo/
+
+# Environment files
+.env
+.env*.local
+.env.development
+.env.test
+.env.production
+!.env.example
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+*.log
+
+# Operating System files
+.DS_Store
+Thumbs.db
+
+# Testing & Coverage
+coverage/
+.nyc_output/
+
+# Internal Agent / Planning Markdown files (per user request: only README.md tracked)
+docs/
+AGENTS.md
+ARCHITECTURE.md
+DECISIONS.md
+DESIGN_SYSTEM.md
+MISTAKES.md
+PLAN.md
+SECURITY.md
+STATE.md
+TESTING.md
+.agent/
