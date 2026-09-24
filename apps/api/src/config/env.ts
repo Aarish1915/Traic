@@ -5,6 +5,7 @@ const EnvSchema = z.object({
   PORT: z.coerce.number().default(4000),
   ALLOWED_ORIGINS: z.string().default('http://localhost:3000,http://localhost:5173'),
   SESSION_SECRET: z.string().min(16).default('development_secret_must_change_in_production'),
+  ADMIN_PASSWORD: z.string().min(8).default('traic_admin_2025!'),
   DATABASE_URL: z.string().optional(),
 });
 

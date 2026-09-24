@@ -1,9 +1,10 @@
 import { Request, Response, NextFunction } from 'express';
 import crypto from 'node:crypto';
 import { logger } from '../../common/logger';
+import { env } from '../../config/env';
 
-// Default master admin password for development; override in production via ADMIN_PASSWORD
-const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'traic_admin_2025!';
+// Master admin password configured via environment variables; defaults to development key
+const ADMIN_PASSWORD = env.ADMIN_PASSWORD;
 
 // Session lifetime: 8 hours
 const SESSION_TTL_MS = 8 * 60 * 60 * 1000;
