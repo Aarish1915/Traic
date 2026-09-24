@@ -11,6 +11,7 @@ import {
   Megaphone,
   Box,
   Camera,
+  LogOut,
 } from 'lucide-react';
 import type { TabId } from '../types';
 
@@ -30,9 +31,10 @@ interface SidebarProps {
   };
   loading: boolean;
   onSync: () => void;
+  onLogout?: () => void;
 }
 
-export function Sidebar({ activeTab, setActiveTab, counts, loading, onSync }: SidebarProps) {
+export function Sidebar({ activeTab, setActiveTab, counts, loading, onSync, onLogout }: SidebarProps) {
   const navItems = [
     { id: 'projects' as TabId, label: 'Projects & Hardware', icon: <Layers size={18} />, count: counts.projects },
     { id: '3d-models' as TabId, label: 'Add Your 3D & Models', icon: <Box size={18} />, count: counts.models3d },
@@ -131,7 +133,7 @@ export function Sidebar({ activeTab, setActiveTab, counts, loading, onSync }: Si
       </div>
 
       {/* Sync & Footer */}
-      <div style={{ borderTop: '1px solid #232838', paddingTop: '16px' }}>
+      <div style={{ borderTop: '1px solid #232838', paddingTop: '16px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
         <button
           onClick={onSync}
           style={{
@@ -153,6 +155,33 @@ export function Sidebar({ activeTab, setActiveTab, counts, loading, onSync }: Si
           <RefreshCw size={14} className={loading ? 'animate-spin' : ''} />
           <span>Sync Live API Data</span>
         </button>
+
+        {onLogout && (
+          <button
+            onClick={onLogout}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '8px',
+              padding: '10px',
+              width: '100%',
+              borderRadius: '8px',
+              backgroundColor: 'rgba(239, 68, 68, 0.1)',
+              color: '#F87171',
+              border: '1px solid rgba(239, 68, 68, 0.25)',
+              fontSize: '12px',
+              fontWeight: 700,
+              cursor: 'pointer',
+              transition: 'background-color 0.2s',
+            }}
+            onMouseOver={(e) => (e.currentTarget.style.backgroundColor = 'rgba(239, 68, 68, 0.2)')}
+            onMouseOut={(e) => (e.currentTarget.style.backgroundColor = 'rgba(239, 68, 68, 0.1)')}
+          >
+            <LogOut size={14} />
+            <span>Lock Console & Logout</span>
+          </button>
+        )}
       </div>
     </aside>
   );

@@ -12,8 +12,23 @@ import {
 import { store } from '../public/data';
 import { NotFoundError, ValidationError } from '../../common/errors';
 import { logger } from '../../common/logger';
+import {
+  requireAdminAuth,
+  checkBruteForceLock,
+  handleLogin,
+  handleLogout,
+  handleVerify,
+} from './auth';
 
 export const adminRouter = Router();
+
+// Authentication endpoints
+adminRouter.post('/admin/auth/login', checkBruteForceLock, handleLogin);
+adminRouter.post('/admin/auth/logout', handleLogout);
+adminRouter.get('/admin/auth/verify', handleVerify);
+
+// Enforce authentication on all administrative mutations and queries
+adminRouter.use('/admin', requireAdminAuth);
 
 // Overview stats
 adminRouter.get('/admin/stats', (_req, res) => {

@@ -3,6 +3,7 @@ import { X } from 'lucide-react';
 
 interface EditModalProps {
   apiBase: string;
+  token?: string | null;
   type: string;
   initialData?: any;
   onClose: () => void;
@@ -11,6 +12,7 @@ interface EditModalProps {
 
 export function EditModal({
   apiBase,
+  token,
   type,
   initialData,
   onClose,
@@ -38,7 +40,10 @@ export function EditModal({
 
       const res = await fetch(url, {
         method,
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
         body: JSON.stringify(payload),
       });
 

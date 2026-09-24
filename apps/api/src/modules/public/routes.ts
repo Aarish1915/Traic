@@ -7,6 +7,7 @@ import { store } from './data';
 import { validateBody } from '../../common/middleware/validate';
 import { NotFoundError } from '../../common/errors';
 import { logger } from '../../common/logger';
+import { publicFormRateLimiter } from '../admin/auth';
 
 export const publicRouter = Router();
 
@@ -74,6 +75,7 @@ publicRouter.get('/public/gallery', (_req, res) => {
 // Join Form Submission
 publicRouter.post(
   '/public/applications',
+  publicFormRateLimiter,
   validateBody(JoinApplicationSchema),
   (req, res) => {
     const saved = store.addApplication(req.body);
@@ -89,6 +91,7 @@ publicRouter.post(
 // Contact Form Submission
 publicRouter.post(
   '/public/contact',
+  publicFormRateLimiter,
   validateBody(ContactMessageSchema),
   (req, res) => {
     const saved = store.addMessage(req.body);

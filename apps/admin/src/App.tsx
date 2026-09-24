@@ -25,11 +25,22 @@ import { AlumniTab } from './components/tabs/AlumniTab';
 import { SettingsTab } from './components/tabs/SettingsTab';
 import { ApplicationsTab } from './components/tabs/ApplicationsTab';
 import { EditModal } from './components/EditModal';
+import { LoginGate } from './components/LoginGate';
 
 const API_BASE = (import.meta as any).env?.VITE_API_URL || 'http://localhost:4000';
 
 export function App() {
   const [activeTab, setActiveTab] = useState<TabId>('projects');
+
+  // Authentication State
+  const [token, setToken] = useState<string | null>(() => {
+    if (typeof window !== 'undefined') {
+      return sessionStorage.getItem('traic_admin_token') || localStorage.getItem('traic_admin_token');
+    }
+    return null;
+  });
+  const [authChecked, setAuthChecked] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   // Live state
   const [projects, setProjects] = useState<Project[]>([]);
@@ -60,8 +71,52 @@ export function App() {
     setTimeout(() => setCopiedSlug(null), 2500);
   };
 
+  // Verify authentication on startup
+  useEffect(() => {
+    const verifyToken = async () => {
+      if (!token) {
+        setIsAuthenticated(false);
+        setAuthChecked(true);
+        return;
+      }
+      try {
+        const res = await fetch(`${API_BASE}/admin/auth/verify`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        if (res.ok) {
+          setIsAuthenticated(true);
+        } else {
+          sessionStorage.removeItem('traic_admin_token');
+          setToken(null);
+          setIsAuthenticated(false);
+        }
+      } catch {
+        setIsAuthenticated(false);
+      } finally {
+        setAuthChecked(true);
+      }
+    };
+    verifyToken();
+  }, [token]);
+
+  const handleLogout = async () => {
+    if (token) {
+      fetch(`${API_BASE}/admin/auth/logout`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}` },
+      }).catch(() => {});
+    }
+    sessionStorage.removeItem('traic_admin_token');
+    setToken(null);
+    setIsAuthenticated(false);
+    showToast('Admin console locked.');
+  };
+
   const fetchAllData = async () => {
+    if (!token) return;
     setLoading(true);
+    const authHeaders: Record<string, string> = { Authorization: `Bearer ${token}` };
+
     try {
       const [projRes, evRes, achRes, memRes, alRes, banRes, galRes, setRes, appRes] = await Promise.all([
         fetch(`${API_BASE}/public/projects`).then((r) => r.json()).catch(() => ({ data: [] })),
@@ -69,10 +124,13 @@ export function App() {
         fetch(`${API_BASE}/public/achievements`).then((r) => r.json()).catch(() => ({ data: [] })),
         fetch(`${API_BASE}/public/team`).then((r) => r.json()).catch(() => ({ data: [] })),
         fetch(`${API_BASE}/public/alumni`).then((r) => r.json()).catch(() => ({ data: [] })),
-        fetch(`${API_BASE}/admin/banners`).then((r) => r.json()).catch(() => ({ data: [] })),
-        fetch(`${API_BASE}/admin/gallery`).then((r) => r.json()).catch(() => ({ data: [] })),
+        fetch(`${API_BASE}/admin/banners`, { headers: authHeaders }).then((r) => {
+          if (r.status === 401) { handleLogout(); }
+          return r.json();
+        }).catch(() => ({ data: [] })),
+        fetch(`${API_BASE}/admin/gallery`, { headers: authHeaders }).then((r) => r.json()).catch(() => ({ data: [] })),
         fetch(`${API_BASE}/public/settings`).then((r) => r.json()).catch(() => ({ data: null })),
-        fetch(`${API_BASE}/admin/applications`).then((r) => r.json()).catch(() => ({ data: [] })),
+        fetch(`${API_BASE}/admin/applications`, { headers: authHeaders }).then((r) => r.json()).catch(() => ({ data: [] })),
       ]);
 
       if (projRes.data) setProjects(projRes.data);
@@ -85,20 +143,29 @@ export function App() {
       if (setRes.data) setSettings(setRes.data);
       if (appRes.data) setApplications(appRes.data);
     } catch {
-      showToast('Error connecting to backend API at http://localhost:4000', 'error');
+      showToast('Error connecting to backend API', 'error');
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchAllData();
-  }, []);
+    if (isAuthenticated) {
+      fetchAllData();
+    }
+  }, [isAuthenticated]);
 
   const handleDelete = async (type: string, id: string) => {
     if (!window.confirm(`Are you sure you want to delete this ${type}?`)) return;
     try {
-      const res = await fetch(`${API_BASE}/admin/${type}/${id}`, { method: 'DELETE' });
+      const res = await fetch(`${API_BASE}/admin/${type}/${id}`, {
+        method: 'DELETE',
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (res.status === 401) {
+        handleLogout();
+        throw new Error('Session expired. Please log in again.');
+      }
       if (!res.ok) throw new Error('Deletion failed');
       const itemLabel = type === 'gallery' ? 'Gallery dispatch' : type.slice(0, -1);
       showToast(`${itemLabel} deleted successfully!`);
@@ -113,9 +180,16 @@ export function App() {
     try {
       const res = await fetch(`${API_BASE}/admin/banners/${banner.id}`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
         body: JSON.stringify({ isActive: !banner.isActive }),
       });
+      if (res.status === 401) {
+        handleLogout();
+        throw new Error('Session expired. Please log in again.');
+      }
       if (!res.ok) throw new Error('Failed to update banner status');
       showToast(`Banner "${banner.title}" is now ${!banner.isActive ? 'Active' : 'Paused'}`);
       fetchAllData();
@@ -128,15 +202,46 @@ export function App() {
     try {
       const res = await fetch(`${API_BASE}/admin/settings`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
         body: JSON.stringify(newSettings),
       });
+      if (res.status === 401) {
+        handleLogout();
+        throw new Error('Session expired. Please log in again.');
+      }
       if (!res.ok) throw new Error('Failed to update settings');
       showToast('Site settings updated live!');
     } catch (err: any) {
       showToast(err.message, 'error');
     }
   };
+
+  if (!authChecked) {
+    return (
+      <div style={{ minHeight: '100vh', backgroundColor: '#07080B', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#94A3B8', fontFamily: 'monospace' }}>
+        INITIALIZING SECURITY GATEWAY...
+      </div>
+    );
+  }
+
+  if (!isAuthenticated) {
+    return (
+      <>
+        <Toast toast={toast} />
+        <LoginGate
+          apiBase={API_BASE}
+          onSuccess={(newToken) => {
+            setToken(newToken);
+            setIsAuthenticated(true);
+            showToast('Security access granted. Welcome to TRAIC Admin.');
+          }}
+        />
+      </>
+    );
+  }
 
   return (
     <div style={{ display: 'flex', minHeight: '100vh', backgroundColor: '#07080B', color: '#E8EAF0', fontFamily: 'system-ui, sans-serif' }}>
@@ -158,6 +263,7 @@ export function App() {
         }}
         loading={loading}
         onSync={fetchAllData}
+        onLogout={handleLogout}
       />
 
       <main style={{ flex: 1, padding: '36px 44px', overflowY: 'auto' }}>
@@ -247,6 +353,7 @@ export function App() {
       {editingItem && (
         <EditModal
           apiBase={API_BASE}
+          token={token}
           type={editingItem.type}
           initialData={editingItem.data}
           onClose={() => setEditingItem(null)}
