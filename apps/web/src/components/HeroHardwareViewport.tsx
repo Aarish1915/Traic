@@ -16,16 +16,16 @@ export function HeroHardwareViewport() {
   return (
     <div className="relative w-full h-[380px] sm:h-[450px] lg:h-[490px] rounded-2xl border border-border/80 bg-gradient-to-b from-surface/90 via-bg-1/95 to-bg-0 shadow-2xl overflow-hidden backdrop-blur-md flex flex-col justify-between">
       {/* Top Viewport Stage Header with Mode Switcher */}
-      <div className="relative z-20 flex items-center justify-between border-b border-border/60 bg-bg-1/90 px-3 sm:px-4 py-2.5 backdrop-blur-sm">
-        <div className="flex items-center gap-2">
-          <span className="h-2.5 w-2.5 rounded-full bg-accent animate-pulse" />
+      <div className="relative z-20 flex items-center justify-between border-b border-border/60 bg-bg-1/90 px-3 sm:px-4 py-2.5 backdrop-blur-sm gap-2">
+        <div className="flex items-center gap-2 min-w-0">
+          <span className="h-2.5 w-2.5 rounded-full bg-accent animate-pulse shrink-0" />
           <span className="font-mono text-xs font-bold text-text-1 truncate">
-            TRAIC H7-CORE // HARDWARE STAGE
+            <span className="hidden sm:inline">TRAIC H7-CORE // </span>HARDWARE STAGE
           </span>
         </div>
 
         {/* 2D Lite vs 3D Interactive Selector */}
-        <div className="flex items-center gap-1 rounded-lg border border-border/80 bg-bg-0/80 p-0.5 text-[10px] font-mono">
+        <div className="flex items-center gap-1 rounded-lg border border-border/80 bg-bg-0/80 p-0.5 text-[10px] font-mono shrink-0">
           <button
             onClick={() => setMode('image')}
             className={`flex items-center gap-1 px-2.5 py-1 rounded transition-all font-semibold ${
@@ -78,20 +78,20 @@ export function HeroHardwareViewport() {
               />
 
               {/* Holographic HUD Overlays */}
-              <div className="absolute top-3 left-3 flex flex-col gap-1.5 pointer-events-none">
-                <span className="inline-flex items-center gap-1.5 rounded bg-bg-0/80 border border-accent/40 px-2 py-0.5 text-[10px] font-mono text-accent backdrop-blur-md">
-                  <Activity className="h-3 w-3 animate-pulse" />
+              <div className="absolute top-2.5 left-2.5 sm:top-3 sm:left-3 flex flex-col gap-1 sm:gap-1.5 pointer-events-none">
+                <span className="inline-flex items-center gap-1 sm:gap-1.5 rounded bg-bg-0/80 border border-accent/40 px-2 py-0.5 text-[9px] sm:text-[10px] font-mono text-accent backdrop-blur-md">
+                  <Activity className="h-2.5 w-2.5 sm:h-3 sm:w-3 animate-pulse" />
                   <span>CORE ACTIVE // 480 MHz</span>
                 </span>
-                <span className="inline-flex items-center gap-1.5 rounded bg-bg-0/80 border border-border/60 px-2 py-0.5 text-[9px] font-mono text-text-2 backdrop-blur-md">
+                <span className="inline-flex items-center gap-1 rounded bg-bg-0/80 border border-border/60 px-2 py-0.5 text-[8px] sm:text-[9px] font-mono text-text-2 backdrop-blur-md">
                   <span>CAN-FD BUS @ 5 Mbps</span>
                 </span>
               </div>
 
-              <div className="absolute bottom-3 right-3 flex items-center gap-1.5 pointer-events-none">
-                <span className="rounded bg-bg-0/85 border border-accent-2/40 px-2.5 py-1 text-[9px] font-mono text-accent-2 backdrop-blur-md shadow-lg flex items-center gap-1">
-                  <Sparkles className="h-3 w-3 text-accent" />
-                  <span>ARM CORTEX-M7 ROBOTICS NODE</span>
+              <div className="absolute bottom-2.5 right-2.5 sm:bottom-3 sm:right-3 flex items-center gap-1.5 pointer-events-none">
+                <span className="rounded bg-bg-0/85 border border-accent-2/40 px-2 py-0.5 sm:px-2.5 sm:py-1 text-[8px] sm:text-[9px] font-mono text-accent-2 backdrop-blur-md shadow-lg flex items-center gap-1">
+                  <Sparkles className="h-2.5 w-2.5 sm:h-3 sm:w-3 text-accent" />
+                  <span className="truncate max-w-[130px] sm:max-w-none">ARM CORTEX-M7 ROBOTICS NODE</span>
                 </span>
               </div>
             </div>

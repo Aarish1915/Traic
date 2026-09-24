@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import * as THREE from 'three';
-import { ThreeHeroFallback } from './ThreeHeroFallback';
+import { Activity, Sparkles } from 'lucide-react';
 
 export function ThreeHeroScene() {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -14,7 +14,7 @@ export function ThreeHeroScene() {
 
     let scene: THREE.Scene;
     let camera: THREE.PerspectiveCamera;
-    let renderer: THREE.WebGLRenderer;
+    let renderer: THREE.WebGLRenderer | null = null;
     let particlesMesh: THREE.Points;
     let chipMesh: THREE.Group;
     let cornerLeds: THREE.Mesh[] = [];
@@ -22,8 +22,8 @@ export function ThreeHeroScene() {
     let resizeObserver: ResizeObserver | null = null;
 
     let isDragging = false;
-    let prevMouseX = 0;
-    let prevMouseY = 0;
+    let prevX = 0;
+    let prevY = 0;
     let rotX = 0.35;
     let rotY = -0.45;
     let targetRotX = 0.35;
@@ -34,10 +34,18 @@ export function ThreeHeroScene() {
       window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
     try {
+      // Safe WebGL pre-flight check
+      const testCanvas = document.createElement('canvas');
+      const gl = testCanvas.getContext('webgl2') || testCanvas.getContext('webgl') || testCanvas.getContext('experimental-webgl');
+      if (!gl) {
+        setWebGLSupported(false);
+        return;
+      }
+
       scene = new THREE.Scene();
 
       const initialWidth = container.clientWidth || 320;
-      const initialHeight = container.clientHeight || 260;
+      const initialHeight = container.clientHeight || 280;
 
       camera = new THREE.PerspectiveCamera(
         42,
@@ -53,22 +61,23 @@ export function ThreeHeroScene() {
       }
       camera.lookAt(0, 0, 0);
 
-      // Safe WebGL settings for iOS Safari & mobile devices
+      // Safe, ultra-lightweight WebGL settings for iOS Safari & Android
       renderer = new THREE.WebGLRenderer({
         alpha: true,
-        antialias: typeof window !== 'undefined' ? (window.devicePixelRatio || 1) < 2 : false,
-        powerPreference: 'default',
+        antialias: false, // Essential for iOS Safari memory stability
+        powerPreference: 'low-power',
         precision: 'mediump',
       });
       renderer.setSize(initialWidth, initialHeight);
-      renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.5));
+      renderer.setPixelRatio(Math.min(typeof window !== 'undefined' ? window.devicePixelRatio || 1 : 1, 1.25));
       renderer.domElement.style.display = 'block';
       renderer.domElement.style.width = '100%';
       renderer.domElement.style.height = '100%';
+      renderer.domElement.style.touchAction = 'none'; // Prevent iOS Safari gesture capture
       container.appendChild(renderer.domElement);
 
       // PARTICLE CIRCUIT DUST
-      const particleCount = 220;
+      const particleCount = 180;
       const particleGeo = new THREE.BufferGeometry();
       const positions = new Float32Array(particleCount * 3);
       const colors = new Float32Array(particleCount * 3);
@@ -100,301 +109,168 @@ export function ThreeHeroScene() {
       particlesMesh = new THREE.Points(particleGeo, particleMat);
       scene.add(particlesMesh);
 
-      // CENTRAL SILICON CHIP NODE
+      // SILICON CHIP PACKAGE
       chipMesh = new THREE.Group();
+      scene.add(chipMesh);
 
-      // Main chip package die
-      const dieGeo = new THREE.BoxGeometry(4.8, 4.8, 0.48);
+      const isLightMode = typeof document !== 'undefined' && document.documentElement.getAttribute('data-theme') === 'light';
+
+      // 1. Ceramic / Matte Titanium Silicon Die Base
+      const dieGeo = new THREE.BoxGeometry(6.4, 0.55, 6.4);
       const dieMat = new THREE.MeshStandardMaterial({
-        color: 0x1e293b,
-        roughness: 0.22,
-        metalness: 0.88,
+        color: isLightMode ? 0x1e293b : 0x0f172a,
+        roughness: 0.35,
+        metalness: 0.8,
       });
-      const dieMesh = new THREE.Mesh(dieGeo, dieMat);
-      chipMesh.add(dieMesh);
+      const die = new THREE.Mesh(dieGeo, dieMat);
+      chipMesh.add(die);
 
-      // Metallic top heat spreader layer
-      const topPlateGeo = new THREE.BoxGeometry(3.6, 3.6, 0.52);
-      const topPlateMat = new THREE.MeshStandardMaterial({
-        color: 0x334155,
-        roughness: 0.25,
-        metalness: 0.92,
+      // Edge wireframe accent
+      const dieEdgeGeo = new THREE.EdgesGeometry(dieGeo);
+      const dieEdgeMat = new THREE.LineBasicMaterial({
+        color: isLightMode ? 0xd97706 : 0x38bdf8,
+        linewidth: 1.5,
       });
-      const topPlateMesh = new THREE.Mesh(topPlateGeo, topPlateMat);
-      chipMesh.add(topPlateMesh);
+      chipMesh.add(new THREE.LineSegments(dieEdgeGeo, dieEdgeMat));
 
-      // Glowing circuit core border
-      const edgeGeo = new THREE.EdgesGeometry(dieGeo);
-      const edgeMat = new THREE.LineBasicMaterial({ color: 0x38bdf8, linewidth: 2 });
-      const edgeLines = new THREE.LineSegments(edgeGeo, edgeMat);
-      chipMesh.add(edgeLines);
-
-      // Gold wire bonding pins on edges
-      const pinMat = new THREE.MeshStandardMaterial({
-        color: 0xffbe0b,
+      // 2. Metallic Heat Spreader Center Plate
+      const heatSpreaderGeo = new THREE.BoxGeometry(4.4, 0.28, 4.4);
+      const heatSpreaderMat = new THREE.MeshStandardMaterial({
+        color: isLightMode ? 0x475569 : 0x1e293b,
         metalness: 0.95,
         roughness: 0.15,
       });
+      const heatSpreader = new THREE.Mesh(heatSpreaderGeo, heatSpreaderMat);
+      heatSpreader.position.y = 0.38;
+      chipMesh.add(heatSpreader);
 
-      for (let i = -2.0; i <= 2.0; i += 0.5) {
-        // Top and bottom pins
-        const pinTop = new THREE.Mesh(new THREE.BoxGeometry(0.2, 0.65, 0.12), pinMat);
-        pinTop.position.set(i, 2.7, 0);
-        chipMesh.add(pinTop);
+      // 3. Gold Wire-Bonding Connection Pins (40 Peripheral Pins)
+      const pinMat = new THREE.MeshStandardMaterial({
+        color: 0xffb703,
+        metalness: 0.95,
+        roughness: 0.2,
+      });
+      const pinCoords: [number, number, number][] = [];
+      const pinOffset = 3.35;
+      const pinSpacing = 0.58;
 
-        const pinBottom = pinTop.clone();
-        pinBottom.position.set(i, -2.7, 0);
-        chipMesh.add(pinBottom);
-
-        // Left and right pins
-        const pinLeft = new THREE.Mesh(new THREE.BoxGeometry(0.65, 0.2, 0.12), pinMat);
-        pinLeft.position.set(-2.7, i, 0);
-        chipMesh.add(pinLeft);
-
-        const pinRight = pinLeft.clone();
-        pinRight.position.set(2.7, i, 0);
-        chipMesh.add(pinRight);
+      for (let i = -4.5; i <= 4.5; i += 1.0) {
+        pinCoords.push([i * pinSpacing, 0, pinOffset]);
+        pinCoords.push([i * pinSpacing, 0, -pinOffset]);
+        pinCoords.push([pinOffset, 0, i * pinSpacing]);
+        pinCoords.push([-pinOffset, 0, i * pinSpacing]);
       }
 
-      // 4 Status corner LEDs
-      const ledColors = [0x34d399, 0x38bdf8, 0xff9f1c, 0xf87171];
-      const ledCoords = [
-        [-1.6, 1.6],
-        [1.6, 1.6],
-        [-1.6, -1.6],
-        [1.6, -1.6],
+      pinCoords.forEach(([x, y, z]) => {
+        const pin = new THREE.Mesh(new THREE.BoxGeometry(0.18, 0.16, 0.45), pinMat);
+        pin.position.set(x, y, z);
+        if (Math.abs(x) > Math.abs(z)) {
+          pin.rotation.y = Math.PI / 2;
+        }
+        chipMesh.add(pin);
+      });
+
+      // 4. Glowing Bus Traces (Gold & Cyan Micro-Traces)
+      const traceGeo = new THREE.PlaneGeometry(3.6, 3.6);
+      const traceMat = new THREE.MeshBasicMaterial({
+        color: 0x38bdf8,
+        transparent: true,
+        opacity: 0.85,
+        wireframe: true,
+      });
+      const traces = new THREE.Mesh(traceGeo, traceMat);
+      traces.rotation.x = -Math.PI / 2;
+      traces.position.y = 0.54;
+      chipMesh.add(traces);
+
+      // 5. Pulsing Status LEDs on 4 Corners
+      const ledColors = [0x22c55e, 0x38bdf8, 0xf59e0b, 0xef4444];
+      const ledPositions = [
+        [-2.7, 0.32, -2.7],
+        [2.7, 0.32, -2.7],
+        [-2.7, 0.32, 2.7],
+        [2.7, 0.32, 2.7],
       ];
-      cornerLeds = [];
-      for (let j = 0; j < 4; j++) {
-        const ledGeo = new THREE.CylinderGeometry(0.12, 0.12, 0.6, 12);
-        const ledMat = new THREE.MeshBasicMaterial({ color: ledColors[j] });
-        const led = new THREE.Mesh(ledGeo, ledMat);
-        led.rotation.x = Math.PI / 2;
-        led.position.set(ledCoords[j][0], ledCoords[j][1], 0.28);
-        chipMesh.add(led);
-        cornerLeds.push(led);
-      }
 
-      // Ground plane grid
-      const gridHelper = new THREE.GridHelper(18, 18, 0x232838, 0x141821);
-      gridHelper.position.y = -3.2;
-      scene.add(gridHelper);
+      ledPositions.forEach(([x, y, z], idx) => {
+        const ledGeo = new THREE.SphereGeometry(0.18, 12, 12);
+        const ledMat = new THREE.MeshBasicMaterial({ color: ledColors[idx] });
+        const ledMesh = new THREE.Mesh(ledGeo, ledMat);
+        ledMesh.position.set(x, y, z);
+        chipMesh.add(ledMesh);
+        cornerLeds.push(ledMesh);
+      });
 
-      scene.add(chipMesh);
-
-      // Lighting
-      const ambientLight = new THREE.AmbientLight(0xffffff, 1.8);
+      // Lighting Setup
+      const ambientLight = new THREE.AmbientLight(0xffffff, isLightMode ? 1.6 : 1.1);
       scene.add(ambientLight);
 
-      const keyLight = new THREE.DirectionalLight(0xffffff, 2.8);
-      keyLight.position.set(2, 9, 11);
+      const keyLight = new THREE.DirectionalLight(0xff9f1c, 2.6);
+      keyLight.position.set(8, 12, 10);
       scene.add(keyLight);
 
-      const cyanPoint = new THREE.PointLight(0x38bdf8, 5.5, 40);
-      cyanPoint.position.set(-8, 8, 10);
-      scene.add(cyanPoint);
+      const fillLight = new THREE.DirectionalLight(0x38bdf8, 2.2);
+      fillLight.position.set(-8, -6, -8);
+      scene.add(fillLight);
 
-      const amberPoint = new THREE.PointLight(0xff9f1c, 6.0, 40);
-      amberPoint.position.set(8, -6, 9);
-      scene.add(amberPoint);
-
-      // Theme-adaptive materials and studio lighting
-      const applyTheme = (isLight: boolean) => {
-        if (isLight) {
-          // Matte ceramic charcoal chip die with steel heat spreader and gold pins
-          dieMat.color.setHex(0x1e293b);
-          dieMat.metalness = 0.85;
-          dieMat.roughness = 0.25;
-          topPlateMat.color.setHex(0x475569);
-          topPlateMat.metalness = 0.9;
-          topPlateMat.roughness = 0.2;
-          edgeMat.color.setHex(0xd97706);
-          pinMat.color.setHex(0xb45309);
-          ambientLight.intensity = 2.4;
-          keyLight.intensity = 3.2;
-          cyanPoint.color.setHex(0x0284c7);
-          cyanPoint.intensity = 5.0;
-          amberPoint.color.setHex(0xd97706);
-          amberPoint.intensity = 6.0;
-          gridHelper.material = new THREE.LineBasicMaterial({
-            color: 0x94a3b8,
-            transparent: true,
-            opacity: 0.6,
-          });
-        } else {
-          // Dark Obsidian high-contrast metallic titanium
-          dieMat.color.setHex(0x1e293b);
-          dieMat.metalness = 0.88;
-          dieMat.roughness = 0.22;
-          topPlateMat.color.setHex(0x334155);
-          topPlateMat.metalness = 0.95;
-          edgeMat.color.setHex(0x38bdf8);
-          pinMat.color.setHex(0xffbe0b);
-          ambientLight.intensity = 2.0;
-          keyLight.intensity = 3.2;
-          cyanPoint.color.setHex(0x38bdf8);
-          cyanPoint.intensity = 6.0;
-          amberPoint.color.setHex(0xff9f1c);
-          amberPoint.intensity = 6.5;
-          gridHelper.material = new THREE.LineBasicMaterial({
-            color: 0x475569,
-            transparent: true,
-            opacity: 0.65,
-          });
-        }
+      // Theme Change Observer
+      const handleThemeChange = () => {
+        const isLight = document.documentElement.getAttribute('data-theme') === 'light';
+        dieMat.color.setHex(isLight ? 0x1e293b : 0x0f172a);
+        dieEdgeMat.color.setHex(isLight ? 0xd97706 : 0x38bdf8);
+        heatSpreaderMat.color.setHex(isLight ? 0x475569 : 0x1e293b);
+        ambientLight.intensity = isLight ? 1.6 : 1.1;
       };
 
-      const checkIsLight = () =>
-        typeof document !== 'undefined' &&
-        (document.documentElement.classList.contains('light') ||
-          document.documentElement.getAttribute('data-theme') === 'light');
-
-      applyTheme(checkIsLight());
-
-      const themeObserver = new MutationObserver(() => {
-        applyTheme(checkIsLight());
-      });
+      const themeObserver = new MutationObserver(handleThemeChange);
       themeObserver.observe(document.documentElement, {
         attributes: true,
-        attributeFilter: ['class', 'data-theme'],
+        attributeFilter: ['data-theme'],
       });
+      window.addEventListener('traic-theme-change', handleThemeChange);
 
-      // Pointer drag interaction
-      const onMouseDown = (e: MouseEvent) => {
+      // UNIFIED POINTER EVENTS FOR FLAWLESS IPHONE & ANDROID ROTATION
+      const dom = renderer.domElement;
+
+      const onPointerDown = (e: PointerEvent) => {
         isDragging = true;
-        prevMouseX = e.clientX;
-        prevMouseY = e.clientY;
+        prevX = e.clientX;
+        prevY = e.clientY;
+        try {
+          dom.setPointerCapture(e.pointerId);
+        } catch {}
       };
 
-      const onMouseMove = (e: MouseEvent) => {
+      const onPointerMove = (e: PointerEvent) => {
         if (!isDragging) return;
-        const deltaX = e.clientX - prevMouseX;
-        const deltaY = e.clientY - prevMouseY;
-        targetRotY += deltaX * 0.012;
-        targetRotX += deltaY * 0.012;
-        prevMouseX = e.clientX;
-        prevMouseY = e.clientY;
+        const dx = e.clientX - prevX;
+        const dy = e.clientY - prevY;
+        targetRotY += dx * 0.012;
+        targetRotX += dy * 0.006;
+        targetRotX = Math.max(-0.6, Math.min(0.8, targetRotX));
+        prevX = e.clientX;
+        prevY = e.clientY;
       };
 
-      const onMouseUp = () => {
+      const onPointerUp = (e: PointerEvent) => {
         isDragging = false;
+        try {
+          dom.releasePointerCapture(e.pointerId);
+        } catch {}
       };
 
-      container.addEventListener('mousedown', onMouseDown);
-      window.addEventListener('mousemove', onMouseMove);
-      window.addEventListener('mouseup', onMouseUp);
+      dom.addEventListener('pointerdown', onPointerDown);
+      dom.addEventListener('pointermove', onPointerMove);
+      dom.addEventListener('pointerup', onPointerUp);
+      dom.addEventListener('pointercancel', onPointerUp);
 
-      // Mobile Touch Interaction: Disambiguate vertical page scrolling from 3D rotation
-      let touchStartX = 0;
-      let touchStartY = 0;
-      let touchMode: 'undecided' | 'rotate' | 'scroll' = 'undecided';
-
-      container.style.touchAction = 'pan-y';
-
-      const onTouchStart = (e: TouchEvent) => {
-        if (e.touches.length === 1) {
-          touchMode = 'undecided';
-          touchStartX = e.touches[0].clientX;
-          touchStartY = e.touches[0].clientY;
-          prevMouseX = e.touches[0].clientX;
-          prevMouseY = e.touches[0].clientY;
-        }
-      };
-
-      const onTouchMove = (e: TouchEvent) => {
-        if (e.touches.length !== 1) return;
-        const currentX = e.touches[0].clientX;
-        const currentY = e.touches[0].clientY;
-
-        if (touchMode === 'undecided') {
-          const totalDx = Math.abs(currentX - touchStartX);
-          const totalDy = Math.abs(currentY - touchStartY);
-          if (totalDx < 8 && totalDy < 8) return; // small gesture threshold
-          if (totalDy > totalDx) {
-            // Primarily vertical swipe: let the page scroll freely!
-            touchMode = 'scroll';
-            isDragging = false;
-            return;
-          } else {
-            // Primarily horizontal swipe: user wants to rotate the 3D node!
-            touchMode = 'rotate';
-            isDragging = true;
-          }
-        }
-
-        if (touchMode === 'rotate') {
-          const deltaX = currentX - prevMouseX;
-          const deltaY = currentY - prevMouseY;
-          targetRotY += deltaX * 0.012;
-          targetRotX += deltaY * 0.005;
-          targetRotX = Math.max(-0.6, Math.min(0.8, targetRotX));
-          prevMouseX = currentX;
-          prevMouseY = currentY;
-        }
-      };
-
-      const onTouchEnd = () => {
-        touchMode = 'undecided';
-        isDragging = false;
-      };
-
-      container.addEventListener('touchstart', onTouchStart, { passive: true });
-      window.addEventListener('touchmove', onTouchMove, { passive: true });
-      window.addEventListener('touchend', onTouchEnd);
-
-      // ResizeObserver to adapt smoothly whenever container layout changes
-      const updateSize = () => {
-        if (!container || !renderer || !camera) return;
-        const w = container.clientWidth || 500;
-        const h = container.clientHeight || 420;
-        camera.aspect = w / (h || 1);
-        camera.updateProjectionMatrix();
-        renderer.setSize(w, h);
-      };
-
-      resizeObserver = new ResizeObserver(() => {
-        updateSize();
-      });
-      resizeObserver.observe(container);
-
-      // Animation loop
-      const clock = new THREE.Clock();
-      const animate = () => {
-        animationFrameId = requestAnimationFrame(animate);
-        const elapsedTime = clock.getElapsedTime();
-
-        // Idle slow spin if not dragging and motion is not reduced
-        if (!isDragging && !prefersReducedMotion) {
-          targetRotY += 0.005;
-        }
-
-        // Smooth damping
-        rotX += (targetRotX - rotX) * 0.08;
-        rotY += (targetRotY - rotY) * 0.08;
-
-        chipMesh.rotation.x = rotX + Math.sin(elapsedTime * 0.9) * 0.04;
-        chipMesh.rotation.y = rotY;
-        chipMesh.position.y = Math.sin(elapsedTime * 1.4) * 0.2;
-
-        // Particle field subtle spin
-        particlesMesh.rotation.y = elapsedTime * 0.025;
-
-        // Pulse corner status LEDs
-        if (cornerLeds.length >= 4) {
-          cornerLeds[0].scale.setScalar(1 + Math.sin(elapsedTime * 4.0) * 0.2);
-          cornerLeds[1].scale.setScalar(1 + Math.cos(elapsedTime * 3.5) * 0.2);
-          cornerLeds[2].scale.setScalar(1 + Math.sin(elapsedTime * 5.0) * 0.2);
-        }
-
-        renderer.render(scene, camera);
-      };
-
+      // Resize handling
       const updateDimensions = () => {
         if (!container || !renderer || !camera) return;
-        const w = container.clientWidth || 320;
-        const h = container.clientHeight || 260;
-        camera.aspect = w / (h || 1);
-        if (w < 640 || camera.aspect < 1.0) {
+        const w = Math.max(container.clientWidth, 320);
+        const h = Math.max(container.clientHeight, 280);
+        camera.aspect = w / h;
+        if (w < 640 || w / h < 1.0) {
           camera.position.set(0, 1.4, 16.5);
         } else {
           camera.position.set(0, 2.2, 13.5);
@@ -403,30 +279,53 @@ export function ThreeHeroScene() {
         renderer.setSize(w, h);
       };
 
-      resizeObserver = new ResizeObserver(() => {
-        updateDimensions();
-      });
+      resizeObserver = new ResizeObserver(() => updateDimensions());
       resizeObserver.observe(container);
-      window.addEventListener('resize', updateDimensions);
-      requestAnimationFrame(updateDimensions);
 
+      // Animation Loop
+      const clock = new THREE.Clock();
+      const animate = () => {
+        animationFrameId = requestAnimationFrame(animate);
+        const elapsedTime = clock.getElapsedTime();
+
+        if (!isDragging && !prefersReducedMotion) {
+          targetRotY += 0.005;
+        }
+
+        rotX += (targetRotX - rotX) * 0.08;
+        rotY += (targetRotY - rotY) * 0.08;
+
+        chipMesh.rotation.x = rotX + Math.sin(elapsedTime * 0.9) * 0.04;
+        chipMesh.rotation.y = rotY;
+        chipMesh.position.y = Math.sin(elapsedTime * 1.4) * 0.2;
+
+        particlesMesh.rotation.y = elapsedTime * 0.025;
+
+        if (cornerLeds.length >= 4) {
+          cornerLeds[0].scale.setScalar(1 + Math.sin(elapsedTime * 4.0) * 0.2);
+          cornerLeds[1].scale.setScalar(1 + Math.cos(elapsedTime * 3.5) * 0.2);
+          cornerLeds[2].scale.setScalar(1 + Math.sin(elapsedTime * 5.0) * 0.2);
+        }
+
+        if (renderer && scene && camera) {
+          renderer.render(scene, camera);
+        }
+      };
       animate();
 
       return () => {
         themeObserver.disconnect();
-        window.removeEventListener('resize', updateDimensions);
+        window.removeEventListener('traic-theme-change', handleThemeChange);
         if (resizeObserver) resizeObserver.disconnect();
-        container.removeEventListener('mousedown', onMouseDown);
-        window.removeEventListener('mousemove', onMouseMove);
-        window.removeEventListener('mouseup', onMouseUp);
-        container.removeEventListener('touchstart', onTouchStart);
-        window.removeEventListener('touchmove', onTouchMove);
-        window.removeEventListener('touchend', onTouchEnd);
+        dom.removeEventListener('pointerdown', onPointerDown);
+        dom.removeEventListener('pointermove', onPointerMove);
+        dom.removeEventListener('pointerup', onPointerUp);
+        dom.removeEventListener('pointercancel', onPointerUp);
         cancelAnimationFrame(animationFrameId);
-        if (renderer.domElement && container.contains(renderer.domElement)) {
+        if (renderer && renderer.domElement && container.contains(renderer.domElement)) {
           container.removeChild(renderer.domElement);
+          renderer.dispose();
         }
-        renderer.dispose();
       };
     } catch (e) {
       console.warn('ThreeHeroScene WebGL initialization error:', e);
@@ -436,14 +335,39 @@ export function ThreeHeroScene() {
   }, []);
 
   if (!webGLSupported) {
-    return <ThreeHeroFallback />;
+    // If WebGL fails, render the high-res 3D CAD render image so design matches perfectly!
+    return (
+      <div className="relative w-full h-full p-3 select-none flex items-center justify-center">
+        <div className="relative z-10 w-full h-full max-h-[360px] rounded-xl overflow-hidden border border-border/60 shadow-2xl">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src="/images/hero-hardware-core.jpg"
+            alt="TRAIC H7 Advanced Robotics Hardware Computing Core"
+            className="w-full h-full object-cover object-center"
+            loading="eager"
+          />
+          <div className="absolute top-3 left-3 flex flex-col gap-1 pointer-events-none">
+            <span className="inline-flex items-center gap-1 rounded bg-bg-0/80 border border-accent/40 px-2 py-0.5 text-[9px] font-mono text-accent backdrop-blur-md">
+              <Activity className="h-3 w-3 animate-pulse" />
+              <span>CORE ACTIVE // 480 MHz</span>
+            </span>
+          </div>
+          <div className="absolute bottom-3 right-3 pointer-events-none">
+            <span className="rounded bg-bg-0/85 border border-accent-2/40 px-2 py-0.5 text-[9px] font-mono text-accent-2 backdrop-blur-md flex items-center gap-1">
+              <Sparkles className="h-3 w-3 text-accent" />
+              <span>ARM CORTEX-M7 ROBOTICS NODE</span>
+            </span>
+          </div>
+        </div>
+      </div>
+    );
   }
 
   return (
     <div
       ref={containerRef}
-      className="w-full h-full min-h-[260px] select-none relative"
-      style={{ minHeight: '260px', width: '100%', height: '100%' }}
+      className="w-full h-full min-h-[280px] select-none relative cursor-grab active:cursor-grabbing"
+      style={{ touchAction: 'none' }}
       aria-label="Interactive 3D STM32 Silicon Chip Node"
     />
   );

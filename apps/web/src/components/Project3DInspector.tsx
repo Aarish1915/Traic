@@ -56,7 +56,7 @@ export function Project3DInspector({
 
   const handleZoom = (delta: number) => {
     if (viewMode === '2d') {
-      setTwoDZoom((prev) => Math.min(Math.max(prev + (delta < 0 ? 0.2 : -0.2), 0.8), 2.5));
+      setTwoDZoom((prev) => Math.min(Math.max(prev + (delta < 0 ? 0.25 : -0.25), 0.75), 2.5));
       return;
     }
     if (!cameraRef.current) return;
@@ -104,7 +104,7 @@ export function Project3DInspector({
 
     // Verify WebGL availability before attempting creation
     const testCanvas = document.createElement('canvas');
-    const gl = testCanvas.getContext('webgl') || testCanvas.getContext('experimental-webgl');
+    const gl = testCanvas.getContext('webgl2') || testCanvas.getContext('webgl') || testCanvas.getContext('experimental-webgl');
     if (!gl) {
       console.warn('WebGL unsupported on this device. Switching to 2D Lite Schematic.');
       setViewMode('2d');
@@ -117,11 +117,10 @@ export function Project3DInspector({
     let renderer: THREE.WebGLRenderer | null = null;
     let animId = 0;
     let isDragging = false;
-    let prevMouseX = 0;
-    let prevMouseY = 0;
+    let prevX = 0;
+    let prevY = 0;
     let resizeObserver: ResizeObserver | null = null;
     let cleanupFn: (() => void) | null = null;
-
 
     try {
       scene = new THREE.Scene();
@@ -137,15 +136,16 @@ export function Project3DInspector({
       cameraRef.current = camera;
 
       renderer = new THREE.WebGLRenderer({
-        antialias: true,
+        antialias: false, // Prevents iOS Safari memory threshold crash
         alpha: true,
         powerPreference: 'low-power',
       });
       renderer.setSize(w, h);
-      renderer.setPixelRatio(Math.min(typeof window !== 'undefined' ? window.devicePixelRatio || 1 : 1, 1.5));
+      renderer.setPixelRatio(Math.min(typeof window !== 'undefined' ? window.devicePixelRatio || 1 : 1, 1.25));
       renderer.domElement.style.display = 'block';
       renderer.domElement.style.width = '100%';
       renderer.domElement.style.height = '100%';
+      renderer.domElement.style.touchAction = 'none'; // Ensures smooth iOS touch rotation
       mount.appendChild(renderer.domElement);
 
       const group = new THREE.Group();
@@ -176,9 +176,7 @@ export function Project3DInspector({
         }
 
         if (category === 'HYBRID') {
-          // ==========================================
           // 1. AUTONOMOUS ALL-TERRAIN ROVER
-          // ==========================================
           const chassisGeo = new THREE.BoxGeometry(4.2, 1.0, 2.6);
           const chassisMat = new THREE.MeshStandardMaterial({
             color: 0x1e293b,
@@ -232,9 +230,7 @@ export function Project3DInspector({
           lidarPuck.position.set(0, 1.15, 0);
           group.add(lidarPuck);
         } else if (category === 'SOFTWARE') {
-          // ==========================================
           // 2. SATELLITE GROUND STATION ANTENNA
-          // ==========================================
           const basePedestal = new THREE.Mesh(
             new THREE.CylinderGeometry(1.2, 1.6, 0.6, 16),
             new THREE.MeshStandardMaterial({ color: 0x1e293b, metalness: 0.8, wireframe })
@@ -272,12 +268,10 @@ export function Project3DInspector({
           horn.position.set(0, 2.1, 0.7);
           group.add(horn);
         } else {
-          // ==========================================
           // 3. PRECISION 4-LAYER HARDWARE PCB BOARD
-          // ==========================================
           const baseGeo = new THREE.BoxGeometry(7.0, 0.3, 4.8);
           const baseMat = new THREE.MeshStandardMaterial({
-            color: 0x064e3b, // High-spec solder mask emerald green
+            color: 0x064e3b,
             roughness: 0.3,
             metalness: 0.5,
             wireframe,
@@ -285,12 +279,10 @@ export function Project3DInspector({
           const baseMesh = new THREE.Mesh(baseGeo, baseMat);
           group.add(baseMesh);
 
-          // Golden Edge Wireframe
           const edgeGeo = new THREE.EdgesGeometry(baseGeo);
           const edgeMat = new THREE.LineBasicMaterial({ color: 0xffd166 });
           group.add(new THREE.LineSegments(edgeGeo, edgeMat));
 
-          // Gold SMD Pads & Traces Grid
           const padMat = new THREE.MeshBasicMaterial({ color: 0xffd166, wireframe });
           for (let x = -2.8; x <= 2.8; x += 0.9) {
             for (let z = -1.8; z <= 1.8; z += 1.1) {
@@ -300,7 +292,6 @@ export function Project3DInspector({
             }
           }
 
-          // Central Microcontroller Package (STM32H7)
           const mcuGeo = new THREE.BoxGeometry(2.2, 0.5, 2.2);
           const mcuMat = new THREE.MeshStandardMaterial({
             color: 0x0f172a,
@@ -312,7 +303,6 @@ export function Project3DInspector({
           mcu.position.set(0, 0.28, 0);
           group.add(mcu);
 
-          // Capacitors
           const capMat = new THREE.MeshStandardMaterial({ color: 0x38bdf8, metalness: 0.8, wireframe });
           const cap1 = new THREE.Mesh(new THREE.CylinderGeometry(0.32, 0.32, 0.8, 16), capMat);
           cap1.position.set(2.4, 0.5, 1.4);
@@ -322,7 +312,6 @@ export function Project3DInspector({
           cap2.position.set(2.4, 0.5, 0.5);
           group.add(cap2);
 
-          // Header Pin Block
           const headerMat = new THREE.MeshStandardMaterial({ color: 0x1e293b, metalness: 0.9, wireframe });
           const header = new THREE.Mesh(new THREE.BoxGeometry(0.6, 0.7, 3.2), headerMat);
           header.position.set(-2.8, 0.45, 0);
@@ -377,25 +366,33 @@ export function Project3DInspector({
         buildProceduralModel();
       }
 
-      // Drag / Swipe Handlers
-      const onMouseDown = (e: MouseEvent) => {
+      // UNIFIED POINTER EVENTS FOR ROTATION (WORKS FLAWLESSLY ON IPHONE & ANDROID)
+      const dom = renderer.domElement;
+
+      const onPointerDown = (e: PointerEvent) => {
         isDragging = true;
-        prevMouseX = e.clientX;
-        prevMouseY = e.clientY;
+        prevX = e.clientX;
+        prevY = e.clientY;
+        try {
+          dom.setPointerCapture(e.pointerId);
+        } catch {}
       };
 
-      const onMouseMove = (e: MouseEvent) => {
+      const onPointerMove = (e: PointerEvent) => {
         if (!isDragging) return;
-        const deltaX = e.clientX - prevMouseX;
-        const deltaY = e.clientY - prevMouseY;
-        group.rotation.y += deltaX * 0.012;
-        group.rotation.x += deltaY * 0.012;
-        prevMouseX = e.clientX;
-        prevMouseY = e.clientY;
+        const dx = e.clientX - prevX;
+        const dy = e.clientY - prevY;
+        group.rotation.y += dx * 0.012;
+        group.rotation.x += dy * 0.008;
+        prevX = e.clientX;
+        prevY = e.clientY;
       };
 
-      const onMouseUp = () => {
+      const onPointerUp = (e: PointerEvent) => {
         isDragging = false;
+        try {
+          dom.releasePointerCapture(e.pointerId);
+        } catch {}
       };
 
       const onWheel = (e: WheelEvent) => {
@@ -404,53 +401,11 @@ export function Project3DInspector({
         camera.position.z = Math.min(Math.max(camera.position.z + e.deltaY * 0.015, 3.5), 24);
       };
 
-      // Touch handlers (1-finger rotate, 2-finger pinch)
-      let initialPinchDist = 0;
-      let initialCameraZ = 0;
-
-      const getTouchDistance = (t1: Touch, t2: Touch) => Math.hypot(t1.clientX - t2.clientX, t1.clientY - t2.clientY);
-
-      const onTouchStart = (e: TouchEvent) => {
-        if (e.touches.length === 1) {
-          isDragging = true;
-          prevMouseX = e.touches[0].clientX;
-          prevMouseY = e.touches[0].clientY;
-        } else if (e.touches.length === 2) {
-          isDragging = false;
-          initialPinchDist = getTouchDistance(e.touches[0], e.touches[1]);
-          if (camera) initialCameraZ = camera.position.z;
-        }
-      };
-
-      const onTouchMove = (e: TouchEvent) => {
-        if (e.touches.length === 1 && isDragging) {
-          e.preventDefault();
-          const deltaX = e.touches[0].clientX - prevMouseX;
-          const deltaY = e.touches[0].clientY - prevMouseY;
-          group.rotation.y += deltaX * 0.012;
-          group.rotation.x += deltaY * 0.012;
-          prevMouseX = e.touches[0].clientX;
-          prevMouseY = e.touches[0].clientY;
-        } else if (e.touches.length === 2 && initialPinchDist > 0 && camera) {
-          e.preventDefault();
-          const currentDist = getTouchDistance(e.touches[0], e.touches[1]);
-          const pinchFactor = initialPinchDist / (currentDist || 1);
-          camera.position.z = Math.min(Math.max(initialCameraZ * pinchFactor, 3.5), 24);
-        }
-      };
-
-      const onTouchEnd = () => {
-        isDragging = false;
-        initialPinchDist = 0;
-      };
-
-      mount.addEventListener('mousedown', onMouseDown);
-      mount.addEventListener('wheel', onWheel, { passive: false });
-      mount.addEventListener('touchstart', onTouchStart, { passive: false });
-      window.addEventListener('mousemove', onMouseMove);
-      window.addEventListener('mouseup', onMouseUp);
-      window.addEventListener('touchmove', onTouchMove, { passive: false });
-      window.addEventListener('touchend', onTouchEnd);
+      dom.addEventListener('pointerdown', onPointerDown);
+      dom.addEventListener('pointermove', onPointerMove);
+      dom.addEventListener('pointerup', onPointerUp);
+      dom.addEventListener('pointercancel', onPointerUp);
+      dom.addEventListener('wheel', onWheel, { passive: false });
 
       // Handle Resizing
       const updateSize = () => {
@@ -480,13 +435,11 @@ export function Project3DInspector({
       cleanupFn = () => {
         isMounted = false;
         if (resizeObserver) resizeObserver.disconnect();
-        mount.removeEventListener('mousedown', onMouseDown);
-        mount.removeEventListener('wheel', onWheel);
-        mount.removeEventListener('touchstart', onTouchStart);
-        window.removeEventListener('mousemove', onMouseMove);
-        window.removeEventListener('mouseup', onMouseUp);
-        window.removeEventListener('touchmove', onTouchMove);
-        window.removeEventListener('touchend', onTouchEnd);
+        dom.removeEventListener('pointerdown', onPointerDown);
+        dom.removeEventListener('pointermove', onPointerMove);
+        dom.removeEventListener('pointerup', onPointerUp);
+        dom.removeEventListener('pointercancel', onPointerUp);
+        dom.removeEventListener('wheel', onWheel);
         if (animId) cancelAnimationFrame(animId);
         if (renderer) {
           if (renderer.domElement && mount.contains(renderer.domElement)) {
@@ -508,65 +461,67 @@ export function Project3DInspector({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-bg-0/90 backdrop-blur-md p-2 sm:p-4">
       <div className="relative flex flex-col md:flex-row w-full max-w-5xl h-[92vh] sm:h-[86vh] max-h-[720px] overflow-hidden rounded-2xl border border-border bg-bg-1 shadow-2xl">
-        {/* Mobile floating close button */}
-        <button
-          onClick={onClose}
-          className="md:hidden absolute top-3 right-3 z-40 rounded-full bg-surface/90 border border-border p-2 text-text-1 shadow-lg backdrop-blur-md"
-          aria-label="Close modal"
-        >
-          <X className="h-5 w-5" />
-        </button>
-
         {/* Left Column: 3D Viewport OR 2D Schematic Stage */}
-        <div className="relative w-full h-[320px] sm:h-[390px] md:h-full md:flex-1 bg-bg-0 cursor-grab active:cursor-grabbing select-none overflow-hidden shrink-0 flex flex-col justify-between">
-          {/* Top Stage Control Header */}
-          <div className="relative z-30 flex items-center justify-between border-b border-border/60 bg-bg-1/90 px-3 sm:px-4 py-2 backdrop-blur-sm">
-            <div className="flex items-center gap-2">
-              <span className="h-2 w-2 rounded-full bg-accent animate-pulse" />
-              <span className="font-mono text-xs font-bold text-text-1 truncate">
-                {projectTitle} // {viewMode === '3d' ? '3D CAD VIEW' : '2D SCHEMATIC'}
+        <div className="relative w-full h-[340px] sm:h-[400px] md:h-full md:flex-1 bg-bg-0 cursor-grab active:cursor-grabbing select-none overflow-hidden shrink-0 flex flex-col justify-between">
+          {/* Top Stage Control Header - Clean Inline Layout with ZERO Overlap */}
+          <div className="relative z-30 flex items-center justify-between border-b border-border/60 bg-bg-1/95 px-3 sm:px-4 py-2.5 backdrop-blur-sm gap-2">
+            <div className="flex items-center gap-2 min-w-0">
+              <span className="h-2 w-2 rounded-full bg-accent animate-pulse shrink-0" />
+              <span className="font-mono text-xs font-bold text-text-1 truncate max-w-[150px] sm:max-w-[260px]">
+                {projectTitle}
               </span>
             </div>
 
-            {/* Mode Switcher Toggle (For Low-end vs High-end devices) */}
-            <div className="flex items-center gap-1 rounded border border-border/80 bg-bg-0/90 p-0.5 text-[10px] font-mono mr-10 md:mr-0">
+            <div className="flex items-center gap-2 shrink-0">
+              {/* Mode Switcher Toggle */}
+              <div className="flex items-center gap-0.5 rounded border border-border/80 bg-bg-0/90 p-0.5 text-[10px] font-mono">
+                <button
+                  onClick={() => setViewMode('3d')}
+                  className={`flex items-center gap-1 px-2.5 py-1 rounded font-semibold transition-all ${
+                    viewMode === '3d'
+                      ? 'bg-accent text-bg-0 shadow-sm'
+                      : 'text-text-2 hover:text-text-1'
+                  }`}
+                  title="Interactive 3D WebGL (High-end devices)"
+                >
+                  <Box className="h-3 w-3" />
+                  <span>3D</span>
+                </button>
+                <button
+                  onClick={() => setViewMode('2d')}
+                  className={`flex items-center gap-1 px-2.5 py-1 rounded font-semibold transition-all ${
+                    viewMode === '2d'
+                      ? 'bg-accent-2 text-bg-0 shadow-sm'
+                      : 'text-text-2 hover:text-text-1'
+                  }`}
+                  title="Lightweight 2D CAD Schematic (Low-end devices)"
+                >
+                  <Zap className="h-3 w-3" />
+                  <span>2D LITE</span>
+                </button>
+              </div>
+
+              {/* Status Badges */}
+              {isLoadingModel && (
+                <span className="hidden lg:inline-flex rounded bg-accent/20 border border-accent/40 px-2 py-0.5 text-[9px] font-mono text-accent animate-pulse">
+                  Loading GLB...
+                </span>
+              )}
+              {isCustomModel && (
+                <span className="hidden lg:inline-flex rounded bg-success/20 border border-success/40 px-2 py-0.5 text-[9px] font-mono text-success">
+                  Custom CAD
+                </span>
+              )}
+
+              {/* Clean Inline Close Button for Mobile & Desktop */}
               <button
-                onClick={() => setViewMode('3d')}
-                className={`flex items-center gap-1 px-2 py-0.5 rounded font-semibold transition-all ${
-                  viewMode === '3d'
-                    ? 'bg-accent text-bg-0 shadow-sm'
-                    : 'text-text-2 hover:text-text-1'
-                }`}
-                title="Interactive 3D WebGL (High-end devices)"
+                onClick={onClose}
+                className="rounded-lg p-1.5 text-text-2 hover:bg-surface hover:text-text-1 transition-colors border border-border/60 bg-surface/80"
+                aria-label="Close modal"
               >
-                <Box className="h-3 w-3" />
-                <span>3D VIEW</span>
-              </button>
-              <button
-                onClick={() => setViewMode('2d')}
-                className={`flex items-center gap-1 px-2 py-0.5 rounded font-semibold transition-all ${
-                  viewMode === '2d'
-                    ? 'bg-accent-2 text-bg-0 shadow-sm'
-                    : 'text-text-2 hover:text-text-1'
-                }`}
-                title="Lightweight 2D CAD Schematic (Low-end devices)"
-              >
-                <Zap className="h-3 w-3" />
-                <span>2D SCHEMATIC</span>
+                <X className="h-4 w-4" />
               </button>
             </div>
-
-            {/* Model Status Indicators */}
-            {isLoadingModel && (
-              <span className="hidden sm:inline-flex rounded bg-accent/20 border border-accent/40 px-2 py-0.5 text-[9px] font-mono text-accent animate-pulse">
-                Loading GLB...
-              </span>
-            )}
-            {isCustomModel && (
-              <span className="hidden sm:inline-flex rounded bg-success/20 border border-success/40 px-2 py-0.5 text-[9px] font-mono text-success">
-                Custom CAD
-              </span>
-            )}
           </div>
 
           {/* Viewport Center */}
@@ -596,19 +551,19 @@ export function Project3DInspector({
             )}
           </div>
 
-          {/* Floating Toolset Overlay */}
+          {/* Floating Toolset Overlay - Positioned Safely with No Overlap */}
           <div className="absolute bottom-3 left-3 sm:bottom-4 sm:left-4 z-30 flex items-center gap-1 sm:gap-1.5 rounded-lg border border-border bg-surface/90 p-1 sm:p-1.5 backdrop-blur-md shadow-xl">
             <button
               onClick={() => handleZoom(-2)}
               title="Zoom In (+)"
-              className="rounded p-1.5 text-text-2 hover:bg-bg-1 hover:text-text-1 transition-colors"
+              className="rounded p-1.5 text-text-2 hover:bg-bg-1 hover:text-text-1 transition-colors min-w-[32px] min-h-[32px] flex items-center justify-center"
             >
               <ZoomIn className="h-4 w-4" />
             </button>
             <button
               onClick={() => handleZoom(2)}
               title="Zoom Out (-)"
-              className="rounded p-1.5 text-text-2 hover:bg-bg-1 hover:text-text-1 transition-colors"
+              className="rounded p-1.5 text-text-2 hover:bg-bg-1 hover:text-text-1 transition-colors min-w-[32px] min-h-[32px] flex items-center justify-center"
             >
               <ZoomOut className="h-4 w-4" />
             </button>
@@ -616,7 +571,7 @@ export function Project3DInspector({
             <button
               onClick={handleReset}
               title="Reset View"
-              className="rounded p-1.5 text-text-2 hover:bg-bg-1 hover:text-text-1 transition-colors"
+              className="rounded p-1.5 text-text-2 hover:bg-bg-1 hover:text-text-1 transition-colors min-w-[32px] min-h-[32px] flex items-center justify-center"
             >
               <RotateCcw className="h-4 w-4" />
             </button>
@@ -626,7 +581,7 @@ export function Project3DInspector({
                 <button
                   onClick={() => setAutoSpin(!autoSpin)}
                   title={autoSpin ? 'Pause Rotation' : 'Auto Rotate'}
-                  className={`rounded p-1.5 transition-colors ${
+                  className={`rounded p-1.5 transition-colors min-w-[32px] min-h-[32px] flex items-center justify-center ${
                     autoSpin ? 'text-accent bg-accent/15' : 'text-text-2 hover:bg-bg-1 hover:text-text-1'
                   }`}
                 >
@@ -635,7 +590,7 @@ export function Project3DInspector({
                 <button
                   onClick={() => setWireframe(!wireframe)}
                   title={wireframe ? 'Shaded View' : 'Wireframe View'}
-                  className={`rounded p-1.5 transition-colors ${
+                  className={`rounded p-1.5 transition-colors min-w-[32px] min-h-[32px] flex items-center justify-center ${
                     wireframe ? 'text-accent-2 bg-accent-2/15' : 'text-text-2 hover:bg-bg-1 hover:text-text-1'
                   }`}
                 >
@@ -645,10 +600,10 @@ export function Project3DInspector({
             )}
           </div>
 
-          {/* Hint Overlay */}
-          <div className="absolute bottom-3 right-3 sm:bottom-4 sm:right-4 z-30 pointer-events-none text-[9px] sm:text-[10px] font-mono text-text-2 bg-bg-0/85 px-2 py-0.5 sm:px-2.5 sm:py-1 rounded border border-border/40 backdrop-blur-sm">
+          {/* Hint Overlay - Hidden on small mobile screens to prevent overlap */}
+          <div className="hidden sm:block absolute bottom-3 right-3 sm:bottom-4 sm:right-4 z-30 pointer-events-none text-[9px] sm:text-[10px] font-mono text-text-2 bg-bg-0/85 px-2.5 py-1 rounded border border-border/40 backdrop-blur-sm">
             {viewMode === '3d'
-              ? 'Swipe / drag to rotate • Pinch to zoom'
+              ? 'Drag to rotate • Scroll to zoom'
               : 'Use +/- buttons to zoom 2D schematic'}
           </div>
         </div>
@@ -665,7 +620,7 @@ export function Project3DInspector({
                 className="hidden md:flex rounded-lg p-1.5 text-text-2 hover:bg-surface hover:text-text-1 transition-colors"
                 aria-label="Close modal"
               >
-                <X className="h-5 w-5" />
+                <X className="h-4 w-4" />
               </button>
             </div>
 

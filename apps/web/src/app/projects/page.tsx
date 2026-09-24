@@ -245,13 +245,13 @@ export default function ProjectsPage() {
                   ))}
                 </div>
 
-                <div className="flex flex-wrap items-center justify-between text-xs pt-1 gap-2">
-                  <div className="flex items-center gap-3">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-2">
+                  <div className="flex items-center gap-3.5 text-xs">
                     <a
                       href={project.repoUrl}
                       target="_blank"
                       rel="noreferrer"
-                      className="inline-flex items-center gap-1.5 font-semibold text-text-2 hover:text-text-1 transition-colors"
+                      className="inline-flex items-center gap-1.5 font-semibold text-text-2 hover:text-text-1 transition-colors py-1"
                     >
                       <GithubIcon className="h-3.5 w-3.5" />
                       <span>Code</span>
@@ -260,7 +260,7 @@ export default function ProjectsPage() {
                     {project.slug === 'telemetry-ground-station' ? (
                       <button
                         onClick={() => setShowTelemetry(true)}
-                        className="inline-flex items-center gap-1 text-accent font-semibold hover:underline"
+                        className="inline-flex items-center gap-1 text-accent font-semibold hover:underline py-1"
                         title="Open Interactive Telemetry Simulator"
                       >
                         <Radio className="h-3 w-3 animate-pulse" />
@@ -271,7 +271,7 @@ export default function ProjectsPage() {
                         href={project.demoUrl}
                         target="_blank"
                         rel="noreferrer"
-                        className="inline-flex items-center gap-1 text-accent font-semibold hover:underline"
+                        className="inline-flex items-center gap-1 text-accent font-semibold hover:underline py-1"
                       >
                         <span>Demo</span>
                         <ExternalLink className="h-3 w-3" />
@@ -280,7 +280,7 @@ export default function ProjectsPage() {
 
                     <Link
                       href={`/projects/${project.slug}`}
-                      className="inline-flex items-center gap-1 text-accent-2 font-semibold hover:underline"
+                      className="inline-flex items-center gap-1 text-accent-2 font-semibold hover:underline py-1"
                     >
                       <span>Specs</span>
                       <ArrowRight className="h-3 w-3" />
@@ -296,7 +296,7 @@ export default function ProjectsPage() {
                         modelUrl: project.modelUrl,
                       })
                     }
-                    className="inline-flex items-center gap-1.5 rounded-lg border border-accent-2/40 bg-accent-2/10 px-2.5 py-1 text-xs font-mono font-semibold text-accent-2 hover:bg-accent-2 hover:text-bg-0 transition-colors"
+                    className="inline-flex items-center justify-center gap-1.5 rounded-lg border border-accent-2/50 bg-accent-2/10 px-3 py-1.5 text-xs font-mono font-semibold text-accent-2 hover:bg-accent-2 hover:text-bg-0 transition-colors shrink-0"
                   >
                     <Box className="h-3.5 w-3.5" />
                     <span>Inspect 3D</span>
