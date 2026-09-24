@@ -1,0 +1,57 @@
+services:
+  # ========================================================
+  # 1. TRAIC API Backend Service
+  # ========================================================
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: traic-api
+    restart: unless-stopped
+    ports:
+      - "4000:4000"
+    environment:
+      - NODE_ENV=production
+      - PORT=4000
+      - ADMIN_PASSWORD=${ADMIN_PASSWORD:-traic_admin_2025!}
+      - SESSION_SECRET=${SESSION_SECRET:-change_in_production_secret_key_32chars}
+      - ALLOWED_ORIGINS=http://localhost:3000,http://localhost:5173
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:4000/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 5s
+
+  # ========================================================
+  # 2. TRAIC Public Website (Next.js 15 App Router)
+  # ========================================================
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile.web
+    container_name: traic-web
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - NEXT_PUBLIC_API_URL=http://localhost:4000
+    depends_on:
+      api:
+        condition: service_healthy
+
+  # ========================================================
+  # 3. TRAIC Admin Console (Vite + Nginx Alpine)
+  # ========================================================
+  admin:
+    build:
+      context: .
+      dockerfile: Dockerfile.admin
+    container_name: traic-admin
+    restart: unless-stopped
+    ports:
+      - "5173:5173"
+    depends_on:
+      api:
+        condition: service_healthy

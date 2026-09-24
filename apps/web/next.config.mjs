@@ -6,6 +6,7 @@ const __dirname = path.dirname(__filename);
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  output: process.env.NEXT_OUTPUT_STANDALONE === 'true' ? 'standalone' : undefined,
   outputFileTracingRoot: path.join(__dirname, '../../'),
   transpilePackages: ['@traic/shared'],
 };
