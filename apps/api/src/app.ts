@@ -25,7 +25,13 @@ export function createApp() {
   app.use(
     cors({
       origin: (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) => {
-        if (!origin || allowedOrigins.includes(origin) || env.NODE_ENV === 'development') {
+        if (
+          !origin ||
+          allowedOrigins.includes(origin) ||
+          origin.endsWith('.vercel.app') ||
+          origin.endsWith('.onrender.com') ||
+          env.NODE_ENV === 'development'
+        ) {
           callback(null, true);
         } else {
           callback(new Error('Not allowed by CORS'));
