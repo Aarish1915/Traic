@@ -10,6 +10,7 @@ import {
   Trophy,
   Users,
   Radio,
+  ExternalLink,
 } from 'lucide-react';
 import { GithubIcon } from '@/components/icons';
 import { ProjectCard3DPreview } from '@/components/ProjectCard3DPreview';
@@ -27,6 +28,7 @@ export interface ProjectDetail {
   fullNarrative: string;
   techStack: string[];
   repoUrl: string;
+  demoUrl?: string;
   hasTelemetryDemo?: boolean;
   specs: { label: string; value: string }[];
   bom: { component: string; partNumber: string; function: string }[];
@@ -115,6 +117,18 @@ export function ProjectDetailClient({ project }: { project: ProjectDetail }) {
                   <Radio className="h-4 w-4 animate-pulse" />
                   <span>LIVE TELEMETRY STATION</span>
                 </button>
+              )}
+
+              {project.demoUrl && (
+                <a
+                  href={project.demoUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="flex items-center justify-center gap-2 rounded-xl border border-accent/60 bg-accent/10 px-5 py-3.5 text-sm font-semibold text-accent hover:bg-accent/20 transition-all"
+                >
+                  <ExternalLink className="h-4 w-4" />
+                  <span>LIVE DEMO</span>
+                </a>
               )}
 
               <a

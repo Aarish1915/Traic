@@ -158,7 +158,7 @@ export function Sidebar({ activeTab, setActiveTab, counts, loading, onSync, onLo
       {/* Sync & Footer */}
       <div style={{ borderTop: '1px solid #232838', paddingTop: '16px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
         <a
-          href={import.meta.env.VITE_PUBLIC_WEB_URL || 'https://traic.onrender.com'}
+          href={(import.meta as any).env?.VITE_PUBLIC_WEB_URL || 'https://traic.onrender.com'}
           target="_blank"
           rel="noreferrer"
           style={{
