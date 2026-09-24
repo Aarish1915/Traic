@@ -5,6 +5,7 @@ import cookieParser from 'cookie-parser';
 import { env } from './config/env';
 import { healthRouter } from './modules/health/routes';
 import { publicRouter } from './modules/public/routes';
+import { adminRouter } from './modules/admin/routes';
 import { errorHandler } from './common/middleware/error';
 import { NotFoundError } from './common/errors';
 
@@ -40,6 +41,7 @@ export function createApp() {
   // Mount routers
   app.use(healthRouter);
   app.use(publicRouter);
+  app.use(adminRouter);
 
   // Catch-all 404
   app.use((req, _res, next) => {

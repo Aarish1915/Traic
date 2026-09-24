@@ -1,3 +1,6 @@
+'use client';
+
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Calendar, MapPin, ArrowRight, Clock, Sparkles, CheckCircle2 } from 'lucide-react';
 
@@ -51,6 +54,32 @@ const PAST_EVENTS = [
 ];
 
 export default function EventsPage() {
+  const [upcomingEvents, setUpcomingEvents] = useState(UPCOMING_EVENTS);
+
+  useEffect(() => {
+    const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
+    fetch(`${API_BASE}/public/events`)
+      .then((res) => res.json())
+      .then((res) => {
+        if (res.data && res.data.length > 0) {
+          setUpcomingEvents(
+            res.data.map((e: any) => ({
+              slug: e.slug,
+              title: e.title,
+              type: e.type || 'Technical Event',
+              startsAt: e.startsAt ? new Date(e.startsAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'Upcoming',
+              venue: e.venue || 'TRAIC Maker Space',
+              mode: e.mode || 'OFFLINE',
+              tagline: e.tagline || e.descriptionMd,
+              tracks: e.tracks || ['Robotics', 'Embedded', 'AI'],
+              registrationOpen: e.registrationOpen !== false,
+            }))
+          );
+        }
+      })
+      .catch(() => {});
+  }, []);
+
   return (
     <div className="min-h-screen bg-bg-0 py-16">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
@@ -76,7 +105,7 @@ export default function EventsPage() {
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            {UPCOMING_EVENTS.map((event) => (
+            {upcomingEvents.map((event) => (
               <div
                 key={event.slug}
                 className="flex flex-col justify-between rounded-2xl border border-accent/40 bg-surface/80 p-8 relative overflow-hidden shadow-lg transition-all hover:border-accent"
@@ -92,9 +121,12 @@ export default function EventsPage() {
                     </span>
                   </div>
 
-                  <h2 className="text-2xl font-black text-text-1 mb-3">
+                  <Link
+                    href={`/events/${event.slug}`}
+                    className="text-2xl font-black text-text-1 mb-3 hover:text-accent-2 transition-colors block"
+                  >
                     {event.title}
-                  </h2>
+                  </Link>
                   <p className="text-sm text-text-2 leading-relaxed mb-6">
                     {event.tagline}
                   </p>
@@ -122,13 +154,19 @@ export default function EventsPage() {
                   </div>
                 </div>
 
-                <div className="mt-8 pt-4">
+                <div className="mt-8 pt-4 border-t border-border/80 flex items-center justify-between gap-3">
+                  <Link
+                    href={`/events/${event.slug}`}
+                    className="text-xs font-mono font-semibold text-accent-2 hover:underline"
+                  >
+                    <span>Full Schedule & Lab Specs →</span>
+                  </Link>
                   <Link
                     href="/join"
-                    className="flex items-center justify-center gap-2 rounded-lg bg-accent px-6 py-3 text-sm font-semibold text-bg-0 hover:bg-accent-hover transition-colors"
+                    className="flex items-center gap-1.5 rounded-lg bg-accent px-4 py-2 text-xs font-semibold text-bg-0 hover:bg-accent-hover transition-colors shadow-sm"
                   >
-                    <span>Register for Event</span>
-                    <ArrowRight className="h-4 w-4" />
+                    <span>Register</span>
+                    <ArrowRight className="h-3.5 w-3.5" />
                   </Link>
                 </div>
               </div>

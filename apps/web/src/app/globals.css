@@ -2,22 +2,46 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  --bg-0: #07080B;
-  --bg-1: #0D0F14;
-  --surface: #141821;
-  --border: #232838;
-  --text-1: #E8EAF0;
-  --text-2: #9AA3B5;
-  --accent: #FF9F1C;
-  --accent-2: #38BDF8;
+:root,
+html.dark,
+[data-theme="dark"] {
+  --bg-0: 11 14 20;
+  --bg-1: 16 20 28;
+  --surface: 20 24 34;
+  --surface-hover: 27 33 46;
+  --border: 35 41 56;
+  --text-1: 232 234 240;
+  --text-2: 154 163 181;
+  --accent: 255 159 28;
+  --accent-hover: 224 133 7;
+  --accent-2: 56 189 248;
+  --accent-2-hover: 14 165 233;
+}
+
+:root[data-theme="light"],
+html.light,
+[data-theme="light"],
+html[class~="light"],
+body.light {
+  --bg-0: 245 247 250;
+  --bg-1: 238 242 247;
+  --surface: 255 255 255;
+  --surface-hover: 241 245 249;
+  --border: 203 213 225;
+  --text-1: 15 23 42;
+  --text-2: 51 65 85;
+  --accent: 234 88 12;
+  --accent-hover: 194 65 12;
+  --accent-2: 14 116 144;
+  --accent-2-hover: 3 105 161;
 }
 
 body {
-  background-color: var(--bg-0);
-  color: var(--text-1);
+  background-color: rgb(var(--bg-0));
+  color: rgb(var(--text-1));
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
   overflow-x: hidden;
+  transition: background-color 0.2s ease, color 0.2s ease;
 }
 
 /* Subtle circuit grid pattern */
@@ -28,6 +52,12 @@ body {
   background-position: 0 0, 16px 16px;
 }
 
+html.light .circuit-pattern,
+[data-theme="light"] .circuit-pattern {
+  background-image: radial-gradient(rgba(2, 132, 199, 0.12) 1px, transparent 1px),
+                    radial-gradient(rgba(234, 88, 12, 0.08) 1px, transparent 1px);
+}
+
 /* Glassmorphic border */
 .glass-panel {
   background: rgba(20, 24, 33, 0.7);
@@ -35,8 +65,20 @@ body {
   border: 1px solid rgba(35, 40, 56, 0.8);
 }
 
+html.light .glass-panel,
+[data-theme="light"] .glass-panel {
+  background: rgba(255, 255, 255, 0.85);
+  border: 1px solid rgba(226, 232, 240, 0.9);
+  box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.05);
+}
+
 .glass-panel:hover {
   border-color: rgba(56, 189, 248, 0.3);
+}
+
+html.light .glass-panel:hover,
+[data-theme="light"] .glass-panel:hover {
+  border-color: rgba(2, 132, 199, 0.4);
 }
 
 /* Glow effects */
@@ -44,6 +86,16 @@ body {
   box-shadow: 0 0 25px rgba(255, 159, 28, 0.2);
 }
 
+html.light .glow-accent,
+[data-theme="light"] .glow-accent {
+  box-shadow: 0 0 25px rgba(234, 88, 12, 0.15);
+}
+
 .glow-cyan {
   box-shadow: 0 0 25px rgba(56, 189, 248, 0.15);
+}
+
+html.light .glow-cyan,
+[data-theme="light"] .glow-cyan {
+  box-shadow: 0 0 25px rgba(2, 132, 199, 0.12);
 }

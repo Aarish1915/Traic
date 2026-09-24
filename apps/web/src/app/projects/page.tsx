@@ -1,9 +1,21 @@
 'use client';
 
-import { useState } from 'react';
-import { Cpu, ExternalLink, Filter } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import Link from 'next/link';
+import dynamic from 'next/dynamic';
+import { Cpu, ExternalLink, Filter, Box, ArrowRight, Radio } from 'lucide-react';
 import { GithubIcon } from '@/components/icons';
+import { TelemetryModal } from '@/components/TelemetryModal';
 import type { ProjectCategory } from '@traic/shared';
+
+const Project3DInspector = dynamic(
+  () => import('@/components/Project3DInspector').then((m) => m.Project3DInspector),
+  { ssr: false }
+);
+const ProjectCard3DPreview = dynamic(
+  () => import('@/components/ProjectCard3DPreview').then((m) => m.ProjectCard3DPreview),
+  { ssr: false }
+);
 
 const PROJECTS = [
   {
@@ -16,6 +28,7 @@ const PROJECTS = [
     description: 'Custom CNC aluminum differential-drive robot running real-time 3D SLAM, obstacle avoidance, and waypoint following on NVIDIA Jetson Orin Nano.',
     repoUrl: 'https://github.com/traic-club/autonomous-ugv',
     demoUrl: '',
+    modelUrl: '', // Ready for .glb
     featured: true,
   },
   {
@@ -28,6 +41,7 @@ const PROJECTS = [
     description: 'High-speed differential routing, power sequencing, and camera interfaces on a custom 4-layer FR4 board for low-power edge detection.',
     repoUrl: 'https://github.com/traic-club/edge-neural-pcb',
     demoUrl: '',
+    modelUrl: '', // Ready for .glb
     featured: true,
   },
   {
@@ -39,7 +53,8 @@ const PROJECTS = [
     tech: ['Rust', 'Go', 'Next.js', 'WebSockets', 'LoRa', 'Three.js'],
     description: 'Decodes RF packets from rovers and drones in real time, rendering low-latency 3D orientation models, battery thermals, and sensor graphs.',
     repoUrl: 'https://github.com/traic-club/telemetry-station',
-    demoUrl: 'https://telemetry.traic.in',
+    demoUrl: '',
+    modelUrl: '',
     featured: true,
   },
   {
@@ -52,6 +67,7 @@ const PROJECTS = [
     description: 'Designed custom carbon-fiber and 3D printed coxa-femur-tibia legs driven by high-torque digital bus servos with gait sequencing.',
     repoUrl: 'https://github.com/traic-club/hexapod',
     demoUrl: '',
+    modelUrl: '',
     featured: false,
   },
   {
@@ -64,6 +80,7 @@ const PROJECTS = [
     description: 'Measures true RMS voltage, active/reactive power, and power factor with isolated current transformers and secure TLS MQTT uplinks.',
     repoUrl: 'https://github.com/traic-club/iot-energy-monitor',
     demoUrl: '',
+    modelUrl: '',
     featured: false,
   },
   {
@@ -76,19 +93,68 @@ const PROJECTS = [
     description: 'Precision trajectory tracking within 5mm error margin at 2.5 m/s acceleration using cascading velocity and position PID loops.',
     repoUrl: 'https://github.com/traic-club/holonomic-base',
     demoUrl: '',
+    modelUrl: '',
     featured: false,
   },
 ];
 
 export default function ProjectsPage() {
+  const [projectsList, setProjectsList] = useState(PROJECTS);
   const [selectedCategory, setSelectedCategory] = useState<string>('ALL');
+  const [inspectingProject, setInspectingProject] = useState<{
+    title: string;
+    category: string;
+    tech: string[];
+    modelUrl?: string;
+  } | null>(null);
+  const [showTelemetry, setShowTelemetry] = useState(false);
+
+  useEffect(() => {
+    const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
+    fetch(`${API_BASE}/public/projects`)
+      .then((res) => res.json())
+      .then((res) => {
+        if (res.data && res.data.length > 0) {
+          setProjectsList(
+            res.data.map((p: any) => ({
+              slug: p.slug,
+              title: p.title,
+              tagline: p.tagline,
+              category: p.category as ProjectCategory,
+              year: p.year,
+              tech: p.techStack || p.tech || [],
+              description: p.descriptionMd || p.description,
+              repoUrl: p.repoUrl || '',
+              demoUrl: p.demoUrl || '',
+              modelUrl: p.model3dAssetUrl || '',
+              featured: !!p.featured,
+            }))
+          );
+        }
+      })
+      .catch(() => {});
+  }, []);
 
   const filteredProjects = selectedCategory === 'ALL'
-    ? PROJECTS
-    : PROJECTS.filter((p) => p.category === selectedCategory);
+    ? projectsList
+    : projectsList.filter((p) => p.category === selectedCategory);
 
   return (
     <div className="min-h-screen bg-bg-0 py-16">
+      {/* 3D Model & CAD Inspector Modal */}
+      {inspectingProject && (
+        <Project3DInspector
+          projectTitle={inspectingProject.title}
+          category={inspectingProject.category}
+          techStack={inspectingProject.tech}
+          modelUrl={inspectingProject.modelUrl}
+          onClose={() => setInspectingProject(null)}
+        />
+      )}
+
+      {/* Ground Station Telemetry Simulation Modal */}
+      {showTelemetry && <TelemetryModal onClose={() => setShowTelemetry(false)} />}
+
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="mb-12">
@@ -146,9 +212,19 @@ export default function ProjectsPage() {
                   <span className="text-xs font-mono text-text-2">{project.year}</span>
                 </div>
 
-                <h2 className="text-xl font-bold text-text-1 hover:text-accent-2 transition-colors">
+                {/* Interactive 3D Model Preview */}
+                <ProjectCard3DPreview
+                  category={project.category}
+                  slug={project.slug}
+                  title={project.title}
+                />
+
+                <Link
+                  href={`/projects/${project.slug}`}
+                  className="text-xl font-bold text-text-1 hover:text-accent-2 transition-colors block"
+                >
                   {project.title}
-                </h2>
+                </Link>
                 <p className="mt-2 text-xs font-medium text-accent-2">
                   {project.tagline}
                 </p>
@@ -169,27 +245,62 @@ export default function ProjectsPage() {
                   ))}
                 </div>
 
-                <div className="flex items-center justify-between text-xs pt-1">
-                  <a
-                    href={project.repoUrl}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="inline-flex items-center gap-1.5 font-semibold text-text-2 hover:text-text-1 transition-colors"
-                  >
-                    <GithubIcon className="h-3.5 w-3.5" />
-                    <span>Source Code</span>
-                  </a>
-                  {project.demoUrl && (
+                <div className="flex flex-wrap items-center justify-between text-xs pt-1 gap-2">
+                  <div className="flex items-center gap-3">
                     <a
-                      href={project.demoUrl}
+                      href={project.repoUrl}
                       target="_blank"
                       rel="noreferrer"
-                      className="inline-flex items-center gap-1 text-accent font-semibold hover:underline"
+                      className="inline-flex items-center gap-1.5 font-semibold text-text-2 hover:text-text-1 transition-colors"
                     >
-                      <span>Live Demo</span>
-                      <ExternalLink className="h-3 w-3" />
+                      <GithubIcon className="h-3.5 w-3.5" />
+                      <span>Code</span>
                     </a>
-                  )}
+
+                    {project.slug === 'telemetry-ground-station' ? (
+                      <button
+                        onClick={() => setShowTelemetry(true)}
+                        className="inline-flex items-center gap-1 text-accent font-semibold hover:underline"
+                        title="Open Interactive Telemetry Simulator"
+                      >
+                        <Radio className="h-3 w-3 animate-pulse" />
+                        <span>Demo</span>
+                      </button>
+                    ) : project.demoUrl ? (
+                      <a
+                        href={project.demoUrl}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="inline-flex items-center gap-1 text-accent font-semibold hover:underline"
+                      >
+                        <span>Demo</span>
+                        <ExternalLink className="h-3 w-3" />
+                      </a>
+                    ) : null}
+
+                    <Link
+                      href={`/projects/${project.slug}`}
+                      className="inline-flex items-center gap-1 text-accent-2 font-semibold hover:underline"
+                    >
+                      <span>Specs</span>
+                      <ArrowRight className="h-3 w-3" />
+                    </Link>
+                  </div>
+
+                  <button
+                    onClick={() =>
+                      setInspectingProject({
+                        title: project.title,
+                        category: project.category,
+                        tech: project.tech,
+                        modelUrl: project.modelUrl,
+                      })
+                    }
+                    className="inline-flex items-center gap-1.5 rounded-lg border border-accent-2/40 bg-accent-2/10 px-2.5 py-1 text-xs font-mono font-semibold text-accent-2 hover:bg-accent-2 hover:text-bg-0 transition-colors"
+                  >
+                    <Box className="h-3.5 w-3.5" />
+                    <span>Inspect 3D</span>
+                  </button>
                 </div>
               </div>
             </div>

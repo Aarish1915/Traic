@@ -9,6 +9,10 @@ out/
 # Vite / Build outputs
 dist/
 build/
+*.tsbuildinfo
+*.js.map
+scratch/
+apps/web/scratch/
 
 # Turborepo
 .turbo/

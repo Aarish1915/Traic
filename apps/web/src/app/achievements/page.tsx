@@ -1,3 +1,6 @@
+'use client';
+
+import { useState, useEffect } from 'react';
 import { Trophy, Award, Medal, Calendar } from 'lucide-react';
 
 const ACHIEVEMENTS = [
@@ -49,6 +52,30 @@ const ACHIEVEMENTS = [
 ];
 
 export default function AchievementsPage() {
+  const [achievementsList, setAchievementsList] = useState(ACHIEVEMENTS);
+
+  useEffect(() => {
+    const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
+    fetch(`${API_BASE}/public/achievements`)
+      .then((res) => res.json())
+      .then((res) => {
+        if (res.data && res.data.length > 0) {
+          setAchievementsList(
+            res.data.map((a: any) => ({
+              title: a.awardTitle || a.title || 'National Award',
+              eventName: a.eventName || 'Engineering Competition',
+              level: a.level || 'NATIONAL',
+              rank: a.rank || a.awardTitle || 'Prize Winner',
+              date: a.year ? `Year ${a.year}` : a.date || 'Recent',
+              summary: a.descriptionMd || a.summary || '',
+              highlights: a.highlights || ['Verified in Competition'],
+            }))
+          );
+        }
+      })
+      .catch(() => {});
+  }, []);
+
   return (
     <div className="min-h-screen bg-bg-0 py-16">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
@@ -68,7 +95,7 @@ export default function AchievementsPage() {
 
         {/* Timeline of Achievements */}
         <div className="space-y-6">
-          {ACHIEVEMENTS.map((item, idx) => (
+          {achievementsList.map((item, idx) => (
             <div
               key={item.title}
               className="rounded-xl border border-border bg-surface/70 p-6 md:p-8 transition-all hover:border-accent/40 shadow-sm"

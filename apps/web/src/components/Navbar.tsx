@@ -4,10 +4,12 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Cpu, Menu, X, ArrowUpRight } from 'lucide-react';
+import { ThemeToggle } from './ThemeToggle';
 
 const NAV_ITEMS = [
   { label: 'Projects', href: '/projects' },
   { label: 'Achievements', href: '/achievements' },
+  { label: 'Gallery', href: '/gallery' },
   { label: 'Events', href: '/events' },
   { label: 'Team', href: '/team' },
   { label: 'Learn', href: '/learn' },
@@ -51,8 +53,9 @@ export function Navbar() {
           })}
         </nav>
 
-        {/* CTA Button */}
+        {/* CTA Button & Theme Switcher */}
         <div className="hidden items-center gap-3 md:flex">
+          <ThemeToggle />
           <Link
             href="/join"
             className="flex items-center gap-1.5 rounded-lg border border-accent/60 bg-accent px-4 py-2 text-sm font-semibold text-bg-0 transition-all hover:bg-accent-hover hover:glow-accent"
@@ -62,14 +65,17 @@ export function Navbar() {
           </Link>
         </div>
 
-        {/* Mobile menu button */}
-        <button
-          onClick={() => setIsOpen(!isOpen)}
-          className="flex h-10 w-10 items-center justify-center rounded-lg border border-border bg-surface text-text-2 hover:text-text-1 md:hidden"
-          aria-label="Toggle navigation menu"
-        >
-          {isOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-        </button>
+        {/* Mobile Actions */}
+        <div className="flex items-center gap-2 md:hidden">
+          <ThemeToggle />
+          <button
+            onClick={() => setIsOpen(!isOpen)}
+            className="flex h-10 w-10 items-center justify-center rounded-lg border border-border bg-surface text-text-2 hover:text-text-1"
+            aria-label="Toggle navigation menu"
+          >
+            {isOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+          </button>
+        </div>
       </div>
 
       {/* Mobile Drawer */}
@@ -90,6 +96,10 @@ export function Navbar() {
                 {item.label}
               </Link>
             ))}
+            <div className="flex items-center justify-between border-t border-border/80 pt-3 mt-2 px-1">
+              <span className="text-xs font-mono text-text-2">THEME PREFERENCE:</span>
+              <ThemeToggle />
+            </div>
             <Link
               href="/join"
               onClick={() => setIsOpen(false)}

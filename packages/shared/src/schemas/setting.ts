@@ -25,6 +25,22 @@ export const SiteStatsSchema = z.object({
 });
 export type SiteStats = z.infer<typeof SiteStatsSchema>;
 
+export const BannerTypeSchema = z.enum(['ANNOUNCEMENT', 'EVENT', 'URGENT', 'ACHIEVEMENT']);
+export type BannerType = z.infer<typeof BannerTypeSchema>;
+
+export const BannerSchema = z.object({
+  id: z.string().uuid().optional(),
+  title: z.string().min(2),
+  message: z.string().min(3),
+  linkUrl: z.string().optional().or(z.literal('')),
+  linkText: z.string().optional().or(z.literal('')),
+  type: BannerTypeSchema.default('ANNOUNCEMENT'),
+  isActive: z.boolean().default(true),
+  priority: z.number().int().default(1),
+  createdAt: z.string().optional(),
+});
+export type Banner = z.infer<typeof BannerSchema>;
+
 export const SiteSettingSchema = z.object({
   clubName: z.string().default('TRAIC'),
   tagline: z.string().default('Engineering Community Building Hardware + Software'),

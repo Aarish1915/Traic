@@ -1,154 +1,262 @@
-import { useState } from 'react';
-import { Cpu, Layers, Trophy, Calendar, Users, LogOut, CheckCircle2 } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import type {
+  Project,
+  Event,
+  Achievement,
+  Member,
+  Alumni,
+  SiteSetting,
+  JoinApplication,
+  Banner,
+  GalleryItem,
+} from '@traic/shared';
+import type { TabId } from './types';
+import { Toast } from './components/Toast';
+import { Sidebar } from './components/Sidebar';
+import { Header } from './components/Header';
+import { ProjectsTab } from './components/tabs/ProjectsTab';
+import { ThreeDModelsTab } from './components/tabs/ThreeDModelsTab';
+import { BannersTab } from './components/tabs/BannersTab';
+import { GalleryTab } from './components/tabs/GalleryTab';
+import { EventsTab } from './components/tabs/EventsTab';
+import { AchievementsTab } from './components/tabs/AchievementsTab';
+import { MembersTab } from './components/tabs/MembersTab';
+import { AlumniTab } from './components/tabs/AlumniTab';
+import { SettingsTab } from './components/tabs/SettingsTab';
+import { ApplicationsTab } from './components/tabs/ApplicationsTab';
+import { EditModal } from './components/EditModal';
+
+const API_BASE = 'http://localhost:4000';
 
 export function App() {
-  const [activeTab, setActiveTab] = useState<'projects' | 'events' | 'achievements' | 'applications'>('projects');
+  const [activeTab, setActiveTab] = useState<TabId>('projects');
+
+  // Live state
+  const [projects, setProjects] = useState<Project[]>([]);
+  const [events, setEvents] = useState<Event[]>([]);
+  const [achievements, setAchievements] = useState<Achievement[]>([]);
+  const [members, setMembers] = useState<Member[]>([]);
+  const [alumni, setAlumni] = useState<Alumni[]>([]);
+  const [banners, setBanners] = useState<Banner[]>([]);
+  const [gallery, setGallery] = useState<GalleryItem[]>([]);
+  const [settings, setSettings] = useState<SiteSetting | null>(null);
+  const [applications, setApplications] = useState<JoinApplication[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
+  const [copiedSlug, setCopiedSlug] = useState<string | null>(null);
+
+  // Modals state
+  const [editingItem, setEditingItem] = useState<{ type: string; data?: any } | null>(null);
+
+  const showToast = (message: string, type: 'success' | 'error' = 'success') => {
+    setToast({ message, type });
+    setTimeout(() => setToast(null), 3500);
+  };
+
+  const copyToClipboard = (text: string, slug: string) => {
+    navigator.clipboard.writeText(text);
+    setCopiedSlug(slug);
+    showToast(`Copied ${text} to clipboard!`);
+    setTimeout(() => setCopiedSlug(null), 2500);
+  };
+
+  const fetchAllData = async () => {
+    setLoading(true);
+    try {
+      const [projRes, evRes, achRes, memRes, alRes, banRes, galRes, setRes, appRes] = await Promise.all([
+        fetch(`${API_BASE}/public/projects`).then((r) => r.json()).catch(() => ({ data: [] })),
+        fetch(`${API_BASE}/public/events`).then((r) => r.json()).catch(() => ({ data: [] })),
+        fetch(`${API_BASE}/public/achievements`).then((r) => r.json()).catch(() => ({ data: [] })),
+        fetch(`${API_BASE}/public/team`).then((r) => r.json()).catch(() => ({ data: [] })),
+        fetch(`${API_BASE}/public/alumni`).then((r) => r.json()).catch(() => ({ data: [] })),
+        fetch(`${API_BASE}/admin/banners`).then((r) => r.json()).catch(() => ({ data: [] })),
+        fetch(`${API_BASE}/admin/gallery`).then((r) => r.json()).catch(() => ({ data: [] })),
+        fetch(`${API_BASE}/public/settings`).then((r) => r.json()).catch(() => ({ data: null })),
+        fetch(`${API_BASE}/admin/applications`).then((r) => r.json()).catch(() => ({ data: [] })),
+      ]);
+
+      if (projRes.data) setProjects(projRes.data);
+      if (evRes.data) setEvents(evRes.data);
+      if (achRes.data) setAchievements(achRes.data);
+      if (memRes.data) setMembers(memRes.data);
+      if (alRes.data) setAlumni(alRes.data);
+      if (banRes.data) setBanners(banRes.data);
+      if (galRes.data) setGallery(galRes.data);
+      if (setRes.data) setSettings(setRes.data);
+      if (appRes.data) setApplications(appRes.data);
+    } catch {
+      showToast('Error connecting to backend API at http://localhost:4000', 'error');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchAllData();
+  }, []);
+
+  const handleDelete = async (type: string, id: string) => {
+    if (!window.confirm(`Are you sure you want to delete this ${type}?`)) return;
+    try {
+      const res = await fetch(`${API_BASE}/admin/${type}/${id}`, { method: 'DELETE' });
+      if (!res.ok) throw new Error('Deletion failed');
+      const itemLabel = type === 'gallery' ? 'Gallery dispatch' : type.slice(0, -1);
+      showToast(`${itemLabel} deleted successfully!`);
+      fetchAllData();
+    } catch (err: any) {
+      showToast(err.message, 'error');
+    }
+  };
+
+  const handleToggleBanner = async (banner: Banner) => {
+    if (!banner.id) return;
+    try {
+      const res = await fetch(`${API_BASE}/admin/banners/${banner.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ isActive: !banner.isActive }),
+      });
+      if (!res.ok) throw new Error('Failed to update banner status');
+      showToast(`Banner "${banner.title}" is now ${!banner.isActive ? 'Active' : 'Paused'}`);
+      fetchAllData();
+    } catch (err: any) {
+      showToast(err.message, 'error');
+    }
+  };
+
+  const handleSaveSettings = async (newSettings: SiteSetting) => {
+    try {
+      const res = await fetch(`${API_BASE}/admin/settings`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(newSettings),
+      });
+      if (!res.ok) throw new Error('Failed to update settings');
+      showToast('Site settings updated live!');
+    } catch (err: any) {
+      showToast(err.message, 'error');
+    }
+  };
 
   return (
-    <div style={{ display: 'flex', minHeight: '100vh', backgroundColor: '#07080B', color: '#E8EAF0' }}>
-      {/* Sidebar */}
-      <aside style={{ width: '260px', backgroundColor: '#0D0F14', borderRight: '1px solid #232838', padding: '24px 16px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
-        <div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', paddingBottom: '24px', borderBottom: '1px solid #232838' }}>
-            <div style={{ width: '36px', height: '36px', backgroundColor: 'rgba(255, 159, 28, 0.15)', border: '1px solid rgba(255, 159, 28, 0.4)', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#FF9F1C' }}>
-              <Cpu size={20} />
-            </div>
-            <div>
-              <div style={{ fontWeight: 800, fontSize: '16px' }}>TRAIC ADMIN</div>
-              <div style={{ fontSize: '11px', color: '#9AA3B5', textTransform: 'uppercase', letterSpacing: '1px' }}>Coordinator Console</div>
-            </div>
-          </div>
+    <div style={{ display: 'flex', minHeight: '100vh', backgroundColor: '#07080B', color: '#E8EAF0', fontFamily: 'system-ui, sans-serif' }}>
+      <Toast toast={toast} />
 
-          <nav style={{ marginTop: '24px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
-            {[
-              { id: 'projects', label: 'Projects', icon: <Layers size={18} /> },
-              { id: 'events', label: 'Events & Hackathons', icon: <Calendar size={18} /> },
-              { id: 'achievements', label: 'Achievements', icon: <Trophy size={18} /> },
-              { id: 'applications', label: 'Join Applications', icon: <Users size={18} /> },
-            ].map((tab) => (
-              <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id as any)}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '12px',
-                  padding: '10px 14px',
-                  borderRadius: '8px',
-                  fontSize: '14px',
-                  fontWeight: 500,
-                  cursor: 'pointer',
-                  border: activeTab === tab.id ? '1px solid #232838' : '1px solid transparent',
-                  backgroundColor: activeTab === tab.id ? '#141821' : 'transparent',
-                  color: activeTab === tab.id ? '#38BDF8' : '#9AA3B5',
-                  textAlign: 'left',
-                }}
-              >
-                {tab.icon}
-                <span>{tab.label}</span>
-              </button>
-            ))}
-          </nav>
-        </div>
+      <Sidebar
+        activeTab={activeTab}
+        setActiveTab={setActiveTab}
+        counts={{
+          projects: projects.length,
+          models3d: projects.filter((p) => !!p.model3dAssetUrl).length,
+          banners: banners.length,
+          gallery: gallery.length,
+          events: events.length,
+          achievements: achievements.length,
+          members: members.length,
+          alumni: alumni.length,
+          applications: applications.length,
+        }}
+        loading={loading}
+        onSync={fetchAllData}
+      />
 
-        <div style={{ borderTop: '1px solid #232838', paddingTop: '16px' }}>
-          <div style={{ fontSize: '12px', color: '#9AA3B5', marginBottom: '8px' }}>
-            Logged in as <strong>coordinator@traic.in</strong>
-          </div>
-          <button
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '8px',
-              padding: '8px 12px',
-              borderRadius: '6px',
-              backgroundColor: '#141821',
-              color: '#F87171',
-              border: '1px solid #232838',
-              fontSize: '12px',
-              cursor: 'pointer',
-              width: '100%',
-            }}
-          >
-            <LogOut size={14} />
-            <span>Sign Out</span>
-          </button>
-        </div>
-      </aside>
+      <main style={{ flex: 1, padding: '36px 44px', overflowY: 'auto' }}>
+        <Header activeTab={activeTab} onCreateNew={() => setEditingItem({ type: activeTab })} />
 
-      {/* Main Content Area */}
-      <main style={{ flex: 1, padding: '32px 40px', overflowY: 'auto' }}>
-        <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingBottom: '24px', borderBottom: '1px solid #232838', marginBottom: '32px' }}>
-          <div>
-            <h1 style={{ margin: 0, fontSize: '28px', fontWeight: 800, textTransform: 'capitalize' }}>
-              {activeTab} Management
-            </h1>
-            <p style={{ margin: '4px 0 0', fontSize: '14px', color: '#9AA3B5' }}>
-              Publish, update, and manage entries verified against shared Zod schemas.
-            </p>
-          </div>
-          <button
-            style={{
-              backgroundColor: '#FF9F1C',
-              color: '#07080B',
-              border: 'none',
-              padding: '10px 18px',
-              borderRadius: '8px',
-              fontWeight: 600,
-              fontSize: '13px',
-              cursor: 'pointer',
-            }}
-          >
-            + Create New Entry
-          </button>
-        </header>
+        {activeTab === 'projects' && (
+          <ProjectsTab
+            projects={projects}
+            onEdit={(p) => setEditingItem({ type: 'projects', data: p })}
+            onDelete={(id) => handleDelete('projects', id)}
+          />
+        )}
 
-        {/* Dynamic Panel */}
-        <div style={{ backgroundColor: '#141821', border: '1px solid #232838', borderRadius: '12px', padding: '24px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px', color: '#34D399', fontSize: '13px', fontWeight: 600 }}>
-            <CheckCircle2 size={16} />
-            <span>Connected to TRAIC API Gateway (Local Monorepo)</span>
-          </div>
-          <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '13px' }}>
-            <thead>
-              <tr style={{ borderBottom: '1px solid #232838', color: '#9AA3B5' }}>
-                <th style={{ padding: '12px 8px' }}>Title / Name</th>
-                <th style={{ padding: '12px 8px' }}>Status</th>
-                <th style={{ padding: '12px 8px' }}>Last Updated</th>
-                <th style={{ padding: '12px 8px', textAlign: 'right' }}>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr style={{ borderBottom: '1px solid rgba(35, 40, 56, 0.4)' }}>
-                <td style={{ padding: '14px 8px', fontWeight: 600 }}>Autonomous Field Rover (UGV-X)</td>
-                <td style={{ padding: '14px 8px' }}>
-                  <span style={{ backgroundColor: 'rgba(52, 211, 153, 0.15)', color: '#34D399', border: '1px solid rgba(52, 211, 153, 0.3)', padding: '2px 8px', borderRadius: '4px', fontSize: '11px', fontWeight: 600 }}>
-                    PUBLISHED
-                  </span>
-                </td>
-                <td style={{ padding: '14px 8px', color: '#9AA3B5' }}>2024-12-20</td>
-                <td style={{ padding: '14px 8px', textAlign: 'right' }}>
-                  <button style={{ background: 'none', border: '1px solid #232838', color: '#38BDF8', padding: '4px 10px', borderRadius: '6px', cursor: 'pointer', fontSize: '12px', marginRight: '6px' }}>Edit</button>
-                  <button style={{ background: 'none', border: '1px solid #232838', color: '#F87171', padding: '4px 10px', borderRadius: '6px', cursor: 'pointer', fontSize: '12px' }}>Archive</button>
-                </td>
-              </tr>
-              <tr style={{ borderBottom: '1px solid rgba(35, 40, 56, 0.4)' }}>
-                <td style={{ padding: '14px 8px', fontWeight: 600 }}>Edge Neural Accelerator Board</td>
-                <td style={{ padding: '14px 8px' }}>
-                  <span style={{ backgroundColor: 'rgba(52, 211, 153, 0.15)', color: '#34D399', border: '1px solid rgba(52, 211, 153, 0.3)', padding: '2px 8px', borderRadius: '4px', fontSize: '11px', fontWeight: 600 }}>
-                    PUBLISHED
-                  </span>
-                </td>
-                <td style={{ padding: '14px 8px', color: '#9AA3B5' }}>2024-12-18</td>
-                <td style={{ padding: '14px 8px', textAlign: 'right' }}>
-                  <button style={{ background: 'none', border: '1px solid #232838', color: '#38BDF8', padding: '4px 10px', borderRadius: '6px', cursor: 'pointer', fontSize: '12px', marginRight: '6px' }}>Edit</button>
-                  <button style={{ background: 'none', border: '1px solid #232838', color: '#F87171', padding: '4px 10px', borderRadius: '6px', cursor: 'pointer', fontSize: '12px' }}>Archive</button>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
+        {activeTab === '3d-models' && (
+          <ThreeDModelsTab
+            projects={projects}
+            copiedSlug={copiedSlug}
+            onCopyPath={copyToClipboard}
+            onEditProject={(p) => setEditingItem({ type: 'projects', data: p })}
+          />
+        )}
+
+        {activeTab === 'banners' && (
+          <BannersTab
+            banners={banners}
+            onToggleBanner={handleToggleBanner}
+            onEdit={(b) => setEditingItem({ type: 'banners', data: b })}
+            onDelete={(id) => handleDelete('banners', id)}
+            onCreate={() => setEditingItem({ type: 'banners' })}
+          />
+        )}
+
+        {activeTab === 'gallery' && (
+          <GalleryTab
+            gallery={gallery}
+            onEdit={(g) => setEditingItem({ type: 'gallery', data: g })}
+            onDelete={(id) => handleDelete('gallery', id)}
+            onCreate={() => setEditingItem({ type: 'gallery' })}
+          />
+        )}
+
+        {activeTab === 'events' && (
+          <EventsTab
+            events={events}
+            onEdit={(e) => setEditingItem({ type: 'events', data: e })}
+            onDelete={(id) => handleDelete('events', id)}
+          />
+        )}
+
+        {activeTab === 'achievements' && (
+          <AchievementsTab
+            achievements={achievements}
+            onEdit={(a) => setEditingItem({ type: 'achievements', data: a })}
+            onDelete={(id) => handleDelete('achievements', id)}
+          />
+        )}
+
+        {activeTab === 'members' && (
+          <MembersTab
+            members={members}
+            onEdit={(m) => setEditingItem({ type: 'members', data: m })}
+            onDelete={(id) => handleDelete('members', id)}
+          />
+        )}
+
+        {activeTab === 'alumni' && (
+          <AlumniTab
+            alumni={alumni}
+            onEdit={(al) => setEditingItem({ type: 'alumni', data: al })}
+            onDelete={(id) => handleDelete('alumni', id)}
+          />
+        )}
+
+        {activeTab === 'settings' && (
+          <SettingsTab
+            settings={settings}
+            setSettings={setSettings}
+            onSave={handleSaveSettings}
+          />
+        )}
+
+        {activeTab === 'applications' && (
+          <ApplicationsTab applications={applications} />
+        )}
       </main>
+
+      {editingItem && (
+        <EditModal
+          apiBase={API_BASE}
+          type={editingItem.type}
+          initialData={editingItem.data}
+          onClose={() => setEditingItem(null)}
+          onSuccess={(msg) => {
+            setEditingItem(null);
+            showToast(msg);
+            fetchAllData();
+          }}
+        />
+      )}
     </div>
   );
 }

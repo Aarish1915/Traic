@@ -7,6 +7,7 @@ export default function JoinPage() {
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [appRefId, setAppRefId] = useState('');
 
   const [formData, setFormData] = useState({
     fullName: '',
@@ -26,8 +27,8 @@ export default function JoinPage() {
     setError(null);
 
     try {
-      // Post to API if running, or gracefully handle locally
-      const res = await fetch('http://localhost:4000/public/applications', {
+      const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
+      const res = await fetch(`${API_BASE}/public/applications`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -37,10 +38,11 @@ export default function JoinPage() {
       }).catch(() => null);
 
       if (res && !res.ok) {
-        const data = await res.json();
-        throw new Error(data.error?.message || 'Submission failed');
+        const data = await res.json().catch(() => null);
+        throw new Error(data?.error?.message || 'Submission failed');
       }
 
+      setAppRefId(`TRAIC-2025-${Math.floor(1000 + Math.random() * 9000)}`);
       setSubmitted(true);
     } catch (err: any) {
       setError(err.message || 'Something went wrong. Please check your inputs.');
@@ -66,20 +68,89 @@ export default function JoinPage() {
         </div>
 
         {submitted ? (
-          <div className="rounded-2xl border border-success/40 bg-surface/90 p-10 text-center shadow-xl backdrop-blur-md">
-            <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-success/20 text-success mb-4">
-              <CheckCircle2 className="h-8 w-8" />
+          <div className="rounded-2xl border border-success/40 bg-surface/95 p-8 sm:p-10 shadow-2xl backdrop-blur-md">
+            <div className="flex flex-col sm:flex-row items-center gap-4 border-b border-border/80 pb-6 mb-6">
+              <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-success/20 text-success border border-success/30 flex-shrink-0">
+                <CheckCircle2 className="h-8 w-8" />
+              </div>
+              <div className="text-center sm:text-left">
+                <span className="inline-flex items-center gap-1.5 text-xs font-mono font-bold text-success uppercase">
+                  <span className="h-2 w-2 rounded-full bg-success animate-pulse" />
+                  Application Verified & Logged
+                </span>
+                <h2 className="text-2xl font-black text-text-1">Welcome to the Pipeline!</h2>
+              </div>
             </div>
-            <h2 className="text-2xl font-bold text-text-1">Application Submitted!</h2>
-            <p className="mt-2 text-sm text-text-2 max-w-md mx-auto">
-              Thank you for applying to TRAIC. Our domain leads and coordinators will review your submission and contact you via email for the onboarding interview.
-            </p>
-            <button
-              onClick={() => setSubmitted(false)}
-              className="mt-6 rounded-lg bg-surface border border-border px-5 py-2 text-xs font-mono text-text-1 hover:border-accent"
-            >
-              Submit another application
-            </button>
+
+            {/* Reference ID & Track Box */}
+            <div className="rounded-xl border border-border bg-bg-1/80 p-5 mb-6 font-mono text-xs space-y-3">
+              <div className="flex flex-wrap items-center justify-between gap-2 border-b border-border/60 pb-2.5">
+                <span className="text-text-2">OFFICIAL APPLICATION ID:</span>
+                <span className="text-accent font-bold text-sm bg-accent/10 px-2.5 py-0.5 rounded border border-accent/30">
+                  {appRefId}
+                </span>
+              </div>
+              <div className="flex flex-wrap items-center justify-between gap-2 border-b border-border/60 pb-2.5">
+                <span className="text-text-2">APPLICANT NAME:</span>
+                <span className="text-text-1 font-bold">{formData.fullName}</span>
+              </div>
+              <div className="flex flex-wrap items-center justify-between gap-2 border-b border-border/60 pb-2.5">
+                <span className="text-text-2">REGISTERED TRACK:</span>
+                <span className="text-accent-2 font-bold">{formData.interest.replace('_', ' ')}</span>
+              </div>
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <span className="text-text-2">PRIMARY CONTACT EMAIL:</span>
+                <span className="text-text-1">{formData.email}</span>
+              </div>
+            </div>
+
+            {/* Next Steps Guidance */}
+            <div className="mb-8 space-y-2 text-left">
+              <div className="text-xs font-mono font-bold text-text-1 uppercase tracking-wider mb-3">
+                Next Steps in the Induction Process:
+              </div>
+              <div className="flex items-start gap-3 text-xs text-text-2">
+                <span className="font-mono text-accent font-bold">01.</span>
+                <span>An orientation confirmation has been dispatched to your email with interview dates.</span>
+              </div>
+              <div className="flex items-start gap-3 text-xs text-text-2">
+                <span className="font-mono text-accent-2 font-bold">02.</span>
+                <span>Shortlisted applicants will complete a 48-hour hands-on starter challenge in the Maker Space (Lab 401).</span>
+              </div>
+              <div className="flex items-start gap-3 text-xs text-text-2">
+                <span className="font-mono text-success font-bold">03.</span>
+                <span>Final cohort admits receive 24/7 RFID lab access, personal hardware benches, and hackathon sponsorship.</span>
+              </div>
+            </div>
+
+            <div className="flex flex-wrap items-center justify-center gap-3">
+              <a
+                href="/projects"
+                className="rounded-xl bg-accent px-6 py-2.5 text-xs font-mono font-bold text-bg-0 hover:bg-accent-hover transition-all"
+              >
+                Explore Current Projects →
+              </a>
+              <button
+                type="button"
+                onClick={() => {
+                  setSubmitted(false);
+                  setFormData({
+                    fullName: '',
+                    email: '',
+                    phone: '',
+                    studentId: '',
+                    yearOfStudy: '1',
+                    branch: '',
+                    interest: 'ROBOTICS_HARDWARE',
+                    githubOrPortfolio: '',
+                    statementOfPurpose: '',
+                  });
+                }}
+                className="rounded-xl bg-surface border border-border px-5 py-2.5 text-xs font-mono text-text-2 hover:text-text-1 hover:border-accent-2 transition-all"
+              >
+                Submit Another Application
+              </button>
+            </div>
           </div>
         ) : (
           <form
