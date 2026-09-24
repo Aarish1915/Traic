@@ -28,10 +28,10 @@ COPY packages/config ./packages/config
 COPY packages/shared ./packages/shared
 COPY apps/api ./apps/api
 
-# Build shared types and API distribution
-RUN pnpm --filter @traic/shared build && pnpm --filter @traic/api build
+# Build API distribution
+RUN pnpm --filter @traic/api build
 
-# Prune dev dependencies for lean production footprint
+# Prune dev dependencies and package for production deployment
 RUN pnpm --filter @traic/api --prod deploy /app/pruned-api
 
 # --------------------------------------------------------
@@ -45,10 +45,8 @@ ENV PORT=4000
 # Run as non-privileged node user for container security
 USER node
 
-# Copy compiled artifacts and production dependencies
-COPY --from=builder --chown=node:node /app/pruned-api/node_modules ./node_modules
-COPY --from=builder --chown=node:node /app/apps/api/dist ./dist
-COPY --from=builder --chown=node:node /app/packages/shared ./packages/shared
+# Copy self-contained deployed application
+COPY --from=builder --chown=node:node /app/pruned-api ./
 
 EXPOSE 4000
 

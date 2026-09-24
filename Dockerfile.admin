@@ -22,7 +22,7 @@ COPY packages/shared ./packages/shared
 COPY apps/admin ./apps/admin
 
 # Build static SPA dist
-RUN pnpm --filter @traic/shared build && pnpm --filter @traic/admin build
+RUN pnpm --filter @traic/admin build
 
 # --------------------------------------------------------
 # Ultra-Lightweight Production Nginx Stage

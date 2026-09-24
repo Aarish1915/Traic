@@ -31,7 +31,7 @@ COPY packages/shared ./packages/shared
 COPY apps/web ./apps/web
 
 # Build Next.js application
-RUN pnpm --filter @traic/shared build && pnpm --filter @traic/web build
+RUN pnpm --filter @traic/web build
 
 # --------------------------------------------------------
 # 2. Production Runner Stage
