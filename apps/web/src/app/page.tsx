@@ -17,15 +17,7 @@ import {
 } from 'lucide-react';
 import dynamic from 'next/dynamic';
 import { AnimeGlowHero } from '@/components/AnimeGlowHero';
-import { ThreeHeroFallback } from '@/components/ThreeHeroFallback';
-
-const ThreeHeroScene = dynamic(
-  () => import('@/components/ThreeHeroScene').then((m) => m.ThreeHeroScene),
-  {
-    ssr: false,
-    loading: () => <ThreeHeroFallback />,
-  }
-);
+import { HeroHardwareViewport } from '@/components/HeroHardwareViewport';
 const Project3DInspector = dynamic(
   () => import('@/components/Project3DInspector').then((m) => m.Project3DInspector),
   { ssr: false }
@@ -332,33 +324,9 @@ export default function HomePage() {
               </AnimeGlowHero>
             </div>
 
-            {/* Right Column: Dedicated 3D Interactive Silicon Chip Stage */}
+            {/* Right Column: Hero Hardware Viewport (2D Lite by default / 3D on demand) */}
             <div className="lg:col-span-5 relative mt-6 lg:mt-0">
-              <div className="relative w-full h-[360px] sm:h-[440px] lg:h-[480px] rounded-2xl border border-border/80 bg-gradient-to-b from-surface/80 via-bg-1/90 to-bg-0/95 shadow-2xl overflow-hidden backdrop-blur-md flex flex-col justify-between">
-                {/* Top Stage Header */}
-                <div className="relative z-20 flex items-center justify-between border-b border-border/60 bg-bg-1/80 px-3 sm:px-4 py-2 sm:py-2.5 backdrop-blur-sm">
-                  <div className="flex items-center gap-2">
-                    <span className="h-2.5 w-2.5 rounded-full bg-accent animate-pulse" />
-                    <span className="font-mono text-xs font-bold text-text-1 truncate">TRAIC H7-CORE // 3D VIEWPORT</span>
-                  </div>
-                  <span className="font-mono text-[10px] text-accent-2 border border-accent-2/40 bg-accent-2/10 rounded px-2 py-0.5 shrink-0">
-                    INTERACTIVE
-                  </span>
-                </div>
-
-                {/* 3D Scene Canvas Viewport */}
-                <div className="relative flex-1 w-full min-h-[260px] h-[260px] sm:h-[340px] lg:h-[390px] cursor-grab active:cursor-grabbing">
-                  <ThreeHeroScene />
-                </div>
-
-                {/* Bottom Stage Instructions & Telemetry */}
-                <div className="relative z-20 flex items-center justify-between border-t border-border/60 bg-bg-1/80 px-3 sm:px-4 py-2 backdrop-blur-sm text-[10px] sm:text-[11px] font-mono text-text-2">
-                  <span className="flex items-center gap-1.5 truncate">
-                    <span className="text-accent">●</span> Drag / swipe horizontally to rotate
-                  </span>
-                  <span className="text-accent font-semibold shrink-0 ml-2">480MHz MCU</span>
-                </div>
-              </div>
+              <HeroHardwareViewport />
             </div>
           </div>
         </div>

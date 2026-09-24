@@ -32,6 +32,7 @@ export interface ProjectDetail {
   bom: { component: string; partNumber: string; function: string }[];
   team: { name: string; role: string }[];
   awards?: string[];
+  modelUrl?: string;
 }
 
 export function ProjectDetailClient({ project }: { project: ProjectDetail }) {
@@ -46,6 +47,7 @@ export function ProjectDetailClient({ project }: { project: ProjectDetail }) {
           projectTitle={project.title}
           category={project.category}
           techStack={project.techStack}
+          modelUrl={project.modelUrl}
           onClose={() => setInspectingCAD(false)}
         />
       )}
