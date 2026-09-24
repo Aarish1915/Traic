@@ -22,8 +22,6 @@ export function ThreeHeroScene() {
     let resizeObserver: ResizeObserver | null = null;
 
     let isDragging = false;
-    let prevX = 0;
-    let prevY = 0;
     let rotX = 0.35;
     let rotY = -0.45;
     let targetRotX = 0.35;
@@ -57,15 +55,16 @@ export function ThreeHeroScene() {
       renderer = new THREE.WebGLRenderer({
         alpha: true,
         antialias: false,
-        powerPreference: 'default',
+        powerPreference: 'low-power',
         precision: 'mediump',
+        failIfMajorPerformanceCaveat: false,
       });
       renderer.setSize(initialWidth, initialHeight);
       renderer.setPixelRatio(Math.min(typeof window !== 'undefined' ? window.devicePixelRatio || 1 : 1, 1.25));
       renderer.domElement.style.display = 'block';
       renderer.domElement.style.width = '100%';
       renderer.domElement.style.height = '100%';
-      renderer.domElement.style.touchAction = 'pan-y'; // Allow vertical page scrolling
+      renderer.domElement.style.touchAction = 'none'; // Lock pointer capture for fluid 3D drag
       container.appendChild(renderer.domElement);
 
       // PARTICLE CIRCUIT DUST
@@ -239,95 +238,42 @@ export function ThreeHeroScene() {
       });
       window.addEventListener('traic-theme-change', handleThemeChange);
 
-      // ROCK-SOLID TOUCH & DRAG EVENT HANDLING FOR IPHONE, ANDROID & DESKTOP
+      // UNIFIED W3C POINTER EVENTS (TOUCH, PENCIL & MOUSE) FOR IPHONE, ANDROID & DESKTOP
       const dom = renderer.domElement;
+      let prevPointerX = 0;
+      let prevPointerY = 0;
 
-      let touchStartX = 0;
-      let touchStartY = 0;
-      let touchPrevX = 0;
-      let touchPrevY = 0;
-      let touchMode: 'none' | 'rotate' | 'scroll' = 'none';
-
-      const onTouchStart = (e: TouchEvent) => {
-        if (e.touches.length !== 1) return;
-        touchStartX = e.touches[0].clientX;
-        touchStartY = e.touches[0].clientY;
-        touchPrevX = touchStartX;
-        touchPrevY = touchStartY;
-        touchMode = 'none';
+      const onPointerDown = (e: PointerEvent) => {
         isDragging = true;
+        prevPointerX = e.clientX;
+        prevPointerY = e.clientY;
+        try {
+          dom.setPointerCapture(e.pointerId);
+        } catch (_) {}
       };
 
-      const onTouchMove = (e: TouchEvent) => {
-        if (!isDragging || e.touches.length !== 1) return;
-        const curX = e.touches[0].clientX;
-        const curY = e.touches[0].clientY;
-
-        const dx = curX - touchPrevX;
-        const dy = curY - touchPrevY;
-
-        if (touchMode === 'none') {
-          const totalDx = Math.abs(curX - touchStartX);
-          const totalDy = Math.abs(curY - touchStartY);
-          if (totalDx < 6 && totalDy < 6) return; // small gesture threshold
-          if (totalDy > totalDx * 1.25) {
-            // Primarily vertical swipe: let the page scroll freely on mobile!
-            touchMode = 'scroll';
-            isDragging = false;
-            return;
-          } else {
-            // Primarily horizontal swipe: user is rotating the 3D chip!
-            touchMode = 'rotate';
-          }
-        }
-
-        if (touchMode === 'rotate') {
-          if (e.cancelable) {
-            e.preventDefault(); // Stop iOS Safari from canceling touch or scrolling
-          }
-          targetRotY += dx * 0.012;
-          targetRotX += dy * 0.006;
-          targetRotX = Math.max(-0.6, Math.min(0.8, targetRotX));
-          touchPrevX = curX;
-          touchPrevY = curY;
-        }
-      };
-
-      const onTouchEnd = () => {
-        isDragging = false;
-        touchMode = 'none';
-      };
-
-      // Mouse Drag Controls for Desktop
-      const onMouseDown = (e: MouseEvent) => {
-        isDragging = true;
-        prevX = e.clientX;
-        prevY = e.clientY;
-      };
-
-      const onMouseMove = (e: MouseEvent) => {
+      const onPointerMove = (e: PointerEvent) => {
         if (!isDragging) return;
-        const dx = e.clientX - prevX;
-        const dy = e.clientY - prevY;
+        const dx = e.clientX - prevPointerX;
+        const dy = e.clientY - prevPointerY;
         targetRotY += dx * 0.012;
-        targetRotX += dy * 0.006;
+        targetRotX += dy * 0.008;
         targetRotX = Math.max(-0.6, Math.min(0.8, targetRotX));
-        prevX = e.clientX;
-        prevY = e.clientY;
+        prevPointerX = e.clientX;
+        prevPointerY = e.clientY;
       };
 
-      const onMouseUp = () => {
+      const onPointerUp = (e: PointerEvent) => {
         isDragging = false;
+        try {
+          dom.releasePointerCapture(e.pointerId);
+        } catch (_) {}
       };
 
-      dom.addEventListener('touchstart', onTouchStart, { passive: true });
-      dom.addEventListener('touchmove', onTouchMove, { passive: false });
-      dom.addEventListener('touchend', onTouchEnd, { passive: true });
-      dom.addEventListener('touchcancel', onTouchEnd, { passive: true });
-
-      dom.addEventListener('mousedown', onMouseDown);
-      window.addEventListener('mousemove', onMouseMove);
-      window.addEventListener('mouseup', onMouseUp);
+      dom.addEventListener('pointerdown', onPointerDown);
+      dom.addEventListener('pointermove', onPointerMove);
+      dom.addEventListener('pointerup', onPointerUp);
+      dom.addEventListener('pointercancel', onPointerUp);
 
       // Resize handling
       const updateDimensions = () => {
@@ -382,13 +328,10 @@ export function ThreeHeroScene() {
         themeObserver.disconnect();
         window.removeEventListener('traic-theme-change', handleThemeChange);
         if (resizeObserver) resizeObserver.disconnect();
-        dom.removeEventListener('touchstart', onTouchStart);
-        dom.removeEventListener('touchmove', onTouchMove);
-        dom.removeEventListener('touchend', onTouchEnd);
-        dom.removeEventListener('touchcancel', onTouchEnd);
-        dom.removeEventListener('mousedown', onMouseDown);
-        window.removeEventListener('mousemove', onMouseMove);
-        window.removeEventListener('mouseup', onMouseUp);
+        dom.removeEventListener('pointerdown', onPointerDown);
+        dom.removeEventListener('pointermove', onPointerMove);
+        dom.removeEventListener('pointerup', onPointerUp);
+        dom.removeEventListener('pointercancel', onPointerUp);
         cancelAnimationFrame(animationFrameId);
         if (renderer) {
           if (renderer.domElement && container.contains(renderer.domElement)) {

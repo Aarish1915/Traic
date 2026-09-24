@@ -29,7 +29,7 @@ const ThreeHeroScene = dynamic(
 );
 
 export function HeroHardwareViewport() {
-  const [mode, setMode] = useState<'image' | '3d'>('image');
+  const [mode, setMode] = useState<'image' | '3d'>('3d');
 
   return (
     <div className="relative w-full h-[380px] sm:h-[450px] lg:h-[490px] rounded-2xl border border-border/80 bg-gradient-to-b from-surface/90 via-bg-1/95 to-bg-0 shadow-2xl overflow-hidden backdrop-blur-md flex flex-col justify-between">

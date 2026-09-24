@@ -127,8 +127,9 @@ export function Project3DInspector({
       renderer = new THREE.WebGLRenderer({
         antialias: false,
         alpha: true,
-        powerPreference: 'default',
+        powerPreference: 'low-power',
         precision: 'mediump',
+        failIfMajorPerformanceCaveat: false,
       });
       renderer.setSize(w, h);
       renderer.setPixelRatio(Math.min(typeof window !== 'undefined' ? window.devicePixelRatio || 1 : 1, 1.25));
@@ -356,60 +357,35 @@ export function Project3DInspector({
         buildProceduralModel();
       }
 
-      // UNIFIED POINTER EVENTS FOR ROTATION (WORKS FLAWLESSLY ON IPHONE & ANDROID)
-      // ROCK-SOLID TOUCH & DRAG ROTATION FOR IPHONE, ANDROID & DESKTOP
+      // UNIFIED W3C POINTER EVENTS (TOUCH, PENCIL & MOUSE) FOR IPHONE, ANDROID & DESKTOP
       const dom = renderer.domElement;
+      let prevPointerX = 0;
+      let prevPointerY = 0;
 
-      let touchPrevX = 0;
-      let touchPrevY = 0;
-      let mousePrevX = 0;
-      let mousePrevY = 0;
-
-      const onTouchStart = (e: TouchEvent) => {
-        if (e.touches.length !== 1) return;
-        touchPrevX = e.touches[0].clientX;
-        touchPrevY = e.touches[0].clientY;
+      const onPointerDown = (e: PointerEvent) => {
         isDragging = true;
+        prevPointerX = e.clientX;
+        prevPointerY = e.clientY;
+        try {
+          dom.setPointerCapture(e.pointerId);
+        } catch (_) {}
       };
 
-      const onTouchMove = (e: TouchEvent) => {
-        if (!isDragging || e.touches.length !== 1) return;
-        if (e.cancelable) {
-          e.preventDefault(); // Prevents iOS Safari gesture capture and scroll drop
-        }
-        const curX = e.touches[0].clientX;
-        const curY = e.touches[0].clientY;
-        const dx = curX - touchPrevX;
-        const dy = curY - touchPrevY;
-        group.rotation.y += dx * 0.012;
-        group.rotation.x += dy * 0.008;
-        touchPrevX = curX;
-        touchPrevY = curY;
-      };
-
-      const onTouchEnd = () => {
-        isDragging = false;
-      };
-
-      // Mouse drag controls for desktop
-      const onMouseDown = (e: MouseEvent) => {
-        isDragging = true;
-        mousePrevX = e.clientX;
-        mousePrevY = e.clientY;
-      };
-
-      const onMouseMove = (e: MouseEvent) => {
+      const onPointerMove = (e: PointerEvent) => {
         if (!isDragging) return;
-        const dx = e.clientX - mousePrevX;
-        const dy = e.clientY - mousePrevY;
+        const dx = e.clientX - prevPointerX;
+        const dy = e.clientY - prevPointerY;
         group.rotation.y += dx * 0.012;
         group.rotation.x += dy * 0.008;
-        mousePrevX = e.clientX;
-        mousePrevY = e.clientY;
+        prevPointerX = e.clientX;
+        prevPointerY = e.clientY;
       };
 
-      const onMouseUp = () => {
+      const onPointerUp = (e: PointerEvent) => {
         isDragging = false;
+        try {
+          dom.releasePointerCapture(e.pointerId);
+        } catch (_) {}
       };
 
       const onWheel = (e: WheelEvent) => {
@@ -418,14 +394,10 @@ export function Project3DInspector({
         camera.position.z = Math.min(Math.max(camera.position.z + e.deltaY * 0.015, 3.5), 24);
       };
 
-      dom.addEventListener('touchstart', onTouchStart, { passive: true });
-      dom.addEventListener('touchmove', onTouchMove, { passive: false });
-      dom.addEventListener('touchend', onTouchEnd, { passive: true });
-      dom.addEventListener('touchcancel', onTouchEnd, { passive: true });
-
-      dom.addEventListener('mousedown', onMouseDown);
-      window.addEventListener('mousemove', onMouseMove);
-      window.addEventListener('mouseup', onMouseUp);
+      dom.addEventListener('pointerdown', onPointerDown);
+      dom.addEventListener('pointermove', onPointerMove);
+      dom.addEventListener('pointerup', onPointerUp);
+      dom.addEventListener('pointercancel', onPointerUp);
       dom.addEventListener('wheel', onWheel, { passive: false });
 
       // Handle Resizing
@@ -456,13 +428,10 @@ export function Project3DInspector({
       cleanupFn = () => {
         isMounted = false;
         if (resizeObserver) resizeObserver.disconnect();
-        dom.removeEventListener('touchstart', onTouchStart);
-        dom.removeEventListener('touchmove', onTouchMove);
-        dom.removeEventListener('touchend', onTouchEnd);
-        dom.removeEventListener('touchcancel', onTouchEnd);
-        dom.removeEventListener('mousedown', onMouseDown);
-        window.removeEventListener('mousemove', onMouseMove);
-        window.removeEventListener('mouseup', onMouseUp);
+        dom.removeEventListener('pointerdown', onPointerDown);
+        dom.removeEventListener('pointermove', onPointerMove);
+        dom.removeEventListener('pointerup', onPointerUp);
+        dom.removeEventListener('pointercancel', onPointerUp);
         dom.removeEventListener('wheel', onWheel);
         if (animId) cancelAnimationFrame(animId);
         if (renderer) {
