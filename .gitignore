@@ -51,7 +51,8 @@ PLAN.md
 SECURITY.md
 STATE.md
 TESTING.md
-3D_MODEL_GUIDE.MD   
+3D_MODEL_GUIDE.md
+3D_MODEL_GUIDE.MD
 traic_comprehensive_plan.md
 *TRAIC_LOGO.png
 .agent/
@@ -61,3 +62,4 @@ traic_comprehensive_plan.md
 .idea/
 *.tmp
 *.bak
+scripts/
