@@ -45,8 +45,9 @@ ENV PORT=4000
 # Run as non-privileged node user for container security
 USER node
 
-# Copy self-contained deployed application
+# Copy self-contained deployed application and compiled server
 COPY --from=builder --chown=node:node /app/pruned-api ./
+COPY --from=builder --chown=node:node /app/apps/api/dist ./dist
 
 EXPOSE 4000
 

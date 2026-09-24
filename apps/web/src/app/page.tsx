@@ -17,10 +17,14 @@ import {
 } from 'lucide-react';
 import dynamic from 'next/dynamic';
 import { AnimeGlowHero } from '@/components/AnimeGlowHero';
+import { ThreeHeroFallback } from '@/components/ThreeHeroFallback';
 
 const ThreeHeroScene = dynamic(
   () => import('@/components/ThreeHeroScene').then((m) => m.ThreeHeroScene),
-  { ssr: false }
+  {
+    ssr: false,
+    loading: () => <ThreeHeroFallback />,
+  }
 );
 const Project3DInspector = dynamic(
   () => import('@/components/Project3DInspector').then((m) => m.Project3DInspector),

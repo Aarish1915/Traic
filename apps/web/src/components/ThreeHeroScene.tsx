@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import * as THREE from 'three';
+import { ThreeHeroFallback } from './ThreeHeroFallback';
 
 export function ThreeHeroScene() {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -435,14 +436,7 @@ export function ThreeHeroScene() {
   }, []);
 
   if (!webGLSupported) {
-    return (
-      <div className="w-full h-full min-h-[260px] flex items-center justify-center bg-bg-1 circuit-pattern">
-        <div className="text-center p-6 font-mono text-xs text-text-2">
-          <p className="text-accent font-bold mb-1">TRAIC HARDWARE CORE</p>
-          <p>Silicon Telemetry Node Active</p>
-        </div>
-      </div>
-    );
+    return <ThreeHeroFallback />;
   }
 
   return (
