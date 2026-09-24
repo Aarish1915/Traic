@@ -207,6 +207,15 @@ adminRouter.get('/admin/applications', (_req, res) => {
   res.json({ success: true, data: store.getApplications() });
 });
 
+adminRouter.delete('/admin/applications/:id', (req, res, next) => {
+  const deleted = store.deleteApplication(req.params.id);
+  if (!deleted) {
+    return next(new NotFoundError(`Application ${req.params.id} not found`));
+  }
+  logger.info({ applicationId: req.params.id }, 'Admin deleted application');
+  res.json({ success: true, message: 'Application deleted successfully' });
+});
+
 // BANNERS CRUD
 adminRouter.get('/admin/banners', (_req, res) => {
   res.json({ success: true, data: store.getBanners(false) });

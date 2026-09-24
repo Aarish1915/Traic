@@ -4,8 +4,45 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>TRAIC Admin Portal</title>
+    <style>
+      *, *::before, *::after { box-sizing: border-box; }
+      body { margin: 0; background-color: #07080B; color: #E8EAF0; font-family: system-ui, -apple-system, sans-serif; }
+      input, textarea, select, button { font-family: inherit; }
+      
+      /* Desktop: sidebar visible, no top bar, normal padding */
+      @media (min-width: 768px) {
+        .admin-main { padding: 32px 40px !important; padding-top: 32px !important; }
+      }
+      /* Mobile: hide desktop sidebar, add top bar spacing */
+      @media (max-width: 767px) {
+        .admin-main { padding: 16px 12px !important; padding-top: 68px !important; }
+        .admin-table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+        .admin-info-bar { flex-wrap: wrap !important; gap: 10px !important; }
+        .admin-info-bar > button, .admin-info-bar > a { width: 100% !important; }
+        .admin-grid-2 { grid-template-columns: 1fr !important; }
+      }
+      
+      /* Scrollbar */
+      ::-webkit-scrollbar { width: 6px; height: 6px; }
+      ::-webkit-scrollbar-track { background: #0D0F14; }
+      ::-webkit-scrollbar-thumb { background: #232838; border-radius: 3px; }
+      
+      /* spin animation */
+      @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+
+      /* Modal fullscreen on mobile */
+      @media (max-width: 640px) {
+        .edit-modal-box {
+          width: 100% !important;
+          max-width: 100% !important;
+          height: 100vh !important;
+          max-height: 100vh !important;
+          border-radius: 0 !important;
+        }
+      }
+    </style>
   </head>
-  <body style="margin: 0; background-color: #07080B; color: #E8EAF0; font-family: sans-serif;">
+  <body>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>

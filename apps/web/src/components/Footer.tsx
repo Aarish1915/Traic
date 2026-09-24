@@ -82,6 +82,17 @@ export function Footer() {
                   Curriculum & Tracks
                 </Link>
               </li>
+              <li>
+                <a
+                  href={process.env.NEXT_PUBLIC_ADMIN_URL || 'https://traic-admin.vercel.app'}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="hover:text-accent-2 transition-colors flex items-center gap-1 text-accent/80 font-mono text-xs"
+                >
+                  <span>Admin Console</span>
+                  <span>↗</span>
+                </a>
+              </li>
             </ul>
           </div>
 

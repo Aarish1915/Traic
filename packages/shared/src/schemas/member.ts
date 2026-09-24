@@ -10,21 +10,21 @@ export const MemberRoleSchema = z.enum([
 export type MemberRole = z.infer<typeof MemberRoleSchema>;
 
 export const MemberSocialsSchema = z.object({
-  github: z.string().url().optional().or(z.literal('')),
-  linkedin: z.string().url().optional().or(z.literal('')),
-  twitter: z.string().url().optional().or(z.literal('')),
-  portfolio: z.string().url().optional().or(z.literal('')),
+  github: z.string().optional().nullable().or(z.literal('')),
+  linkedin: z.string().optional().nullable().or(z.literal('')),
+  twitter: z.string().optional().nullable().or(z.literal('')),
+  portfolio: z.string().optional().nullable().or(z.literal('')),
 });
 export type MemberSocials = z.infer<typeof MemberSocialsSchema>;
 
 export const MemberSchema = z.object({
   id: z.string().uuid().optional(),
   name: z.string().min(2, 'Name must be at least 2 characters'),
-  photoUrl: z.string().url().optional(),
-  bio: z.string().max(500).optional(),
+  photoUrl: z.string().optional().nullable().or(z.literal('')),
+  bio: z.string().max(1000).optional().nullable(),
   socials: MemberSocialsSchema.optional(),
   position: MemberRoleSchema,
-  academicYear: z.string().regex(/^\d{4}-\d{4}$/, 'Format must be YYYY-YYYY (e.g. 2024-2025)'),
+  academicYear: z.string().min(4),
   isCurrent: z.boolean().default(true),
   order: z.number().int().default(0),
   status: ContentStatusSchema.default('PUBLISHED'),
@@ -35,13 +35,13 @@ export const AlumniSchema = z.object({
   id: z.string().uuid().optional(),
   memberId: z.string().uuid().optional(),
   name: z.string().min(2),
-  photoUrl: z.string().url().optional(),
-  batch: z.string().regex(/^\d{4}$/, 'Batch year must be YYYY'),
+  photoUrl: z.string().optional().nullable().or(z.literal('')),
+  batch: z.string().min(2),
   currentRole: z.string().min(2),
   company: z.string().min(2),
-  quote: z.string().max(500).optional(),
+  quote: z.string().max(1000).optional().nullable(),
   socials: MemberSocialsSchema.optional(),
-  consentAt: z.string().datetime({ message: 'Explicit consent timestamp is required' }),
-  status: ContentStatusSchema.default('DRAFT'),
+  consentAt: z.string().optional().default(() => new Date().toISOString()),
+  status: ContentStatusSchema.default('PUBLISHED'),
 });
 export type Alumni = z.infer<typeof AlumniSchema>;

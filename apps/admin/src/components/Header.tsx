@@ -38,20 +38,22 @@ export function Header({ activeTab, onCreateNew }: HeaderProps) {
       style={{
         display: 'flex',
         justifyContent: 'space-between',
-        alignItems: 'center',
-        paddingBottom: '24px',
+        alignItems: 'flex-start',
+        flexWrap: 'wrap',
+        gap: '12px',
+        paddingBottom: '20px',
         borderBottom: '1px solid #232838',
-        marginBottom: '32px',
+        marginBottom: '24px',
       }}
     >
-      <div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px', flexWrap: 'wrap' }}>
           <span style={{ fontSize: '11px', fontFamily: 'monospace', color: '#FF9F1C', letterSpacing: '1px' }}>
             ADMIN CONTROL //
           </span>
-          <span style={{ fontSize: '11px', fontFamily: 'monospace', color: '#34D399' }}>CONNECTED TO LOCAL API</span>
+          <span style={{ fontSize: '11px', fontFamily: 'monospace', color: '#34D399' }}>CONNECTED TO API</span>
         </div>
-        <h1 style={{ margin: 0, fontSize: '28px', fontWeight: 900 }}>
+        <h1 style={{ margin: 0, fontSize: 'clamp(18px, 4vw, 26px)', fontWeight: 900, lineHeight: 1.2 }}>
           {titles[activeTab] || `${activeTab} Management`}
         </h1>
       </div>
@@ -66,12 +68,14 @@ export function Header({ activeTab, onCreateNew }: HeaderProps) {
             backgroundColor: '#FF9F1C',
             color: '#07080B',
             border: 'none',
-            padding: '10px 20px',
+            padding: '10px 16px',
             borderRadius: '8px',
             fontWeight: 700,
             fontSize: '13px',
             cursor: 'pointer',
             boxShadow: '0 4px 14px rgba(255, 159, 28, 0.25)',
+            whiteSpace: 'nowrap',
+            flexShrink: 0,
           }}
         >
           <Plus size={16} />

@@ -28,21 +28,44 @@ export default function JoinPage() {
 
     try {
       const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
+      const cleanPortfolio = formData.githubOrPortfolio.trim();
+      const payload = {
+        fullName: formData.fullName.trim(),
+        email: formData.email.trim(),
+        phone: formData.phone.trim(),
+        studentId: formData.studentId.trim(),
+        yearOfStudy: parseInt(formData.yearOfStudy, 10) || 1,
+        branch: formData.branch.trim(),
+        interest: formData.interest,
+        githubOrPortfolio: cleanPortfolio.length > 0
+          ? (cleanPortfolio.startsWith('http://') || cleanPortfolio.startsWith('https://') ? cleanPortfolio : `https://${cleanPortfolio}`)
+          : '',
+        statementOfPurpose: formData.statementOfPurpose.trim(),
+      };
+
       const res = await fetch(`${API_BASE}/public/applications`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          ...formData,
-          yearOfStudy: parseInt(formData.yearOfStudy, 10),
-        }),
+        body: JSON.stringify(payload),
       }).catch(() => null);
 
-      if (res && !res.ok) {
-        const data = await res.json().catch(() => null);
-        throw new Error(data?.error?.message || 'Submission failed');
+      if (!res) {
+        throw new Error('Network error. Unable to reach TRAIC API backend. Please check your internet connection.');
       }
 
-      setAppRefId(`TRAIC-2025-${Math.floor(1000 + Math.random() * 9000)}`);
+      if (!res.ok) {
+        const data = await res.json().catch(() => null);
+        if (data?.error?.details && typeof data.error.details === 'object') {
+          const detailMessages = Object.entries(data.error.details)
+            .map(([field, errs]: [string, any]) => `${field}: ${Array.isArray(errs) ? errs.join(', ') : errs}`)
+            .join(' • ');
+          throw new Error(detailMessages || data?.error?.message || 'Submission failed');
+        }
+        throw new Error(data?.error?.message || 'Application submission failed. Please verify your details.');
+      }
+
+      const resData = await res.json().catch(() => null);
+      setAppRefId(resData?.data?.id ? `TRAIC-${resData.data.id.slice(0, 8).toUpperCase()}` : `TRAIC-2025-${Math.floor(1000 + Math.random() * 9000)}`);
       setSubmitted(true);
     } catch (err: any) {
       setError(err.message || 'Something went wrong. Please check your inputs.');
@@ -258,8 +281,8 @@ export default function JoinPage() {
             <div>
               <label className="block text-xs font-mono text-text-1 mb-2">GITHUB / PORTFOLIO / LINKEDIN (OPTIONAL)</label>
               <input
-                type="url"
-                placeholder="https://github.com/your-username"
+                type="text"
+                placeholder="github.com/username or https://..."
                 value={formData.githubOrPortfolio}
                 onChange={(e) => setFormData({ ...formData, githubOrPortfolio: e.target.value })}
                 className="w-full rounded-lg border border-border bg-bg-1 px-4 py-2.5 text-sm text-text-1 focus:border-accent focus:outline-none"

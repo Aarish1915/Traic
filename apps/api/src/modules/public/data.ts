@@ -558,6 +558,12 @@ class DataStore {
     this.applications.unshift(newApp);
     return newApp;
   }
+  deleteApplication(id: string) {
+    const idx = this.applications.findIndex((a) => a.id === id);
+    if (idx === -1) return false;
+    this.applications.splice(idx, 1);
+    return true;
+  }
 
   // Banners CRUD
   getBanners(onlyActive = false) {

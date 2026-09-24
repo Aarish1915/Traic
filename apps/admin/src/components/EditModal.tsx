@@ -28,14 +28,44 @@ export function EditModal({
 
     try {
       const payload = { ...formData };
-      if (type === 'projects' && typeof payload.techStack === 'string') {
-        payload.techStack = payload.techStack.split(',').map((s: string) => s.trim()).filter(Boolean);
-      }
       if (type === 'projects') {
-        payload.year = Number(payload.year) || 2024;
-      }
-      if (type === 'banners') {
+        if (typeof payload.techStack === 'string') {
+          payload.techStack = payload.techStack.split(',').map((s: string) => s.trim()).filter(Boolean);
+        }
+        payload.year = Number(payload.year) || 2025;
+        // Ensure descriptionMd exists (was previously 'description')
+        if (!payload.descriptionMd && payload.description) {
+          payload.descriptionMd = payload.description;
+        }
+        // Ensure demoUrl (was previously 'liveUrl')
+        if (!payload.demoUrl && payload.liveUrl) {
+          payload.demoUrl = payload.liveUrl;
+        }
+        delete payload.description;
+        delete payload.liveUrl;
+      } else if (type === 'banners') {
         payload.priority = Number(payload.priority) || 1;
+      } else if (type === 'members') {
+        payload.order = Number(payload.order) || 0;
+      } else if (type === 'alumni') {
+        if (!payload.consentAt) {
+          payload.consentAt = new Date().toISOString();
+        }
+      } else if (type === 'achievements') {
+        if (!payload.date) {
+          payload.date = new Date().toISOString().slice(0, 10);
+        }
+      } else if (type === 'events') {
+        // Normalize startsAt: if user provided a date like "2025-03-15", convert to ISO string
+        if (payload.startsAt && !payload.startsAt.includes('T')) {
+          payload.startsAt = new Date(payload.startsAt).toISOString();
+        }
+        if (payload.endsAt && !payload.endsAt.includes('T') && payload.endsAt.length > 0) {
+          payload.endsAt = new Date(payload.endsAt).toISOString();
+        }
+        if (!payload.startsAt) {
+          payload.startsAt = new Date().toISOString();
+        }
       }
 
       const res = await fetch(url, {
@@ -49,6 +79,12 @@ export function EditModal({
 
       if (!res.ok) {
         const errData = await res.json().catch(() => null);
+        if (errData?.error?.details && typeof errData.error.details === 'object') {
+          const detailMessages = Object.entries(errData.error.details)
+            .map(([field, errs]: [string, any]) => `${field}: ${Array.isArray(errs) ? errs.join(', ') : errs}`)
+            .join(' • ');
+          throw new Error(detailMessages || errData?.error?.message || 'Operation failed');
+        }
         throw new Error(errData?.error?.message || 'Operation failed');
       }
 
@@ -79,14 +115,16 @@ export function EditModal({
       }}
     >
       <div
+        className="edit-modal-box"
         style={{
           backgroundColor: '#141821',
           border: '1px solid #232838',
           borderRadius: '16px',
-          width: '580px',
+          width: '90vw',
+          maxWidth: '600px',
           maxHeight: '90vh',
           overflowY: 'auto',
-          padding: '28px',
+          padding: 'clamp(16px, 4vw, 28px)',
           boxShadow: '0 20px 40px rgba(0,0,0,0.6)',
         }}
       >
@@ -380,31 +418,34 @@ export function EditModal({
                 />
               </div>
               <div>
-                <label style={{ display: 'block', fontSize: '11px', color: '#9AA3B5', marginBottom: '4px' }}>Description *</label>
+                <label style={{ display: 'block', fontSize: '11px', color: '#9AA3B5', marginBottom: '4px' }}>Description / Markdown *</label>
                 <textarea
                   required
-                  rows={3}
-                  value={formData.description || ''}
-                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                  rows={4}
+                  placeholder="Describe this project, its goals, hardware used, outcomes..."
+                  value={formData.descriptionMd || ''}
+                  onChange={(e) => setFormData({ ...formData, descriptionMd: e.target.value })}
                   style={{ width: '100%', padding: '8px 12px', borderRadius: '6px', backgroundColor: '#07080B', border: '1px solid #232838', color: '#E8EAF0' }}
                 />
               </div>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
                 <div>
-                  <label style={{ display: 'block', fontSize: '11px', color: '#9AA3B5', marginBottom: '4px' }}>GitHub URL</label>
+                  <label style={{ display: 'block', fontSize: '11px', color: '#9AA3B5', marginBottom: '4px' }}>GitHub Repo URL</label>
                   <input
-                    type="url"
+                    type="text"
+                    placeholder="https://github.com/TRAIC-community/..."
                     value={formData.repoUrl || ''}
                     onChange={(e) => setFormData({ ...formData, repoUrl: e.target.value })}
                     style={{ width: '100%', padding: '8px 12px', borderRadius: '6px', backgroundColor: '#07080B', border: '1px solid #232838', color: '#E8EAF0' }}
                   />
                 </div>
                 <div>
-                  <label style={{ display: 'block', fontSize: '11px', color: '#9AA3B5', marginBottom: '4px' }}>Live Demo URL</label>
+                  <label style={{ display: 'block', fontSize: '11px', color: '#9AA3B5', marginBottom: '4px' }}>Live Demo / Video URL</label>
                   <input
-                    type="url"
-                    value={formData.liveUrl || ''}
-                    onChange={(e) => setFormData({ ...formData, liveUrl: e.target.value })}
+                    type="text"
+                    placeholder="https://demo.traic.in/... or YouTube link"
+                    value={formData.demoUrl || ''}
+                    onChange={(e) => setFormData({ ...formData, demoUrl: e.target.value })}
                     style={{ width: '100%', padding: '8px 12px', borderRadius: '6px', backgroundColor: '#07080B', border: '1px solid #232838', color: '#E8EAF0' }}
                   />
                 </div>
@@ -462,11 +503,35 @@ export function EditModal({
                   </select>
                 </div>
               </div>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                <div>
+                  <label style={{ display: 'block', fontSize: '11px', color: '#9AA3B5', marginBottom: '4px' }}>Start Date & Time *</label>
+                  <input
+                    required
+                    type="text"
+                    placeholder="2025-03-15T09:00:00.000Z or 2025-03-15"
+                    value={formData.startsAt || ''}
+                    onChange={(e) => setFormData({ ...formData, startsAt: e.target.value })}
+                    style={{ width: '100%', padding: '8px 12px', borderRadius: '6px', backgroundColor: '#07080B', border: '1px solid #232838', color: '#E8EAF0' }}
+                  />
+                </div>
+                <div>
+                  <label style={{ display: 'block', fontSize: '11px', color: '#9AA3B5', marginBottom: '4px' }}>End Date & Time (optional)</label>
+                  <input
+                    type="text"
+                    placeholder="2025-03-16T18:00:00.000Z"
+                    value={formData.endsAt || ''}
+                    onChange={(e) => setFormData({ ...formData, endsAt: e.target.value })}
+                    style={{ width: '100%', padding: '8px 12px', borderRadius: '6px', backgroundColor: '#07080B', border: '1px solid #232838', color: '#E8EAF0' }}
+                  />
+                </div>
+              </div>
               <div>
                 <label style={{ display: 'block', fontSize: '11px', color: '#9AA3B5', marginBottom: '4px' }}>Venue *</label>
                 <input
                   required
                   type="text"
+                  placeholder="e.g. College Auditorium, Online - Google Meet"
                   value={formData.venue || ''}
                   onChange={(e) => setFormData({ ...formData, venue: e.target.value })}
                   style={{ width: '100%', padding: '8px 12px', borderRadius: '6px', backgroundColor: '#07080B', border: '1px solid #232838', color: '#E8EAF0' }}
@@ -475,7 +540,8 @@ export function EditModal({
               <div>
                 <label style={{ display: 'block', fontSize: '11px', color: '#9AA3B5', marginBottom: '4px' }}>Registration URL</label>
                 <input
-                  type="url"
+                  type="text"
+                  placeholder="/join or https://forms.google.com/..."
                   value={formData.registerUrl || ''}
                   onChange={(e) => setFormData({ ...formData, registerUrl: e.target.value })}
                   style={{ width: '100%', padding: '8px 12px', borderRadius: '6px', backgroundColor: '#07080B', border: '1px solid #232838', color: '#E8EAF0' }}
@@ -666,17 +732,17 @@ export function EditModal({
             </>
           )}
 
-          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '12px' }}>
+          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '12px', flexWrap: 'wrap' }}>
             <button
               type="button"
               onClick={onClose}
-              style={{ background: 'none', border: '1px solid #232838', color: '#9AA3B5', padding: '8px 16px', borderRadius: '6px', cursor: 'pointer', fontSize: '13px' }}
+              style={{ background: 'none', border: '1px solid #232838', color: '#9AA3B5', padding: '10px 20px', borderRadius: '6px', cursor: 'pointer', fontSize: '13px', flex: '1 1 auto', minWidth: '100px' }}
             >
               Cancel
             </button>
             <button
               type="submit"
-              style={{ backgroundColor: '#FF9F1C', color: '#07080B', border: 'none', padding: '8px 20px', borderRadius: '6px', fontWeight: 700, fontSize: '13px', cursor: 'pointer' }}
+              style={{ backgroundColor: '#FF9F1C', color: '#07080B', border: 'none', padding: '10px 24px', borderRadius: '6px', fontWeight: 700, fontSize: '13px', cursor: 'pointer', flex: '2 1 auto', minWidth: '140px' }}
             >
               Save Changes
             </button>

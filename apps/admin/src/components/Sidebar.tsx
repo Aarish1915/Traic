@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react';
 import {
   Cpu,
   Layers,
@@ -12,6 +13,9 @@ import {
   Box,
   Camera,
   LogOut,
+  ExternalLink,
+  Menu,
+  X,
 } from 'lucide-react';
 import type { TabId } from '../types';
 
@@ -35,6 +39,22 @@ interface SidebarProps {
 }
 
 export function Sidebar({ activeTab, setActiveTab, counts, loading, onSync, onLogout }: SidebarProps) {
+  const [isMobileOpen, setIsMobileOpen] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth < 768);
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+
+  // Close sidebar when tab is selected on mobile
+  const handleTabSelect = (tab: TabId) => {
+    setActiveTab(tab);
+    if (isMobile) setIsMobileOpen(false);
+  };
+
   const navItems = [
     { id: 'projects' as TabId, label: 'Projects & Hardware', icon: <Layers size={18} />, count: counts.projects },
     { id: '3d-models' as TabId, label: 'Add Your 3D & Models', icon: <Box size={18} />, count: counts.models3d },
@@ -44,60 +64,60 @@ export function Sidebar({ activeTab, setActiveTab, counts, loading, onSync, onLo
     { id: 'achievements' as TabId, label: 'Achievements', icon: <Trophy size={18} />, count: counts.achievements },
     { id: 'members' as TabId, label: 'Leadership & Team', icon: <Users size={18} />, count: counts.members },
     { id: 'alumni' as TabId, label: 'Alumni Directory', icon: <GraduationCap size={18} />, count: counts.alumni },
-    { id: 'settings' as TabId, label: 'Site & Announcement Controls', icon: <SettingsIcon size={18} /> },
-    { id: 'applications' as TabId, label: 'Membership Applications', icon: <FileText size={18} />, count: counts.applications },
+    { id: 'settings' as TabId, label: 'Site Controls', icon: <SettingsIcon size={18} /> },
+    { id: 'applications' as TabId, label: 'Applications', icon: <FileText size={18} />, count: counts.applications },
   ];
 
-  return (
-    <aside
-      style={{
-        width: '280px',
-        backgroundColor: '#0D0F14',
-        borderRight: '1px solid #232838',
-        padding: '24px 16px',
-        display: 'flex',
-        flexDirection: 'column',
-        justifyContent: 'space-between',
-        flexShrink: 0,
-      }}
-    >
+  const sidebarContent = (
+    <>
       <div>
         {/* Logo */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', paddingBottom: '24px', borderBottom: '1px solid #232838' }}>
-          <div
-            style={{
-              width: '38px',
-              height: '38px',
-              backgroundColor: 'rgba(255, 159, 28, 0.15)',
-              border: '1px solid rgba(255, 159, 28, 0.4)',
-              borderRadius: '8px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              color: '#FF9F1C',
-            }}
-          >
-            <Cpu size={22} />
-          </div>
-          <div>
-            <div style={{ fontWeight: 900, fontSize: '18px', letterSpacing: '0.5px' }}>TRAIC STUDIO</div>
-            <div style={{ fontSize: '11px', color: '#9AA3B5', textTransform: 'uppercase', letterSpacing: '1px' }}>
-              Coordinator Console
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingBottom: '20px', borderBottom: '1px solid #232838' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <div
+              style={{
+                width: '38px',
+                height: '38px',
+                backgroundColor: 'rgba(255, 159, 28, 0.15)',
+                border: '1px solid rgba(255, 159, 28, 0.4)',
+                borderRadius: '8px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                color: '#FF9F1C',
+                flexShrink: 0,
+              }}
+            >
+              <Cpu size={22} />
+            </div>
+            <div>
+              <div style={{ fontWeight: 900, fontSize: '16px', letterSpacing: '0.5px' }}>TRAIC STUDIO</div>
+              <div style={{ fontSize: '10px', color: '#9AA3B5', textTransform: 'uppercase', letterSpacing: '1px' }}>
+                Coordinator Console
+              </div>
             </div>
           </div>
+          {isMobile && (
+            <button
+              onClick={() => setIsMobileOpen(false)}
+              style={{ background: 'none', border: 'none', color: '#9AA3B5', cursor: 'pointer', padding: '4px' }}
+            >
+              <X size={20} />
+            </button>
+          )}
         </div>
 
         {/* Nav items */}
-        <nav style={{ marginTop: '24px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+        <nav style={{ marginTop: '16px', display: 'flex', flexDirection: 'column', gap: '4px' }}>
           {navItems.map((tab) => (
             <button
               key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
+              onClick={() => handleTabSelect(tab.id)}
               style={{
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'space-between',
-                padding: '10px 14px',
+                padding: '10px 12px',
                 borderRadius: '8px',
                 fontSize: '13px',
                 fontWeight: 600,
@@ -107,11 +127,12 @@ export function Sidebar({ activeTab, setActiveTab, counts, loading, onSync, onLo
                 color: activeTab === tab.id ? '#38BDF8' : '#9AA3B5',
                 textAlign: 'left',
                 transition: 'all 0.15s ease',
+                width: '100%',
               }}
             >
-              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                {tab.icon}
-                <span>{tab.label}</span>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', minWidth: 0 }}>
+                <span style={{ flexShrink: 0 }}>{tab.icon}</span>
+                <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{tab.label}</span>
               </div>
               {tab.count !== undefined && (
                 <span
@@ -122,6 +143,8 @@ export function Sidebar({ activeTab, setActiveTab, counts, loading, onSync, onLo
                     backgroundColor: activeTab === tab.id ? '#07080B' : '#141821',
                     color: activeTab === tab.id ? '#38BDF8' : '#9AA3B5',
                     border: '1px solid #232838',
+                    flexShrink: 0,
+                    marginLeft: '6px',
                   }}
                 >
                   {tab.count}
@@ -134,6 +157,34 @@ export function Sidebar({ activeTab, setActiveTab, counts, loading, onSync, onLo
 
       {/* Sync & Footer */}
       <div style={{ borderTop: '1px solid #232838', paddingTop: '16px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+        <a
+          href={import.meta.env.VITE_PUBLIC_WEB_URL || 'https://traic.onrender.com'}
+          target="_blank"
+          rel="noreferrer"
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '8px',
+            padding: '10px',
+            width: '100%',
+            borderRadius: '8px',
+            backgroundColor: 'rgba(255, 159, 28, 0.1)',
+            color: '#FF9F1C',
+            border: '1px solid rgba(255, 159, 28, 0.35)',
+            fontSize: '12px',
+            fontWeight: 700,
+            textDecoration: 'none',
+            boxSizing: 'border-box',
+            transition: 'background-color 0.2s',
+          }}
+          onMouseOver={(e) => (e.currentTarget.style.backgroundColor = 'rgba(255, 159, 28, 0.2)')}
+          onMouseOut={(e) => (e.currentTarget.style.backgroundColor = 'rgba(255, 159, 28, 0.1)')}
+        >
+          <ExternalLink size={14} />
+          <span>View Public Website ↗</span>
+        </a>
+
         <button
           onClick={onSync}
           style={{
@@ -152,7 +203,7 @@ export function Sidebar({ activeTab, setActiveTab, counts, loading, onSync, onLo
             cursor: 'pointer',
           }}
         >
-          <RefreshCw size={14} className={loading ? 'animate-spin' : ''} />
+          <RefreshCw size={14} style={{ animation: loading ? 'spin 1s linear infinite' : 'none' }} />
           <span>Sync Live API Data</span>
         </button>
 
@@ -183,6 +234,98 @@ export function Sidebar({ activeTab, setActiveTab, counts, loading, onSync, onLo
           </button>
         )}
       </div>
+    </>
+  );
+
+  if (isMobile) {
+    return (
+      <>
+        {/* Mobile top bar */}
+        <div
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            height: '56px',
+            backgroundColor: '#0D0F14',
+            borderBottom: '1px solid #232838',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            padding: '0 16px',
+            zIndex: 9999,
+          }}
+        >
+          <button
+            onClick={() => setIsMobileOpen(true)}
+            style={{ background: 'none', border: 'none', color: '#E8EAF0', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px' }}
+          >
+            <Menu size={22} />
+          </button>
+          <div style={{ fontWeight: 900, fontSize: '16px', letterSpacing: '0.5px', color: '#E8EAF0' }}>TRAIC STUDIO</div>
+          <div style={{ width: '38px' }} />
+        </div>
+
+        {/* Overlay */}
+        {isMobileOpen && (
+          <div
+            onClick={() => setIsMobileOpen(false)}
+            style={{
+              position: 'fixed',
+              inset: 0,
+              backgroundColor: 'rgba(0,0,0,0.65)',
+              zIndex: 10000,
+            }}
+          />
+        )}
+
+        {/* Drawer */}
+        <aside
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            bottom: 0,
+            width: '280px',
+            backgroundColor: '#0D0F14',
+            borderRight: '1px solid #232838',
+            padding: '20px 14px',
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'space-between',
+            zIndex: 10001,
+            transform: isMobileOpen ? 'translateX(0)' : 'translateX(-100%)',
+            transition: 'transform 0.25s ease',
+            overflowY: 'auto',
+          }}
+        >
+          {sidebarContent}
+        </aside>
+      </>
+    );
+  }
+
+  // Desktop sidebar
+  return (
+    <aside
+      style={{
+        width: '260px',
+        minWidth: '260px',
+        backgroundColor: '#0D0F14',
+        borderRight: '1px solid #232838',
+        padding: '24px 14px',
+        display: 'flex',
+        flexDirection: 'column',
+        justifyContent: 'space-between',
+        flexShrink: 0,
+        height: '100vh',
+        position: 'sticky',
+        top: 0,
+        overflowY: 'auto',
+      }}
+    >
+      {sidebarContent}
     </aside>
   );
 }

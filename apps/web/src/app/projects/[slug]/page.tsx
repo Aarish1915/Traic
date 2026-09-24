@@ -196,13 +196,52 @@ export function generateStaticParams() {
   return Object.keys(PROJECT_DATABASE).map((slug) => ({ slug }));
 }
 
+export const dynamicParams = true;
+
 export default async function ProjectDetailPage({
   params,
 }: {
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const project = PROJECT_DATABASE[slug];
+  let project: ProjectDetail | undefined = PROJECT_DATABASE[slug];
+
+  if (!project) {
+    try {
+      const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
+      const res = await fetch(`${API_BASE}/public/projects/${slug}`, { next: { revalidate: 60 } });
+      if (res.ok) {
+        const json = await res.json();
+        const p = json.data;
+        if (p) {
+          project = {
+            slug: p.slug,
+            title: p.title,
+            category: p.category,
+            year: p.year || 2025,
+            status: p.status === 'PUBLISHED' ? 'Operational — Live' : p.status,
+            tagline: p.tagline,
+            description: p.descriptionMd || p.tagline,
+            fullNarrative: p.descriptionMd || p.tagline,
+            techStack: p.techStack || [],
+            repoUrl: p.repoUrl || 'https://github.com/Aarish1915/Traic',
+            demoUrl: p.demoUrl,
+            hasTelemetryDemo: false,
+            specs: [
+              { label: 'Category', value: p.category },
+              { label: 'Year', value: String(p.year || 2025) },
+              { label: 'Tech Stack', value: (p.techStack || []).join(', ') || 'Robotics & Hardware' },
+            ],
+            bom: [],
+            team: p.team?.map((t: any) => ({ name: t.name, role: t.roleInProject })) || [],
+            awards: [],
+          };
+        }
+      }
+    } catch {
+      // API unreachable or build time
+    }
+  }
 
   if (!project) {
     notFound();

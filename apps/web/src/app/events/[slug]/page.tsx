@@ -117,13 +117,59 @@ export function generateStaticParams() {
   return Object.keys(EVENTS_DATABASE).map((slug) => ({ slug }));
 }
 
+export const dynamicParams = true;
+
 export default async function EventDetailPage({
   params,
 }: {
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const event = EVENTS_DATABASE[slug];
+  let event: EventDetail | undefined = EVENTS_DATABASE[slug];
+
+  if (!event) {
+    try {
+      const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
+      const res = await fetch(`${API_BASE}/public/events/${slug}`, { next: { revalidate: 60 } });
+      if (res.ok) {
+        const json = await res.json();
+        const e = json.data;
+        if (e) {
+          event = {
+            slug: e.slug,
+            title: e.title,
+            type: e.type || 'Technical Event',
+            startsAt: e.startsAt ? new Date(e.startsAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'Upcoming',
+            duration: 'Full Day Event',
+            venue: e.venue || 'TRAIC Maker Space',
+            labLocation: 'TRAIC Innovation Lab, Block 4',
+            mode: e.mode || 'OFFLINE',
+            tagline: e.tagline || e.descriptionMd,
+            description: e.descriptionMd || e.tagline,
+            prizePool: 'Merit Certificates & Awards',
+            tracks: e.tracks || ['Robotics', 'Embedded Systems', 'Edge AI'],
+            schedule: [
+              { time: 'Morning', activity: 'Technical Briefing & Lab Allocation', desc: 'Hands-on briefing with senior mentors.' },
+              { time: 'Afternoon', activity: 'Prototype Development & Bench Testing', desc: 'Active hardware work on laboratory equipment.' },
+              { time: 'Evening', activity: 'Project Review & Demonstration', desc: 'Hardware evaluation and project defense.' },
+            ],
+            equipmentProvided: [
+              'Oscilloscopes & Benchtop Power Supplies',
+              'Microcontroller Development Boards',
+              'Soldering & SMD Rework Stations',
+              '3D Printers & Workshop Tools',
+            ],
+            mentors: [
+              { name: 'Aarish Ali', role: 'Lead Coordinator & Robotics Architect' },
+            ],
+            registrationOpen: e.registrationOpen !== false,
+          };
+        }
+      }
+    } catch {
+      // API fallback
+    }
+  }
 
   if (!event) {
     notFound();

@@ -247,10 +247,63 @@ function AvatarBox({
 }
 
 export default function TeamPage() {
+  const [leadershipList, setLeadershipList] = useState(LEADERSHIP);
+  const [leadsList, setLeadsList] = useState(DOMAIN_LEADS);
   const [alumniList, setAlumniList] = useState(ALUMNI);
 
   useEffect(() => {
     const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
+
+    fetch(`${API_BASE}/public/team`)
+      .then((res) => res.json())
+      .then((res) => {
+        if (res.data && res.data.length > 0) {
+          const apiCoordinators = res.data.filter((m: any) => m.position === 'COORDINATOR' || m.position === 'CO_COORDINATOR');
+          const apiLeads = res.data.filter((m: any) => m.position === 'LEAD' || m.position === 'MEMBER');
+
+          if (apiCoordinators.length > 0) {
+            setLeadershipList(apiCoordinators.map((m: any) => {
+              const existing = LEADERSHIP.find((l) => l.name.toLowerCase() === m.name.toLowerCase());
+              return {
+                name: m.name,
+                role: existing?.role || m.bio?.split('.')[0] || (m.position === 'COORDINATOR' ? 'Lead Coordinator & Robotics Architect' : 'Co-Coordinator'),
+                domain: existing?.domain || 'Robotics & Hardware',
+                academicYear: m.academicYear || existing?.academicYear || '2024–2025',
+                bio: m.bio || existing?.bio || '',
+                skills: existing?.skills || ['Embedded', 'Robotics', 'Hardware'],
+                avatar: m.photoUrl || existing?.avatar,
+                initials: m.name.split(' ').map((n: string) => n[0]).join('').slice(0, 2),
+                projects: existing?.projects,
+                achievements: existing?.achievements,
+                github: m.socials?.github || existing?.github || 'https://github.com',
+                linkedin: m.socials?.linkedin || existing?.linkedin || 'https://linkedin.com',
+              };
+            }));
+          }
+
+          if (apiLeads.length > 0) {
+            setLeadsList(apiLeads.map((m: any) => {
+              const existing = DOMAIN_LEADS.find((l) => l.name.toLowerCase() === m.name.toLowerCase());
+              return {
+                name: m.name,
+                role: existing?.role || m.bio?.split('.')[0] || (m.position === 'LEAD' ? 'Domain Technical Lead' : 'Core Engineer'),
+                domain: existing?.domain || 'Engineering',
+                academicYear: m.academicYear || existing?.academicYear || 'Class of 2025',
+                bio: m.bio || existing?.bio || '',
+                skills: existing?.skills || ['Engineering', 'Design', 'Systems'],
+                avatar: m.photoUrl || existing?.avatar,
+                initials: m.name.split(' ').map((n: string) => n[0]).join('').slice(0, 2),
+                projects: existing?.projects,
+                achievements: existing?.achievements,
+                github: m.socials?.github || existing?.github || 'https://github.com',
+                linkedin: m.socials?.linkedin || existing?.linkedin || 'https://linkedin.com',
+              };
+            }));
+          }
+        }
+      })
+      .catch(() => {});
+
     fetch(`${API_BASE}/public/alumni`)
       .then((res) => res.json())
       .then((res) => {
@@ -302,7 +355,7 @@ export default function TeamPage() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            {LEADERSHIP.map((lead) => (
+            {leadershipList.map((lead) => (
               <div
                 key={lead.name}
                 className="rounded-2xl border border-border bg-surface/80 p-8 shadow-sm transition-all hover:border-accent/40 flex flex-col justify-between"
@@ -423,7 +476,7 @@ export default function TeamPage() {
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {DOMAIN_LEADS.map((lead) => (
+            {leadsList.map((lead) => (
               <div
                 key={lead.name}
                 className="rounded-xl border border-border bg-surface/70 p-6 flex flex-col justify-between shadow-sm hover:border-accent-2/40 transition-all"

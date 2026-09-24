@@ -10,10 +10,10 @@ export const AchievementSchema = z.object({
   eventName: z.string().min(3),
   level: AchievementLevelSchema,
   rank: z.string().min(1), // e.g. "1st Place", "Winner", "Finalist"
-  date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Date format must be YYYY-MM-DD'),
+  date: z.string().min(4),
   projectId: z.string().uuid().optional(),
-  certificateAssetUrl: z.string().url().optional(),
-  photos: z.array(z.string().url()).default([]),
+  certificateAssetUrl: z.string().optional().nullable().or(z.literal('')),
+  photos: z.array(z.string()).default([]),
   status: ContentStatusSchema.default('PUBLISHED'),
 });
 export type Achievement = z.infer<typeof AchievementSchema>;

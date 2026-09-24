@@ -266,7 +266,7 @@ export function App() {
         onLogout={handleLogout}
       />
 
-      <main style={{ flex: 1, padding: '36px 44px', overflowY: 'auto' }}>
+      <main style={{ flex: 1, padding: '16px', paddingTop: '72px', overflowY: 'auto' }} className="admin-main">
         <Header activeTab={activeTab} onCreateNew={() => setEditingItem({ type: activeTab })} />
 
         {activeTab === 'projects' && (
@@ -346,7 +346,10 @@ export function App() {
         )}
 
         {activeTab === 'applications' && (
-          <ApplicationsTab applications={applications} />
+          <ApplicationsTab
+            applications={applications}
+            onDelete={(id) => handleDelete('applications', id)}
+          />
         )}
       </main>
 

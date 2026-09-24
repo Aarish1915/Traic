@@ -13,11 +13,11 @@ export const EventSchema = z.object({
   type: z.string().min(2), // Workshop, Hackathon, Boot Camp, Tech Talk
   mode: EventModeSchema.default('OFFLINE'),
   venue: z.string().min(2),
-  startsAt: z.string().datetime(),
-  endsAt: z.string().datetime().optional(),
-  registerUrl: z.string().url().optional().or(z.literal('')),
-  bannerAssetUrl: z.string().url().optional(),
-  photos: z.array(z.string().url()).default([]),
+  startsAt: z.string().min(1),
+  endsAt: z.string().optional().nullable().or(z.literal('')),
+  registerUrl: z.string().optional().nullable().or(z.literal('')),
+  bannerAssetUrl: z.string().optional().nullable().or(z.literal('')),
+  photos: z.array(z.string()).default([]),
   status: ContentStatusSchema.default('PUBLISHED'),
 });
 export type Event = z.infer<typeof EventSchema>;

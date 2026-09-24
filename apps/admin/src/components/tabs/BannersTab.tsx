@@ -12,20 +12,35 @@ interface BannersTabProps {
 export function BannersTab({ banners, onToggleBanner, onEdit, onDelete, onCreate }: BannersTabProps) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-      <div style={{ padding: '16px 20px', borderRadius: '8px', backgroundColor: '#141821', border: '1px solid #232838', fontSize: '13px', color: '#9AA3B5', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <div>
+      <div
+        className="admin-info-bar"
+        style={{
+          padding: '14px 16px',
+          borderRadius: '8px',
+          backgroundColor: '#141821',
+          border: '1px solid #232838',
+          fontSize: '13px',
+          color: '#9AA3B5',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          flexWrap: 'wrap',
+          gap: '10px',
+        }}
+      >
+        <div style={{ flex: 1, minWidth: '200px' }}>
           <strong style={{ color: '#E8EAF0' }}>Top Alert Bar Control:</strong> The highest-priority active banner is displayed across the top of all public pages on the website.
         </div>
         <button
           onClick={onCreate}
-          style={{ backgroundColor: '#FF9F1C', color: '#07080B', border: 'none', padding: '6px 14px', borderRadius: '6px', fontWeight: 700, fontSize: '12px', cursor: 'pointer' }}
+          style={{ backgroundColor: '#FF9F1C', color: '#07080B', border: 'none', padding: '8px 16px', borderRadius: '6px', fontWeight: 700, fontSize: '12px', cursor: 'pointer', flexShrink: 0 }}
         >
           + Add New Banner
         </button>
       </div>
 
-      <div style={{ backgroundColor: '#141821', border: '1px solid #232838', borderRadius: '12px', overflow: 'hidden' }}>
-        <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '13px' }}>
+      <div className="admin-table-wrap" style={{ backgroundColor: '#141821', border: '1px solid #232838', borderRadius: '12px', overflowX: 'auto' }}>
+        <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '13px', minWidth: '680px' }}>
           <thead>
             <tr style={{ borderBottom: '1px solid #232838', color: '#9AA3B5', backgroundColor: '#0D0F14' }}>
               <th style={{ padding: '14px 16px' }}>Banner Title & Message</th>
@@ -99,16 +114,16 @@ export function BannersTab({ banners, onToggleBanner, onEdit, onDelete, onCreate
                     <span>{b.isActive ? 'Active (Live)' : 'Paused'}</span>
                   </button>
                 </td>
-                <td style={{ padding: '14px 16px', textAlign: 'right' }}>
+                <td style={{ padding: '14px 16px', textAlign: 'right', whiteSpace: 'nowrap' }}>
                   <button
                     onClick={() => onEdit(b)}
-                    style={{ background: 'none', border: '1px solid #232838', color: '#38BDF8', padding: '5px 10px', borderRadius: '6px', cursor: 'pointer', marginRight: '8px' }}
+                    style={{ background: 'none', border: '1px solid #232838', color: '#38BDF8', padding: '6px 10px', borderRadius: '6px', cursor: 'pointer', marginRight: '8px' }}
                   >
                     <Edit2 size={13} />
                   </button>
                   <button
                     onClick={() => b.id && onDelete(b.id)}
-                    style={{ background: 'none', border: '1px solid #232838', color: '#F87171', padding: '5px 10px', borderRadius: '6px', cursor: 'pointer' }}
+                    style={{ background: 'none', border: '1px solid #232838', color: '#F87171', padding: '6px 10px', borderRadius: '6px', cursor: 'pointer' }}
                   >
                     <Trash2 size={13} />
                   </button>
