@@ -140,9 +140,14 @@ export function ProjectCard3DPreview({ category }: ProjectCard3DPreviewProps) {
         camera.position.set(0, 2.5, 7.5);
         camera.lookAt(0, 0, 0);
 
-        renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true, powerPreference: 'low-power' });
+        renderer = new THREE.WebGLRenderer({
+          alpha: true,
+          antialias: false,
+          powerPreference: 'low-power',
+          precision: 'mediump',
+        });
         renderer.setSize(w, h);
-        renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.5));
+        renderer.setPixelRatio(Math.min(typeof window !== 'undefined' ? window.devicePixelRatio || 1 : 1, 1.2));
         renderer.domElement.style.display = 'block';
         renderer.domElement.style.width = '100%';
         renderer.domElement.style.height = '100%';
@@ -340,10 +345,20 @@ export function ProjectCard3DPreview({ category }: ProjectCard3DPreviewProps) {
               cancelAnimationFrame(animId);
               animId = 0;
             }
+            // CRITICAL FOR iOS SAFARI (Rule M-002):
+            // Automatically recycle WebGL contexts for off-screen cards on mobile
+            if (renderer && typeof window !== 'undefined' && window.innerWidth < 1024) {
+              if (renderer.domElement && mount.contains(renderer.domElement)) {
+                mount.removeChild(renderer.domElement);
+              }
+              renderer.dispose();
+              renderer.forceContextLoss();
+              renderer = null;
+            }
           }
         });
       },
-      { threshold: 0.15 }
+      { threshold: 0.02, rootMargin: '80px 0px' }
     );
     intersectionObserver.observe(mount);
 
@@ -370,12 +385,16 @@ export function ProjectCard3DPreview({ category }: ProjectCard3DPreviewProps) {
       className="relative w-full h-[140px] sm:h-[150px] rounded-lg border border-border/60 bg-gradient-to-b from-bg-1/80 to-bg-0/90 overflow-hidden mb-4 cursor-grab active:cursor-grabbing select-none shadow-inner"
       style={{ touchAction: 'pan-y' }}
     >
-      <div ref={mountRef} className="w-full h-full" style={{ touchAction: 'pan-y' }} />
-      <div className="absolute top-2 right-2 flex items-center gap-1 rounded bg-surface/80 border border-border/80 px-2 py-0.5 text-[10px] font-mono text-accent-2 pointer-events-none backdrop-blur-sm">
+      {/* 2D CAD Blueprint Ambient Background */}
+      <div className="absolute inset-0 pointer-events-none opacity-20 flex items-center justify-center">
+        <div className="w-full h-full bg-[radial-gradient(#38bdf8_1px,transparent_1px)] [background-size:16px_16px]" />
+      </div>
+      <div ref={mountRef} className="w-full h-full relative z-10" style={{ touchAction: 'pan-y' }} />
+      <div className="absolute top-2 right-2 flex items-center gap-1 rounded bg-surface/80 border border-border/80 px-2 py-0.5 text-[10px] font-mono text-accent-2 pointer-events-none backdrop-blur-sm z-20">
         <Box className="h-3 w-3" />
         <span>3D CAD VIEW</span>
       </div>
-      <div className="absolute bottom-1.5 left-2 text-[9px] font-mono text-text-2 pointer-events-none opacity-70">
+      <div className="absolute bottom-1.5 left-2 text-[9px] font-mono text-text-2 pointer-events-none opacity-70 z-20">
         Drag / swipe to rotate
       </div>
     </div>

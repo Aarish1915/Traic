@@ -59,7 +59,7 @@ const LEADERSHIP: TeamMember[] = [
     academicYear: '2024–2025',
     bio: 'Directs overall club technical roadmaps, high-speed PCB fabrication, RTOS firmware development, and autonomous vehicle integration.',
     skills: ['ROS2', 'STM32', 'FreeRTOS', 'CAN-FD', 'High-Speed PCB', 'C++'],
-    avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80',
+    avatar: '/images/team/aarish-ali.jpg',
     initials: 'AA',
     projects: [
       { title: 'Autonomous Field Rover (UGV-X)', slug: 'autonomous-ugv-rover' },

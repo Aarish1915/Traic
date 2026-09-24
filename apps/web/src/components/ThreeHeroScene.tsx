@@ -35,25 +35,32 @@ export function ThreeHeroScene() {
     try {
       scene = new THREE.Scene();
 
-      const initialWidth = container.clientWidth || 500;
-      const initialHeight = container.clientHeight || 420;
+      const initialWidth = container.clientWidth || 320;
+      const initialHeight = container.clientHeight || 260;
 
       camera = new THREE.PerspectiveCamera(
-        40,
+        42,
         initialWidth / (initialHeight || 1),
         0.1,
         1000
       );
-      camera.position.set(0, 2.2, 13.5);
+      // Adaptive mobile camera distance
+      if (initialWidth < 640 || (initialWidth / initialHeight) < 1.0) {
+        camera.position.set(0, 1.4, 16.5);
+      } else {
+        camera.position.set(0, 2.2, 13.5);
+      }
       camera.lookAt(0, 0, 0);
 
+      // Safe WebGL settings for iOS Safari & mobile devices
       renderer = new THREE.WebGLRenderer({
         alpha: true,
-        antialias: true,
-        powerPreference: 'high-performance',
+        antialias: typeof window !== 'undefined' ? (window.devicePixelRatio || 1) < 2 : false,
+        powerPreference: 'default',
+        precision: 'mediump',
       });
       renderer.setSize(initialWidth, initialHeight);
-      renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.5));
       renderer.domElement.style.display = 'block';
       renderer.domElement.style.width = '100%';
       renderer.domElement.style.height = '100%';
@@ -381,10 +388,32 @@ export function ThreeHeroScene() {
         renderer.render(scene, camera);
       };
 
+      const updateDimensions = () => {
+        if (!container || !renderer || !camera) return;
+        const w = container.clientWidth || 320;
+        const h = container.clientHeight || 260;
+        camera.aspect = w / (h || 1);
+        if (w < 640 || camera.aspect < 1.0) {
+          camera.position.set(0, 1.4, 16.5);
+        } else {
+          camera.position.set(0, 2.2, 13.5);
+        }
+        camera.updateProjectionMatrix();
+        renderer.setSize(w, h);
+      };
+
+      resizeObserver = new ResizeObserver(() => {
+        updateDimensions();
+      });
+      resizeObserver.observe(container);
+      window.addEventListener('resize', updateDimensions);
+      requestAnimationFrame(updateDimensions);
+
       animate();
 
       return () => {
         themeObserver.disconnect();
+        window.removeEventListener('resize', updateDimensions);
         if (resizeObserver) resizeObserver.disconnect();
         container.removeEventListener('mousedown', onMouseDown);
         window.removeEventListener('mousemove', onMouseMove);
@@ -407,7 +436,7 @@ export function ThreeHeroScene() {
 
   if (!webGLSupported) {
     return (
-      <div className="w-full h-full min-h-[380px] flex items-center justify-center bg-bg-1 circuit-pattern">
+      <div className="w-full h-full min-h-[260px] flex items-center justify-center bg-bg-1 circuit-pattern">
         <div className="text-center p-6 font-mono text-xs text-text-2">
           <p className="text-accent font-bold mb-1">TRAIC HARDWARE CORE</p>
           <p>Silicon Telemetry Node Active</p>
@@ -419,8 +448,8 @@ export function ThreeHeroScene() {
   return (
     <div
       ref={containerRef}
-      className="w-full h-full min-h-[380px] select-none relative"
-      style={{ minHeight: '380px', width: '100%', height: '100%' }}
+      className="w-full h-full min-h-[260px] select-none relative"
+      style={{ minHeight: '260px', width: '100%', height: '100%' }}
       aria-label="Interactive 3D STM32 Silicon Chip Node"
     />
   );

@@ -152,7 +152,7 @@ const initialMembers: Member[] = [
   {
     id: 'm1111111-1111-1111-1111-111111111111',
     name: 'Aarish Ali',
-    photoUrl: '/images/team/aarish.webp',
+    photoUrl: '/images/team/aarish-ali.jpg',
     bio: 'Lead Coordinator & Robotics Architect. Specializes in embedded firmware, high-speed PCB design, and ROS2 robot locomotion.',
     socials: {
       github: 'https://github.com/Aarish1915',
