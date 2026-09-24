@@ -26,7 +26,7 @@ import { SettingsTab } from './components/tabs/SettingsTab';
 import { ApplicationsTab } from './components/tabs/ApplicationsTab';
 import { EditModal } from './components/EditModal';
 
-const API_BASE = 'http://localhost:4000';
+const API_BASE = (import.meta as any).env?.VITE_API_URL || 'http://localhost:4000';
 
 export function App() {
   const [activeTab, setActiveTab] = useState<TabId>('projects');

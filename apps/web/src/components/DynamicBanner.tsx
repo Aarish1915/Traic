@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { ArrowRight, Sparkles, AlertTriangle, Trophy, Calendar, X } from 'lucide-react';
 import type { Banner } from '@traic/shared';
 
-const API_BASE = 'http://localhost:4000';
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
 
 export function DynamicBanner() {
   const [banner, setBanner] = useState<Banner | null>(null);
