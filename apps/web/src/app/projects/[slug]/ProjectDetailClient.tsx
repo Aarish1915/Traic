@@ -96,11 +96,11 @@ export function ProjectDetailClient({ project }: { project: ProjectDetail }) {
             </p>
 
             {/* Action buttons */}
-            <div className="flex flex-wrap items-center gap-4 pt-2">
+            <div className="flex flex-col sm:flex-row sm:flex-wrap items-stretch sm:items-center gap-3 pt-2">
               <button
                 type="button"
                 onClick={() => setInspectingCAD(true)}
-                className="flex items-center gap-2 rounded-xl bg-accent px-6 py-3.5 text-sm font-bold text-bg-0 shadow-lg hover:bg-accent-hover transition-all hover:scale-[1.02] active:scale-[0.98]"
+                className="flex items-center justify-center gap-2 rounded-xl bg-accent px-6 py-3.5 text-sm font-bold text-bg-0 shadow-lg hover:bg-accent-hover transition-all hover:scale-[1.02] active:scale-[0.98]"
               >
                 <Box className="h-4 w-4" />
                 <span>INSPECT 3D CAD MODEL</span>
@@ -110,7 +110,7 @@ export function ProjectDetailClient({ project }: { project: ProjectDetail }) {
                 <button
                   type="button"
                   onClick={() => setShowTelemetry(true)}
-                  className="flex items-center gap-2 rounded-xl border border-accent-2/60 bg-accent-2/15 px-5 py-3.5 text-sm font-bold text-accent-2 hover:bg-accent-2/25 transition-all shadow-sm"
+                  className="flex items-center justify-center gap-2 rounded-xl border border-accent-2/60 bg-accent-2/15 px-5 py-3.5 text-sm font-bold text-accent-2 hover:bg-accent-2/25 transition-all shadow-sm"
                 >
                   <Radio className="h-4 w-4 animate-pulse" />
                   <span>LIVE TELEMETRY STATION</span>
@@ -121,7 +121,7 @@ export function ProjectDetailClient({ project }: { project: ProjectDetail }) {
                 href={project.repoUrl}
                 target="_blank"
                 rel="noreferrer"
-                className="flex items-center gap-2 rounded-xl border border-border bg-surface px-5 py-3.5 text-sm font-semibold text-text-1 hover:border-accent-2/50 hover:bg-surface-hover transition-all"
+                className="flex items-center justify-center gap-2 rounded-xl border border-border bg-surface px-5 py-3.5 text-sm font-semibold text-text-1 hover:border-accent-2/50 hover:bg-surface-hover transition-all"
               >
                 <GithubIcon className="h-4 w-4" />
                 <span>GITHUB REPO</span>

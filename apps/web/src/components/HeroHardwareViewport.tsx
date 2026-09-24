@@ -108,9 +108,17 @@ export function HeroHardwareViewport() {
       <div className="relative z-20 flex items-center justify-between border-t border-border/60 bg-bg-1/90 px-3 sm:px-4 py-2 backdrop-blur-sm text-[10px] sm:text-[11px] font-mono text-text-2">
         <span className="flex items-center gap-1.5 truncate">
           <span className="text-accent">●</span>
-          {mode === 'image'
-            ? 'Ultra-lightweight high-res hardware core render (0% GPU)'
-            : 'Interactive WebGL 3D active • Drag horizontally to rotate'}
+          {mode === 'image' ? (
+            <>
+              <span className="hidden sm:inline">Ultra-lightweight high-res hardware core render (0% GPU)</span>
+              <span className="sm:hidden">2D Core Render (0% GPU)</span>
+            </>
+          ) : (
+            <>
+              <span className="hidden sm:inline">Interactive WebGL 3D active • Drag horizontally to rotate</span>
+              <span className="sm:hidden">Interactive 3D • Touch drag to rotate</span>
+            </>
+          )}
         </span>
         <div className="flex items-center gap-2 shrink-0 ml-2">
           <Cpu className="h-3.5 w-3.5 text-accent" />

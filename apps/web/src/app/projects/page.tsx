@@ -296,7 +296,7 @@ export default function ProjectsPage() {
                         modelUrl: project.modelUrl,
                       })
                     }
-                    className="inline-flex items-center justify-center gap-1.5 rounded-lg border border-accent-2/50 bg-accent-2/10 px-3 py-1.5 text-xs font-mono font-semibold text-accent-2 hover:bg-accent-2 hover:text-bg-0 transition-colors shrink-0"
+                    className="w-full sm:w-auto inline-flex items-center justify-center gap-1.5 rounded-lg border border-accent-2/50 bg-accent-2/10 px-3.5 py-2 text-xs font-mono font-semibold text-accent-2 hover:bg-accent-2 hover:text-bg-0 transition-colors shrink-0"
                   >
                     <Box className="h-3.5 w-3.5" />
                     <span>Inspect 3D</span>

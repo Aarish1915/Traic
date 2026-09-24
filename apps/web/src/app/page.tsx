@@ -284,17 +284,17 @@ export default function HomePage() {
                 </p>
 
                 {/* Action CTAs */}
-                <div className="anime-reveal mt-8 flex flex-wrap items-center gap-4">
+                <div className="anime-reveal mt-8 flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4">
                   <Link
                     href="/projects"
-                    className="flex items-center gap-2 rounded-lg bg-accent px-6 py-3.5 text-sm font-semibold text-bg-0 shadow-lg transition-all hover:bg-accent-hover hover:glow-accent"
+                    className="flex items-center justify-center gap-2 rounded-lg bg-accent px-6 py-3.5 text-sm font-semibold text-bg-0 shadow-lg transition-all hover:bg-accent-hover hover:glow-accent"
                   >
                     <span>Explore Projects</span>
                     <ArrowRight className="h-4 w-4" />
                   </Link>
                   <Link
                     href="/join"
-                    className="flex items-center gap-2 rounded-lg border border-border bg-surface px-6 py-3.5 text-sm font-semibold text-text-1 transition-all hover:border-accent-2/50 hover:bg-surface-hover"
+                    className="flex items-center justify-center gap-2 rounded-lg border border-border bg-surface px-6 py-3.5 text-sm font-semibold text-text-1 transition-all hover:border-accent-2/50 hover:bg-surface-hover"
                   >
                     <span>Join the 2025 Cohort</span>
                     <ChevronRight className="h-4 w-4 text-text-2" />
@@ -425,10 +425,10 @@ export default function HomePage() {
                     ))}
                   </div>
 
-                  <div className="flex items-center justify-between pt-1">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 pt-1">
                     <Link
                       href={`/projects/${project.slug}`}
-                      className="inline-flex items-center gap-1 text-xs font-semibold text-text-1 hover:text-accent"
+                      className="inline-flex items-center gap-1 text-xs font-semibold text-text-1 hover:text-accent py-1"
                     >
                       <span>Read Specs</span>
                       <ArrowRight className="h-3 w-3" />
@@ -443,7 +443,7 @@ export default function HomePage() {
                           modelUrl: (project as any).modelUrl,
                         })
                       }
-                      className="inline-flex items-center gap-1.5 rounded-lg border border-accent-2/40 bg-accent-2/10 px-2.5 py-1 text-xs font-mono font-semibold text-accent-2 hover:bg-accent-2 hover:text-bg-0 transition-colors"
+                      className="w-full sm:w-auto inline-flex items-center justify-center gap-1.5 rounded-lg border border-accent-2/40 bg-accent-2/10 px-3 py-1.5 text-xs font-mono font-semibold text-accent-2 hover:bg-accent-2 hover:text-bg-0 transition-colors"
                     >
                       <Box className="h-3.5 w-3.5" />
                       <span>Inspect 3D</span>

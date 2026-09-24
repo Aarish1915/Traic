@@ -67,14 +67,14 @@ export function ThemeToggle() {
 
   return (
     <div
-      className="flex items-center rounded-full border border-border/90 bg-surface p-1 shadow-md font-mono text-[11px] backdrop-blur-md"
+      className="flex items-center rounded-full border border-border/90 bg-surface p-0.5 sm:p-1 shadow-md font-mono text-[11px] backdrop-blur-md"
       role="group"
       aria-label="Theme switcher"
     >
       <button
         type="button"
         onClick={() => applyTheme('dark')}
-        className={`flex items-center gap-1.5 rounded-full px-3 py-1 font-semibold transition-all ${
+        className={`flex items-center gap-1 sm:gap-1.5 rounded-full px-2 sm:px-3 py-1 font-semibold transition-all ${
           theme === 'dark'
             ? 'bg-bg-1 text-accent-2 border border-accent-2/50 shadow-sm'
             : 'text-text-2 hover:text-text-1'
@@ -82,13 +82,13 @@ export function ThemeToggle() {
         title="Activate Dark Obsidian Theme"
       >
         <Moon className="h-3.5 w-3.5" />
-        <span>DARK</span>
+        <span className="hidden sm:inline">DARK</span>
       </button>
 
       <button
         type="button"
         onClick={() => applyTheme('light')}
-        className={`flex items-center gap-1.5 rounded-full px-3 py-1 font-semibold transition-all ${
+        className={`flex items-center gap-1 sm:gap-1.5 rounded-full px-2 sm:px-3 py-1 font-semibold transition-all ${
           theme === 'light'
             ? 'bg-accent text-bg-0 border border-accent font-bold shadow-sm'
             : 'text-text-2 hover:text-text-1'
@@ -96,7 +96,7 @@ export function ThemeToggle() {
         title="Activate Light Stone Theme"
       >
         <Sun className="h-3.5 w-3.5" />
-        <span>LIGHT</span>
+        <span className="hidden sm:inline">LIGHT</span>
       </button>
     </div>
   );

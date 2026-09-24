@@ -102,23 +102,12 @@ export function Project3DInspector({
     const mount = mountRef.current;
     if (!mount) return undefined;
 
-    // Verify WebGL availability before attempting creation
-    const testCanvas = document.createElement('canvas');
-    const gl = testCanvas.getContext('webgl2') || testCanvas.getContext('webgl') || testCanvas.getContext('experimental-webgl');
-    if (!gl) {
-      console.warn('WebGL unsupported on this device. Switching to 2D Lite Schematic.');
-      setViewMode('2d');
-      return undefined;
-    }
-
     let isMounted = true;
     let scene: THREE.Scene;
     let camera: THREE.PerspectiveCamera;
     let renderer: THREE.WebGLRenderer | null = null;
     let animId = 0;
     let isDragging = false;
-    let prevX = 0;
-    let prevY = 0;
     let resizeObserver: ResizeObserver | null = null;
     let cleanupFn: (() => void) | null = null;
 
@@ -136,16 +125,17 @@ export function Project3DInspector({
       cameraRef.current = camera;
 
       renderer = new THREE.WebGLRenderer({
-        antialias: false, // Prevents iOS Safari memory threshold crash
+        antialias: false,
         alpha: true,
-        powerPreference: 'low-power',
+        powerPreference: 'default',
+        precision: 'mediump',
       });
       renderer.setSize(w, h);
       renderer.setPixelRatio(Math.min(typeof window !== 'undefined' ? window.devicePixelRatio || 1 : 1, 1.25));
       renderer.domElement.style.display = 'block';
       renderer.domElement.style.width = '100%';
       renderer.domElement.style.height = '100%';
-      renderer.domElement.style.touchAction = 'none'; // Ensures smooth iOS touch rotation
+      renderer.domElement.style.touchAction = 'none'; // Dedicated modal canvas captures touches
       mount.appendChild(renderer.domElement);
 
       const group = new THREE.Group();
@@ -367,32 +357,59 @@ export function Project3DInspector({
       }
 
       // UNIFIED POINTER EVENTS FOR ROTATION (WORKS FLAWLESSLY ON IPHONE & ANDROID)
+      // ROCK-SOLID TOUCH & DRAG ROTATION FOR IPHONE, ANDROID & DESKTOP
       const dom = renderer.domElement;
 
-      const onPointerDown = (e: PointerEvent) => {
+      let touchPrevX = 0;
+      let touchPrevY = 0;
+      let mousePrevX = 0;
+      let mousePrevY = 0;
+
+      const onTouchStart = (e: TouchEvent) => {
+        if (e.touches.length !== 1) return;
+        touchPrevX = e.touches[0].clientX;
+        touchPrevY = e.touches[0].clientY;
         isDragging = true;
-        prevX = e.clientX;
-        prevY = e.clientY;
-        try {
-          dom.setPointerCapture(e.pointerId);
-        } catch {}
       };
 
-      const onPointerMove = (e: PointerEvent) => {
-        if (!isDragging) return;
-        const dx = e.clientX - prevX;
-        const dy = e.clientY - prevY;
+      const onTouchMove = (e: TouchEvent) => {
+        if (!isDragging || e.touches.length !== 1) return;
+        if (e.cancelable) {
+          e.preventDefault(); // Prevents iOS Safari gesture capture and scroll drop
+        }
+        const curX = e.touches[0].clientX;
+        const curY = e.touches[0].clientY;
+        const dx = curX - touchPrevX;
+        const dy = curY - touchPrevY;
         group.rotation.y += dx * 0.012;
         group.rotation.x += dy * 0.008;
-        prevX = e.clientX;
-        prevY = e.clientY;
+        touchPrevX = curX;
+        touchPrevY = curY;
       };
 
-      const onPointerUp = (e: PointerEvent) => {
+      const onTouchEnd = () => {
         isDragging = false;
-        try {
-          dom.releasePointerCapture(e.pointerId);
-        } catch {}
+      };
+
+      // Mouse drag controls for desktop
+      const onMouseDown = (e: MouseEvent) => {
+        isDragging = true;
+        mousePrevX = e.clientX;
+        mousePrevY = e.clientY;
+      };
+
+      const onMouseMove = (e: MouseEvent) => {
+        if (!isDragging) return;
+        const dx = e.clientX - mousePrevX;
+        const dy = e.clientY - mousePrevY;
+        group.rotation.y += dx * 0.012;
+        group.rotation.x += dy * 0.008;
+        mousePrevX = e.clientX;
+        mousePrevY = e.clientY;
+      };
+
+      const onMouseUp = () => {
+        isDragging = false;
       };
 
       const onWheel = (e: WheelEvent) => {
@@ -401,10 +418,14 @@ export function Project3DInspector({
         camera.position.z = Math.min(Math.max(camera.position.z + e.deltaY * 0.015, 3.5), 24);
       };
 
-      dom.addEventListener('pointerdown', onPointerDown);
-      dom.addEventListener('pointermove', onPointerMove);
-      dom.addEventListener('pointerup', onPointerUp);
-      dom.addEventListener('pointercancel', onPointerUp);
+      dom.addEventListener('touchstart', onTouchStart, { passive: true });
+      dom.addEventListener('touchmove', onTouchMove, { passive: false });
+      dom.addEventListener('touchend', onTouchEnd, { passive: true });
+      dom.addEventListener('touchcancel', onTouchEnd, { passive: true });
+
+      dom.addEventListener('mousedown', onMouseDown);
+      window.addEventListener('mousemove', onMouseMove);
+      window.addEventListener('mouseup', onMouseUp);
       dom.addEventListener('wheel', onWheel, { passive: false });
 
       // Handle Resizing
@@ -435,10 +456,13 @@ export function Project3DInspector({
       cleanupFn = () => {
         isMounted = false;
         if (resizeObserver) resizeObserver.disconnect();
-        dom.removeEventListener('pointerdown', onPointerDown);
-        dom.removeEventListener('pointermove', onPointerMove);
-        dom.removeEventListener('pointerup', onPointerUp);
-        dom.removeEventListener('pointercancel', onPointerUp);
+        dom.removeEventListener('touchstart', onTouchStart);
+        dom.removeEventListener('touchmove', onTouchMove);
+        dom.removeEventListener('touchend', onTouchEnd);
+        dom.removeEventListener('touchcancel', onTouchEnd);
+        dom.removeEventListener('mousedown', onMouseDown);
+        window.removeEventListener('mousemove', onMouseMove);
+        window.removeEventListener('mouseup', onMouseUp);
         dom.removeEventListener('wheel', onWheel);
         if (animId) cancelAnimationFrame(animId);
         if (renderer) {
@@ -446,6 +470,7 @@ export function Project3DInspector({
             mount.removeChild(renderer.domElement);
           }
           renderer.dispose();
+          renderer.forceContextLoss(); // Guarantees iOS Safari reclaims GPU WebGL context
         }
       };
     } catch (err) {
@@ -638,33 +663,36 @@ export function Project3DInspector({
                 <div className="grid grid-cols-3 gap-2">
                   <button
                     onClick={() => setCameraView('iso')}
-                    className={`rounded border py-1.5 text-xs font-mono font-semibold transition-all ${
+                    className={`rounded border py-1.5 px-1 text-[11px] sm:text-xs font-mono font-semibold transition-all ${
                       currentView === 'iso'
                         ? 'border-accent bg-accent/15 text-accent'
                         : 'border-border bg-bg-1 text-text-2 hover:border-text-2'
                     }`}
                   >
-                    ISOMETRIC
+                    <span className="hidden sm:inline">ISOMETRIC</span>
+                    <span className="sm:hidden">ISO</span>
                   </button>
                   <button
                     onClick={() => setCameraView('top')}
-                    className={`rounded border py-1.5 text-xs font-mono font-semibold transition-all ${
+                    className={`rounded border py-1.5 px-1 text-[11px] sm:text-xs font-mono font-semibold transition-all ${
                       currentView === 'top'
                         ? 'border-accent bg-accent/15 text-accent'
                         : 'border-border bg-bg-1 text-text-2 hover:border-text-2'
                     }`}
                   >
-                    TOP (PCB)
+                    <span className="hidden sm:inline">TOP (PCB)</span>
+                    <span className="sm:hidden">TOP</span>
                   </button>
                   <button
                     onClick={() => setCameraView('front')}
-                    className={`rounded border py-1.5 text-xs font-mono font-semibold transition-all ${
+                    className={`rounded border py-1.5 px-1 text-[11px] sm:text-xs font-mono font-semibold transition-all ${
                       currentView === 'front'
                         ? 'border-accent bg-accent/15 text-accent'
                         : 'border-border bg-bg-1 text-text-2 hover:border-text-2'
                     }`}
                   >
-                    FRONT (CAD)
+                    <span className="hidden sm:inline">FRONT (CAD)</span>
+                    <span className="sm:hidden">FRONT</span>
                   </button>
                 </div>
               </div>

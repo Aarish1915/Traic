@@ -34,14 +34,6 @@ export function ThreeHeroScene() {
       window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
     try {
-      // Safe WebGL pre-flight check
-      const testCanvas = document.createElement('canvas');
-      const gl = testCanvas.getContext('webgl2') || testCanvas.getContext('webgl') || testCanvas.getContext('experimental-webgl');
-      if (!gl) {
-        setWebGLSupported(false);
-        return;
-      }
-
       scene = new THREE.Scene();
 
       const initialWidth = container.clientWidth || 320;
@@ -61,11 +53,11 @@ export function ThreeHeroScene() {
       }
       camera.lookAt(0, 0, 0);
 
-      // Safe, ultra-lightweight WebGL settings for iOS Safari & Android
+      // Robust WebGL renderer initialization for iOS Safari & Android
       renderer = new THREE.WebGLRenderer({
         alpha: true,
-        antialias: false, // Essential for iOS Safari memory stability
-        powerPreference: 'low-power',
+        antialias: false,
+        powerPreference: 'default',
         precision: 'mediump',
       });
       renderer.setSize(initialWidth, initialHeight);
@@ -73,7 +65,7 @@ export function ThreeHeroScene() {
       renderer.domElement.style.display = 'block';
       renderer.domElement.style.width = '100%';
       renderer.domElement.style.height = '100%';
-      renderer.domElement.style.touchAction = 'none'; // Prevent iOS Safari gesture capture
+      renderer.domElement.style.touchAction = 'pan-y'; // Allow vertical page scrolling
       container.appendChild(renderer.domElement);
 
       // PARTICLE CIRCUIT DUST
@@ -229,19 +221,73 @@ export function ThreeHeroScene() {
       });
       window.addEventListener('traic-theme-change', handleThemeChange);
 
-      // UNIFIED POINTER EVENTS FOR FLAWLESS IPHONE & ANDROID ROTATION
+      // ROCK-SOLID TOUCH & DRAG EVENT HANDLING FOR IPHONE, ANDROID & DESKTOP
       const dom = renderer.domElement;
 
-      const onPointerDown = (e: PointerEvent) => {
+      let touchStartX = 0;
+      let touchStartY = 0;
+      let touchPrevX = 0;
+      let touchPrevY = 0;
+      let touchMode: 'none' | 'rotate' | 'scroll' = 'none';
+
+      const onTouchStart = (e: TouchEvent) => {
+        if (e.touches.length !== 1) return;
+        touchStartX = e.touches[0].clientX;
+        touchStartY = e.touches[0].clientY;
+        touchPrevX = touchStartX;
+        touchPrevY = touchStartY;
+        touchMode = 'none';
+        isDragging = true;
+      };
+
+      const onTouchMove = (e: TouchEvent) => {
+        if (!isDragging || e.touches.length !== 1) return;
+        const curX = e.touches[0].clientX;
+        const curY = e.touches[0].clientY;
+
+        const dx = curX - touchPrevX;
+        const dy = curY - touchPrevY;
+
+        if (touchMode === 'none') {
+          const totalDx = Math.abs(curX - touchStartX);
+          const totalDy = Math.abs(curY - touchStartY);
+          if (totalDx < 6 && totalDy < 6) return; // small gesture threshold
+          if (totalDy > totalDx * 1.25) {
+            // Primarily vertical swipe: let the page scroll freely on mobile!
+            touchMode = 'scroll';
+            isDragging = false;
+            return;
+          } else {
+            // Primarily horizontal swipe: user is rotating the 3D chip!
+            touchMode = 'rotate';
+          }
+        }
+
+        if (touchMode === 'rotate') {
+          if (e.cancelable) {
+            e.preventDefault(); // Stop iOS Safari from canceling touch or scrolling
+          }
+          targetRotY += dx * 0.012;
+          targetRotX += dy * 0.006;
+          targetRotX = Math.max(-0.6, Math.min(0.8, targetRotX));
+          touchPrevX = curX;
+          touchPrevY = curY;
+        }
+      };
+
+      const onTouchEnd = () => {
+        isDragging = false;
+        touchMode = 'none';
+      };
+
+      // Mouse Drag Controls for Desktop
+      const onMouseDown = (e: MouseEvent) => {
         isDragging = true;
         prevX = e.clientX;
         prevY = e.clientY;
-        try {
-          dom.setPointerCapture(e.pointerId);
-        } catch {}
       };
 
-      const onPointerMove = (e: PointerEvent) => {
+      const onMouseMove = (e: MouseEvent) => {
         if (!isDragging) return;
         const dx = e.clientX - prevX;
         const dy = e.clientY - prevY;
@@ -252,17 +298,18 @@ export function ThreeHeroScene() {
         prevY = e.clientY;
       };
 
-      const onPointerUp = (e: PointerEvent) => {
+      const onMouseUp = () => {
         isDragging = false;
-        try {
-          dom.releasePointerCapture(e.pointerId);
-        } catch {}
       };
 
-      dom.addEventListener('pointerdown', onPointerDown);
-      dom.addEventListener('pointermove', onPointerMove);
-      dom.addEventListener('pointerup', onPointerUp);
-      dom.addEventListener('pointercancel', onPointerUp);
+      dom.addEventListener('touchstart', onTouchStart, { passive: true });
+      dom.addEventListener('touchmove', onTouchMove, { passive: false });
+      dom.addEventListener('touchend', onTouchEnd, { passive: true });
+      dom.addEventListener('touchcancel', onTouchEnd, { passive: true });
+
+      dom.addEventListener('mousedown', onMouseDown);
+      window.addEventListener('mousemove', onMouseMove);
+      window.addEventListener('mouseup', onMouseUp);
 
       // Resize handling
       const updateDimensions = () => {
@@ -317,14 +364,20 @@ export function ThreeHeroScene() {
         themeObserver.disconnect();
         window.removeEventListener('traic-theme-change', handleThemeChange);
         if (resizeObserver) resizeObserver.disconnect();
-        dom.removeEventListener('pointerdown', onPointerDown);
-        dom.removeEventListener('pointermove', onPointerMove);
-        dom.removeEventListener('pointerup', onPointerUp);
-        dom.removeEventListener('pointercancel', onPointerUp);
+        dom.removeEventListener('touchstart', onTouchStart);
+        dom.removeEventListener('touchmove', onTouchMove);
+        dom.removeEventListener('touchend', onTouchEnd);
+        dom.removeEventListener('touchcancel', onTouchEnd);
+        dom.removeEventListener('mousedown', onMouseDown);
+        window.removeEventListener('mousemove', onMouseMove);
+        window.removeEventListener('mouseup', onMouseUp);
         cancelAnimationFrame(animationFrameId);
-        if (renderer && renderer.domElement && container.contains(renderer.domElement)) {
-          container.removeChild(renderer.domElement);
+        if (renderer) {
+          if (renderer.domElement && container.contains(renderer.domElement)) {
+            container.removeChild(renderer.domElement);
+          }
           renderer.dispose();
+          renderer.forceContextLoss(); // Guarantees iOS Safari reclaims GPU WebGL context
         }
       };
     } catch (e) {
