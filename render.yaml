@@ -1,17 +1,19 @@
 services:
   # ========================================================
-  # 1. TRAIC API Backend Service (Node.js / Express 5)
+  # TRAIC API Backend Service (Node.js / Express 5)
   # ========================================================
   - type: web
     name: traic-api
     runtime: node
     plan: free
     region: oregon
-    buildCommand: pnpm install --frozen-lockfile && pnpm --filter @traic/shared build && pnpm --filter @traic/api build
+    buildCommand: corepack enable && pnpm install --frozen-lockfile && pnpm --filter @traic/shared build && pnpm --filter @traic/api build
     startCommand: node apps/api/dist/server.js
     healthCheckPath: /health
     autoDeploy: true
     envVars:
+      - key: NODE_VERSION
+        value: 22
       - key: NODE_ENV
         value: production
       - key: PORT
@@ -23,22 +25,3 @@ services:
         generateValue: true
       - key: ALLOWED_ORIGINS
         value: "*"
-
-  # ========================================================
-  # 2. TRAIC Admin Console (Optional Static Site on Render)
-  # ========================================================
-  - type: static
-    name: traic-admin
-    buildCommand: pnpm install --frozen-lockfile && pnpm --filter @traic/shared build && pnpm --filter @traic/admin build
-    staticPublishPath: apps/admin/dist
-    autoDeploy: true
-    routes:
-      - type: rewrite
-        source: /*
-        destination: /index.html
-    envVars:
-      - key: VITE_API_URL
-        fromService:
-          type: web
-          name: traic-api
-          property: host
