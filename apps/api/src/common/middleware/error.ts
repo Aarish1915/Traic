@@ -29,6 +29,31 @@ export function errorHandler(
     return;
   }
 
+  // Handle Express body-parser entity too large (payload inflation / ReDoS protection)
+  if ((err as any).type === 'entity.too.large' || (err as any).status === 413) {
+    logger.warn({ path: req.path, requestId }, 'Request payload exceeded maximum size limit');
+    res.status(413).json({
+      error: {
+        code: 'PAYLOAD_TOO_LARGE',
+        message: 'Request payload exceeded maximum size limit (1MB cap)',
+        requestId,
+      },
+    });
+    return;
+  }
+
+  // Handle malformed JSON body errors
+  if (err instanceof SyntaxError && 'status' in err && (err as any).status === 400) {
+    res.status(400).json({
+      error: {
+        code: 'MALFORMED_JSON',
+        message: 'Malformed JSON payload in request body',
+        requestId,
+      },
+    });
+    return;
+  }
+
   logger.error({ err, requestId, path: req.path }, 'Unhandled exception');
 
   res.status(500).json({

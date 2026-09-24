@@ -119,17 +119,17 @@ export function App() {
 
     try {
       const [projRes, evRes, achRes, memRes, alRes, banRes, galRes, setRes, appRes] = await Promise.all([
-        fetch(`${API_BASE}/public/projects`).then((r) => r.json()).catch(() => ({ data: [] })),
-        fetch(`${API_BASE}/public/events`).then((r) => r.json()).catch(() => ({ data: [] })),
-        fetch(`${API_BASE}/public/achievements`).then((r) => r.json()).catch(() => ({ data: [] })),
-        fetch(`${API_BASE}/public/team`).then((r) => r.json()).catch(() => ({ data: [] })),
-        fetch(`${API_BASE}/public/alumni`).then((r) => r.json()).catch(() => ({ data: [] })),
+        fetch(`${API_BASE}/admin/projects`, { headers: authHeaders }).then((r) => r.json()).catch(() => ({ data: [] })),
+        fetch(`${API_BASE}/admin/events`, { headers: authHeaders }).then((r) => r.json()).catch(() => ({ data: [] })),
+        fetch(`${API_BASE}/admin/achievements`, { headers: authHeaders }).then((r) => r.json()).catch(() => ({ data: [] })),
+        fetch(`${API_BASE}/admin/members`, { headers: authHeaders }).then((r) => r.json()).catch(() => ({ data: [] })),
+        fetch(`${API_BASE}/admin/alumni`, { headers: authHeaders }).then((r) => r.json()).catch(() => ({ data: [] })),
         fetch(`${API_BASE}/admin/banners`, { headers: authHeaders }).then((r) => {
           if (r.status === 401) { handleLogout(); }
           return r.json();
         }).catch(() => ({ data: [] })),
         fetch(`${API_BASE}/admin/gallery`, { headers: authHeaders }).then((r) => r.json()).catch(() => ({ data: [] })),
-        fetch(`${API_BASE}/public/settings`).then((r) => r.json()).catch(() => ({ data: null })),
+        fetch(`${API_BASE}/admin/settings`, { headers: authHeaders }).then((r) => r.json()).catch(() => ({ data: null })),
         fetch(`${API_BASE}/admin/applications`, { headers: authHeaders }).then((r) => r.json()).catch(() => ({ data: [] })),
       ]);
 
@@ -219,6 +219,56 @@ export function App() {
     }
   };
 
+  const handleQuickToggle = async (entityType: string, id: string, currentVal: any) => {
+    try {
+      let body: any = {};
+      if (typeof currentVal === 'boolean') {
+        body = { active: !currentVal };
+      } else {
+        body = { status: currentVal === 'PUBLISHED' ? 'DRAFT' : 'PUBLISHED' };
+      }
+
+      const res = await fetch(`${API_BASE}/admin/${entityType}/${id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(body),
+      });
+
+      if (res.ok) {
+        showToast('Visibility updated successfully');
+        fetchAllData();
+      } else {
+        showToast('Failed to update visibility', 'error');
+      }
+    } catch {
+      showToast('Network error while updating visibility', 'error');
+    }
+  };
+
+  const handleUpdateApplicationStatus = async (id: string, status: string) => {
+    try {
+      const res = await fetch(`${API_BASE}/admin/applications/${id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ status }),
+      });
+      if (res.ok) {
+        showToast(`Candidate status updated to ${status}`);
+        fetchAllData();
+      } else {
+        showToast('Failed to update application status', 'error');
+      }
+    } catch {
+      showToast('Network error while updating status', 'error');
+    }
+  };
+
   if (!authChecked) {
     return (
       <div style={{ minHeight: '100vh', backgroundColor: '#07080B', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#94A3B8', fontFamily: 'monospace' }}>
@@ -274,6 +324,7 @@ export function App() {
             projects={projects}
             onEdit={(p) => setEditingItem({ type: 'projects', data: p })}
             onDelete={(id) => handleDelete('projects', id)}
+            onToggleVisibility={(id, currentVal) => handleQuickToggle('projects', id, currentVal)}
           />
         )}
 
@@ -302,6 +353,7 @@ export function App() {
             onEdit={(g) => setEditingItem({ type: 'gallery', data: g })}
             onDelete={(id) => handleDelete('gallery', id)}
             onCreate={() => setEditingItem({ type: 'gallery' })}
+            onToggleVisibility={(id, currentVal) => handleQuickToggle('gallery', id, currentVal)}
           />
         )}
 
@@ -310,6 +362,7 @@ export function App() {
             events={events}
             onEdit={(e) => setEditingItem({ type: 'events', data: e })}
             onDelete={(id) => handleDelete('events', id)}
+            onToggleVisibility={(id, currentVal) => handleQuickToggle('events', id, currentVal)}
           />
         )}
 
@@ -318,6 +371,7 @@ export function App() {
             achievements={achievements}
             onEdit={(a) => setEditingItem({ type: 'achievements', data: a })}
             onDelete={(id) => handleDelete('achievements', id)}
+            onToggleVisibility={(id, currentVal) => handleQuickToggle('achievements', id, currentVal)}
           />
         )}
 
@@ -326,6 +380,7 @@ export function App() {
             members={members}
             onEdit={(m) => setEditingItem({ type: 'members', data: m })}
             onDelete={(id) => handleDelete('members', id)}
+            onToggleVisibility={(id, currentVal) => handleQuickToggle('members', id, currentVal)}
           />
         )}
 
@@ -334,6 +389,7 @@ export function App() {
             alumni={alumni}
             onEdit={(al) => setEditingItem({ type: 'alumni', data: al })}
             onDelete={(id) => handleDelete('alumni', id)}
+            onToggleVisibility={(id, currentVal) => handleQuickToggle('alumni', id, currentVal)}
           />
         )}
 
@@ -349,6 +405,7 @@ export function App() {
           <ApplicationsTab
             applications={applications}
             onDelete={(id) => handleDelete('applications', id)}
+            onUpdateStatus={handleUpdateApplicationStatus}
           />
         )}
       </main>

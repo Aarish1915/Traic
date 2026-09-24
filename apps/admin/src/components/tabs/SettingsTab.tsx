@@ -56,7 +56,7 @@ export function SettingsTab({ settings, setSettings, onSave }: SettingsTabProps)
                   stats: { ...(settings.stats || { projectsBuilt: 42, awardsWon: 28, activeMembers: 95 }), yearsActive: Number(e.target.value) },
                 })
               }
-              style={{ width: '100%', padding: '10px', borderRadius: '6px', backgroundColor: '#0D0F14', border: '1px solid #232838', color: '#FF9F1C', fontWeight: 800 }}
+              style={{ width: '100%', padding: '10px', borderRadius: '6px', backgroundColor: '#0D0F14', border: '1px solid #232838', color: '#00E5FF', fontWeight: 800 }}
             />
           </div>
           <div>

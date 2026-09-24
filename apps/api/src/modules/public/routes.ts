@@ -11,50 +11,50 @@ import { publicFormRateLimiter } from '../admin/auth';
 
 export const publicRouter = Router();
 
-// Projects
+// Projects (Published only)
 publicRouter.get('/public/projects', (_req, res) => {
-  res.json({ success: true, data: store.getProjects() });
+  res.json({ success: true, data: store.getProjects(true) });
 });
 
 publicRouter.get('/public/projects/:slug', (req, res, next) => {
-  const project = store.getProjectBySlug(req.params.slug);
+  const project = store.getProjectBySlug(req.params.slug, true);
   if (!project) {
     return next(new NotFoundError(`Project with slug '${req.params.slug}' not found`));
   }
   res.json({ success: true, data: project });
 });
 
-// Achievements
+// Achievements (Published only)
 publicRouter.get('/public/achievements', (_req, res) => {
-  res.json({ success: true, data: store.getAchievements() });
+  res.json({ success: true, data: store.getAchievements(true) });
 });
 
-// Events
+// Events (Published only)
 publicRouter.get('/public/events', (_req, res) => {
-  res.json({ success: true, data: store.getEvents() });
+  res.json({ success: true, data: store.getEvents(true) });
 });
 
 publicRouter.get('/public/events/:slug', (req, res, next) => {
-  const event = store.getEventBySlug(req.params.slug);
+  const event = store.getEventBySlug(req.params.slug, true);
   if (!event) {
     return next(new NotFoundError(`Event with slug '${req.params.slug}' not found`));
   }
   res.json({ success: true, data: event });
 });
 
-// Team
+// Team (Active members only)
 publicRouter.get('/public/team', (_req, res) => {
-  res.json({ success: true, data: store.getMembers() });
+  res.json({ success: true, data: store.getMembers(true) });
 });
 
-// Alumni
+// Alumni (Active alumni only)
 publicRouter.get('/public/alumni', (_req, res) => {
-  res.json({ success: true, data: store.getAlumni() });
+  res.json({ success: true, data: store.getAlumni(true) });
 });
 
 // Tracks (Curriculum)
 publicRouter.get('/public/tracks', (_req, res) => {
-  res.json({ success: true, data: store.tracks });
+  res.json({ success: true, data: store.getTracks(true) });
 });
 
 // Site Settings
@@ -67,9 +67,9 @@ publicRouter.get('/public/banners', (_req, res) => {
   res.json({ success: true, data: store.getBanners(true) });
 });
 
-// Gallery & Field Dispatches
+// Gallery & Field Dispatches (Active only)
 publicRouter.get('/public/gallery', (_req, res) => {
-  res.json({ success: true, data: store.getGallery() });
+  res.json({ success: true, data: store.getGallery(true) });
 });
 
 // Join Form Submission

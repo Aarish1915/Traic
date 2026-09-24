@@ -41,6 +41,12 @@ export function EditModal({
         if (!payload.demoUrl && payload.liveUrl) {
           payload.demoUrl = payload.liveUrl;
         }
+        if (payload.specs && Array.isArray(payload.specs)) {
+          payload.specs = payload.specs.filter((s: any) => s.label && s.value);
+        }
+        if (payload.bom && Array.isArray(payload.bom)) {
+          payload.bom = payload.bom.filter((b: any) => b.component && b.partNumber && b.function);
+        }
         delete payload.description;
         delete payload.liveUrl;
       } else if (type === 'banners') {
@@ -450,6 +456,164 @@ export function EditModal({
                   />
                 </div>
               </div>
+
+              {/* Publication Status & Featured */}
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                <div>
+                  <label style={{ display: 'block', fontSize: '11px', color: '#9AA3B5', marginBottom: '4px' }}>Publication Status *</label>
+                  <select
+                    value={formData.status || 'DRAFT'}
+                    onChange={(e) => setFormData({ ...formData, status: e.target.value })}
+                    style={{ width: '100%', padding: '8px 12px', borderRadius: '6px', backgroundColor: '#07080B', border: '1px solid #232838', color: '#E8EAF0' }}
+                  >
+                    <option value="DRAFT">DRAFT (Hidden from Public)</option>
+                    <option value="PUBLISHED">PUBLISHED (Live on Public Website)</option>
+                  </select>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', paddingTop: '18px' }}>
+                  <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontSize: '12px', color: '#E8EAF0' }}>
+                    <input
+                      type="checkbox"
+                      checked={formData.featured === true}
+                      onChange={(e) => setFormData({ ...formData, featured: e.target.checked })}
+                    />
+                    <span>Featured Project (Top of Homepage)</span>
+                  </label>
+                </div>
+              </div>
+
+              {/* Hardware Specifications Builder */}
+              <div style={{ padding: '14px', backgroundColor: '#0D0F14', border: '1px solid #232838', borderRadius: '8px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
+                  <label style={{ fontSize: '12px', fontWeight: 700, color: '#38BDF8' }}>
+                    Technical Specifications ({Array.isArray(formData.specs) ? formData.specs.length : 0})
+                  </label>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const cur = Array.isArray(formData.specs) ? [...formData.specs] : [];
+                      setFormData({ ...formData, specs: [...cur, { label: '', value: '' }] });
+                    }}
+                    style={{ backgroundColor: '#1A2338', border: '1px solid #28344D', color: '#38BDF8', padding: '4px 10px', borderRadius: '4px', fontSize: '11px', cursor: 'pointer', fontWeight: 700 }}
+                  >
+                    + Add Spec Row
+                  </button>
+                </div>
+                {(formData.specs || []).length === 0 ? (
+                  <div style={{ fontSize: '11px', color: '#64748B', fontStyle: 'italic' }}>
+                    No custom hardware specifications added. Click &quot;+ Add Spec Row&quot; to configure.
+                  </div>
+                ) : (
+                  (formData.specs || []).map((spec: any, idx: number) => (
+                    <div key={idx} style={{ display: 'flex', gap: '8px', marginBottom: '8px' }}>
+                      <input
+                        type="text"
+                        placeholder="Label (e.g. Battery System)"
+                        value={spec.label || ''}
+                        onChange={(e) => {
+                          const specs = [...formData.specs];
+                          specs[idx] = { ...specs[idx], label: e.target.value };
+                          setFormData({ ...formData, specs });
+                        }}
+                        style={{ flex: 1, padding: '6px 10px', borderRadius: '4px', backgroundColor: '#07080B', border: '1px solid #232838', color: '#E8EAF0', fontSize: '12px' }}
+                      />
+                      <input
+                        type="text"
+                        placeholder="Value (e.g. 6S 22.2V 10,000mAh LiFePO4)"
+                        value={spec.value || ''}
+                        onChange={(e) => {
+                          const specs = [...formData.specs];
+                          specs[idx] = { ...specs[idx], value: e.target.value };
+                          setFormData({ ...formData, specs });
+                        }}
+                        style={{ flex: 2, padding: '6px 10px', borderRadius: '4px', backgroundColor: '#07080B', border: '1px solid #232838', color: '#E8EAF0', fontSize: '12px' }}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const specs = formData.specs.filter((_: any, i: number) => i !== idx);
+                          setFormData({ ...formData, specs });
+                        }}
+                        style={{ backgroundColor: 'rgba(239, 68, 68, 0.1)', border: '1px solid rgba(239, 68, 68, 0.3)', color: '#EF4444', padding: '0 10px', borderRadius: '4px', cursor: 'pointer' }}
+                      >
+                        ✕
+                      </button>
+                    </div>
+                  ))
+                )}
+              </div>
+
+              {/* Bill of Materials (BOM) Builder */}
+              <div style={{ padding: '14px', backgroundColor: '#0D0F14', border: '1px solid #232838', borderRadius: '8px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
+                  <label style={{ fontSize: '12px', fontWeight: 700, color: '#FF9F1C' }}>
+                    Bill of Materials (BOM) ({Array.isArray(formData.bom) ? formData.bom.length : 0} Components)
+                  </label>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const cur = Array.isArray(formData.bom) ? [...formData.bom] : [];
+                      setFormData({ ...formData, bom: [...cur, { component: '', partNumber: '', function: '' }] });
+                    }}
+                    style={{ backgroundColor: '#1A2338', border: '1px solid #28344D', color: '#FF9F1C', padding: '4px 10px', borderRadius: '4px', fontSize: '11px', cursor: 'pointer', fontWeight: 700 }}
+                  >
+                    + Add Part
+                  </button>
+                </div>
+                {(formData.bom || []).length === 0 ? (
+                  <div style={{ fontSize: '11px', color: '#64748B', fontStyle: 'italic' }}>
+                    No BOM components added. Click &quot;+ Add Part&quot; to list silicon, sensors, and actuators.
+                  </div>
+                ) : (
+                  (formData.bom || []).map((item: any, idx: number) => (
+                    <div key={idx} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr auto', gap: '8px', marginBottom: '8px' }}>
+                      <input
+                        type="text"
+                        placeholder="Component Name"
+                        value={item.component || ''}
+                        onChange={(e) => {
+                          const bom = [...formData.bom];
+                          bom[idx] = { ...bom[idx], component: e.target.value };
+                          setFormData({ ...formData, bom });
+                        }}
+                        style={{ padding: '6px 10px', borderRadius: '4px', backgroundColor: '#07080B', border: '1px solid #232838', color: '#E8EAF0', fontSize: '12px' }}
+                      />
+                      <input
+                        type="text"
+                        placeholder="Part Number"
+                        value={item.partNumber || ''}
+                        onChange={(e) => {
+                          const bom = [...formData.bom];
+                          bom[idx] = { ...bom[idx], partNumber: e.target.value };
+                          setFormData({ ...formData, bom });
+                        }}
+                        style={{ padding: '6px 10px', borderRadius: '4px', backgroundColor: '#07080B', border: '1px solid #232838', color: '#E8EAF0', fontSize: '12px' }}
+                      />
+                      <input
+                        type="text"
+                        placeholder="Function in System"
+                        value={item.function || ''}
+                        onChange={(e) => {
+                          const bom = [...formData.bom];
+                          bom[idx] = { ...bom[idx], function: e.target.value };
+                          setFormData({ ...formData, bom });
+                        }}
+                        style={{ padding: '6px 10px', borderRadius: '4px', backgroundColor: '#07080B', border: '1px solid #232838', color: '#E8EAF0', fontSize: '12px' }}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const bom = formData.bom.filter((_: any, i: number) => i !== idx);
+                          setFormData({ ...formData, bom });
+                        }}
+                        style={{ backgroundColor: 'rgba(239, 68, 68, 0.1)', border: '1px solid rgba(239, 68, 68, 0.3)', color: '#EF4444', padding: '0 10px', borderRadius: '4px', cursor: 'pointer' }}
+                      >
+                        ✕
+                      </button>
+                    </div>
+                  ))
+                )}
+              </div>
             </>
           )}
 
@@ -557,6 +721,17 @@ export function EditModal({
                   style={{ width: '100%', padding: '8px 12px', borderRadius: '6px', backgroundColor: '#07080B', border: '1px solid #232838', color: '#E8EAF0' }}
                 />
               </div>
+              <div>
+                <label style={{ display: 'block', fontSize: '11px', color: '#9AA3B5', marginBottom: '4px' }}>Publication Status *</label>
+                <select
+                  value={formData.status || 'PUBLISHED'}
+                  onChange={(e) => setFormData({ ...formData, status: e.target.value })}
+                  style={{ width: '100%', padding: '8px 12px', borderRadius: '6px', backgroundColor: '#07080B', border: '1px solid #232838', color: '#E8EAF0' }}
+                >
+                  <option value="PUBLISHED">PUBLISHED (Visible on Public Website)</option>
+                  <option value="DRAFT">DRAFT (Hidden from Public Website)</option>
+                </select>
+              </div>
             </>
           )}
 
@@ -620,6 +795,17 @@ export function EditModal({
                   style={{ width: '100%', padding: '8px 12px', borderRadius: '6px', backgroundColor: '#07080B', border: '1px solid #232838', color: '#E8EAF0' }}
                 />
               </div>
+              <div>
+                <label style={{ display: 'block', fontSize: '11px', color: '#9AA3B5', marginBottom: '4px' }}>Publication Status</label>
+                <select
+                  value={formData.status || 'PUBLISHED'}
+                  onChange={(e) => setFormData({ ...formData, status: e.target.value })}
+                  style={{ width: '100%', padding: '8px 12px', borderRadius: '6px', backgroundColor: '#07080B', border: '1px solid #232838', color: '#E8EAF0' }}
+                >
+                  <option value="PUBLISHED">PUBLISHED (Visible)</option>
+                  <option value="DRAFT">DRAFT (Hidden)</option>
+                </select>
+              </div>
             </>
           )}
 
@@ -670,6 +856,17 @@ export function EditModal({
                   onChange={(e) => setFormData({ ...formData, bio: e.target.value })}
                   style={{ width: '100%', padding: '8px 12px', borderRadius: '6px', backgroundColor: '#07080B', border: '1px solid #232838', color: '#E8EAF0' }}
                 />
+              </div>
+              <div>
+                <label style={{ display: 'block', fontSize: '11px', color: '#9AA3B5', marginBottom: '4px' }}>Membership Status</label>
+                <select
+                  value={formData.status || 'PUBLISHED'}
+                  onChange={(e) => setFormData({ ...formData, status: e.target.value })}
+                  style={{ width: '100%', padding: '8px 12px', borderRadius: '6px', backgroundColor: '#07080B', border: '1px solid #232838', color: '#E8EAF0' }}
+                >
+                  <option value="PUBLISHED">PUBLISHED / ACTIVE (Visible on Team Page)</option>
+                  <option value="DRAFT">DRAFT / HIDDEN (Hidden from Public)</option>
+                </select>
               </div>
             </>
           )}
@@ -728,6 +925,17 @@ export function EditModal({
                   onChange={(e) => setFormData({ ...formData, quote: e.target.value })}
                   style={{ width: '100%', padding: '8px 12px', borderRadius: '6px', backgroundColor: '#07080B', border: '1px solid #232838', color: '#E8EAF0' }}
                 />
+              </div>
+              <div>
+                <label style={{ display: 'block', fontSize: '11px', color: '#9AA3B5', marginBottom: '4px' }}>Alumni Profile Visibility</label>
+                <select
+                  value={formData.status || 'PUBLISHED'}
+                  onChange={(e) => setFormData({ ...formData, status: e.target.value })}
+                  style={{ width: '100%', padding: '8px 12px', borderRadius: '6px', backgroundColor: '#07080B', border: '1px solid #232838', color: '#E8EAF0' }}
+                >
+                  <option value="PUBLISHED">PUBLISHED (Visible in Alumni Network)</option>
+                  <option value="DRAFT">DRAFT (Hidden from Public)</option>
+                </select>
               </div>
             </>
           )}

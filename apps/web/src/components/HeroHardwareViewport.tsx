@@ -4,10 +4,28 @@ import { useState } from 'react';
 import dynamic from 'next/dynamic';
 import { Cpu, Zap, Activity, Box, Sparkles } from 'lucide-react';
 
-// Dynamically import ThreeHeroScene only on user demand
+// Dynamically import ThreeHeroScene only on user demand with high-tech HUD skeleton
 const ThreeHeroScene = dynamic(
   () => import('./ThreeHeroScene').then((mod) => mod.ThreeHeroScene),
-  { ssr: false }
+  {
+    ssr: false,
+    loading: () => (
+      <div className="w-full h-full min-h-[320px] flex flex-col items-center justify-center p-6 text-center bg-bg-0/95 font-mono select-none">
+        <div className="relative mb-4">
+          <div className="h-12 w-12 border-2 border-accent/30 border-t-accent rounded-full animate-spin" />
+          <div className="absolute inset-0 flex items-center justify-center text-[10px] text-accent font-bold">
+            3D
+          </div>
+        </div>
+        <div className="text-xs font-bold text-accent-2 tracking-widest uppercase">
+          INITIALIZING WEBGL CORE // TRAIC-H7
+        </div>
+        <div className="text-[10px] text-text-2 mt-1.5 font-mono">
+          Compiling shaders • Binding 480MHz telemetry die
+        </div>
+      </div>
+    ),
+  }
 );
 
 export function HeroHardwareViewport() {
@@ -86,6 +104,13 @@ export function HeroHardwareViewport() {
                 <span className="inline-flex items-center gap-1 rounded bg-bg-0/80 border border-border/60 px-2 py-0.5 text-[8px] sm:text-[9px] font-mono text-text-2 backdrop-blur-md">
                   <span>CAN-FD BUS @ 5 Mbps</span>
                 </span>
+              </div>
+
+              {/* Official TRAIC Emblem Badge */}
+              <div className="absolute top-2.5 right-2.5 sm:top-3 sm:right-3 flex items-center gap-1.5 rounded-lg bg-bg-0/90 border border-accent/40 px-2.5 py-1 backdrop-blur-md shadow-lg pointer-events-none">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src="/traic-logo.png" alt="TRAIC" className="h-5 w-5 object-contain" />
+                <span className="text-[9px] font-mono text-accent font-bold tracking-wider hidden sm:inline">TRAIC EMBLEM</span>
               </div>
 
               <div className="absolute bottom-2.5 right-2.5 sm:bottom-3 sm:right-3 flex items-center gap-1.5 pointer-events-none">

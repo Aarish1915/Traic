@@ -1,19 +1,31 @@
+'use client';
+
 import Link from 'next/link';
-import { Cpu } from 'lucide-react';
+import { ArrowUp } from 'lucide-react';
 import { GithubIcon, LinkedinIcon, InstagramIcon, DiscordIcon } from '@/components/icons';
 
 export function Footer() {
+  const scrollToTop = () => {
+    if (typeof window !== 'undefined') {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  };
+
   return (
     <footer className="border-t border-border bg-bg-1 pt-16 pb-12">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 gap-10 md:grid-cols-4">
           {/* Brand Info */}
           <div className="md:col-span-1">
-            <Link href="/" className="flex items-center gap-2 font-bold tracking-tight">
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg border border-accent/40 bg-accent/10 text-accent">
-                <Cpu className="h-4 w-4" />
+            <Link href="/" className="flex items-center gap-3 font-bold tracking-tight">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-accent/40 bg-surface/80 p-1 shadow-[0_0_15px_rgba(0,229,255,0.25)]">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src="/traic-logo.png" alt="TRAIC Logo" className="h-full w-full object-contain" />
               </div>
-              <span className="text-xl font-black text-text-1">TRAIC</span>
+              <div className="flex flex-col">
+                <span className="text-xl font-black text-text-1">TRAIC</span>
+                <span className="text-[10px] tracking-wider text-text-2 uppercase font-medium">Robotics & AI Club</span>
+              </div>
             </Link>
             <p className="mt-4 text-sm leading-relaxed text-text-2">
               Engineering workshop meets modern product studio. Designing custom PCBs, autonomous robots, and intelligent software systems.
@@ -127,9 +139,20 @@ export function Footer() {
           </div>
         </div>
 
-        <div className="mt-12 border-t border-border pt-8 flex flex-col sm:flex-row items-center justify-between text-xs text-text-2">
+        <div className="mt-12 border-t border-border pt-8 flex flex-col sm:flex-row items-center justify-between text-xs text-text-2 gap-4">
           <p>© {new Date().getFullYear()} TRAIC. All rights reserved.</p>
-          <div className="mt-4 sm:mt-0 flex gap-6">
+
+          {/* Go to Top Button */}
+          <button
+            onClick={scrollToTop}
+            className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg border border-border bg-surface text-text-1 hover:border-accent hover:text-accent transition-all text-xs font-mono font-medium shadow-sm group"
+            aria-label="Scroll back to top of page"
+          >
+            <span>GO TO TOP</span>
+            <ArrowUp className="h-3.5 w-3.5 transition-transform group-hover:-translate-y-0.5 text-accent" />
+          </button>
+
+          <div className="flex gap-6">
             <span>Built by engineers for engineers.</span>
           </div>
         </div>

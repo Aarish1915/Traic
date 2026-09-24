@@ -372,6 +372,37 @@ const initialGallery: GalleryItem[] = [
   },
 ];
 
+const initialApplications: JoinApplication[] = [
+  {
+    id: 'app-11111111-1111-1111-1111-111111111111',
+    fullName: 'Devansh Singhal',
+    email: 'devansh.s@college.edu',
+    phone: '+91 98765 43210',
+    studentId: '2023ECE044',
+    yearOfStudy: 2,
+    branch: 'Electronics & Communication Engineering',
+    interest: 'ROBOTICS_HARDWARE',
+    githubOrPortfolio: 'https://github.com/devansh-s',
+    statementOfPurpose: 'I have designed a 2-wheel self-balancing inverted pendulum robot using MPU6050 and complementary filter during my 1st year summer break. I want to dive deep into ROS2, SLAM algorithms, and high-frequency CAN-FD buses with the TRAIC autonomous rover team. Looking to contribute heavily to mechanical machining and motor driver circuits.',
+    status: 'REVIEWING',
+    createdAt: new Date(Date.now() - 2 * 3600 * 1000).toISOString(),
+  },
+  {
+    id: 'app-22222222-2222-2222-2222-222222222222',
+    fullName: 'Meera Krishnan',
+    email: 'meera.k@college.edu',
+    phone: '+91 98123 45678',
+    studentId: '2024CSE108',
+    yearOfStudy: 1,
+    branch: 'Computer Science & Engineering',
+    interest: 'AI_MACHINE_LEARNING',
+    githubOrPortfolio: 'https://github.com/meera-krishnan',
+    statementOfPurpose: 'Passionate about quantized neural inference on low-power silicon. I have trained custom YOLOv8 models for micro-aerial vehicle target tracking and deployed them on Raspberry Pi using ONNX Runtime. I want to build FPGA/NPU accelerated pipelines for the Edge Neural Accelerator project.',
+    status: 'SHORTLISTED',
+    createdAt: new Date(Date.now() - 26 * 3600 * 1000).toISOString(),
+  },
+];
+
 class DataStore {
   public projects: Project[] = [...initialProjects];
   public achievements: Achievement[] = [...initialAchievements];
@@ -382,18 +413,24 @@ class DataStore {
   public banners: Banner[] = [...initialBanners];
   public gallery: GalleryItem[] = [...initialGallery];
   public settings: SiteSetting = { ...initialSettings };
-  public applications: JoinApplication[] = [];
+  public applications: JoinApplication[] = [...initialApplications];
   public messages: ContactMessage[] = [];
 
   // Projects CRUD
-  getProjects() {
+  getProjects(publishedOnly = false) {
+    if (publishedOnly) {
+      return this.projects.filter((p) => p.status === 'PUBLISHED');
+    }
     return this.projects;
   }
   getProjectById(id: string) {
     return this.projects.find((p) => p.id === id);
   }
-  getProjectBySlug(slug: string) {
-    return this.projects.find((p) => p.slug === slug);
+  getProjectBySlug(slug: string, publishedOnly = false) {
+    const p = this.projects.find((item) => item.slug === slug);
+    if (!p) return null;
+    if (publishedOnly && p.status !== 'PUBLISHED') return null;
+    return p;
   }
   createProject(data: Omit<Project, 'id'>) {
     const newProject: Project = {
@@ -423,14 +460,20 @@ class DataStore {
   }
 
   // Events CRUD
-  getEvents() {
+  getEvents(publishedOnly = false) {
+    if (publishedOnly) {
+      return this.events.filter((e) => e.status === 'PUBLISHED');
+    }
     return this.events;
   }
   getEventById(id: string) {
     return this.events.find((e) => e.id === id);
   }
-  getEventBySlug(slug: string) {
-    return this.events.find((e) => e.slug === slug);
+  getEventBySlug(slug: string, publishedOnly = false) {
+    const e = this.events.find((item) => item.slug === slug);
+    if (!e) return null;
+    if (publishedOnly && e.status !== 'PUBLISHED') return null;
+    return e;
   }
   createEvent(data: Omit<Event, 'id'>) {
     const newEvent: Event = {
@@ -454,7 +497,10 @@ class DataStore {
   }
 
   // Achievements CRUD
-  getAchievements() {
+  getAchievements(publishedOnly = false) {
+    if (publishedOnly) {
+      return this.achievements.filter((a) => (a as any).status !== 'DRAFT');
+    }
     return this.achievements;
   }
   createAchievement(data: Omit<Achievement, 'id'>) {
@@ -479,8 +525,9 @@ class DataStore {
   }
 
   // Members CRUD
-  getMembers() {
-    return this.members;
+  getMembers(activeOnly = false) {
+    const list = activeOnly ? this.members.filter((m) => m.status !== 'DRAFT') : this.members;
+    return [...list].sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
   }
   createMember(data: Omit<Member, 'id'>) {
     const newMember: Member = {
@@ -504,7 +551,10 @@ class DataStore {
   }
 
   // Alumni CRUD
-  getAlumni() {
+  getAlumni(activeOnly = false) {
+    if (activeOnly) {
+      return this.alumni.filter((al) => (al as any).active !== false);
+    }
     return this.alumni;
   }
   createAlumni(data: Omit<Alumni, 'id'>) {
@@ -558,11 +608,25 @@ class DataStore {
     this.applications.unshift(newApp);
     return newApp;
   }
+  updateApplication(id: string, data: Partial<JoinApplication>) {
+    const idx = this.applications.findIndex((a) => a.id === id);
+    if (idx === -1) return null;
+    this.applications[idx] = { ...this.applications[idx], ...data };
+    return this.applications[idx];
+  }
   deleteApplication(id: string) {
     const idx = this.applications.findIndex((a) => a.id === id);
     if (idx === -1) return false;
     this.applications.splice(idx, 1);
     return true;
+  }
+
+  // Tracks
+  getTracks(activeOnly = false) {
+    if (activeOnly) {
+      return this.tracks.filter((t) => (t as any).active !== false);
+    }
+    return this.tracks;
   }
 
   // Banners CRUD
@@ -595,7 +659,10 @@ class DataStore {
   }
 
   // Gallery CRUD
-  getGallery() {
+  getGallery(onlyActive = false) {
+    if (onlyActive) {
+      return this.gallery.filter((g) => (g as any).active !== false);
+    }
     return this.gallery;
   }
   createGalleryItem(data: Omit<GalleryItem, 'id'>) {

@@ -162,18 +162,36 @@ export function ThreeHeroScene() {
         chipMesh.add(pin);
       });
 
-      // 4. Glowing Bus Traces (Gold & Cyan Micro-Traces)
-      const traceGeo = new THREE.PlaneGeometry(3.6, 3.6);
+      // 4. Glowing Bus Traces & Official TRAIC Insignia
+      const traceGeo = new THREE.PlaneGeometry(3.8, 3.8);
       const traceMat = new THREE.MeshBasicMaterial({
-        color: 0x38bdf8,
+        color: 0x00e5ff,
         transparent: true,
-        opacity: 0.85,
+        opacity: 0.65,
         wireframe: true,
       });
       const traces = new THREE.Mesh(traceGeo, traceMat);
       traces.rotation.x = -Math.PI / 2;
-      traces.position.y = 0.54;
+      traces.position.y = 0.53;
       chipMesh.add(traces);
+
+      // Official TRAIC Logo Top Face
+      try {
+        const logoLoader = new THREE.TextureLoader();
+        logoLoader.load('/traic-logo.png', (texture) => {
+          texture.colorSpace = THREE.SRGBColorSpace;
+          const logoGeo = new THREE.PlaneGeometry(3.2, 3.2);
+          const logoMat = new THREE.MeshBasicMaterial({
+            map: texture,
+            transparent: true,
+            opacity: 0.95,
+          });
+          const logoMesh = new THREE.Mesh(logoGeo, logoMat);
+          logoMesh.rotation.x = -Math.PI / 2;
+          logoMesh.position.y = 0.55;
+          chipMesh.add(logoMesh);
+        });
+      } catch (_) {}
 
       // 5. Pulsing Status LEDs on 4 Corners
       const ledColors = [0x22c55e, 0x38bdf8, 0xf59e0b, 0xef4444];

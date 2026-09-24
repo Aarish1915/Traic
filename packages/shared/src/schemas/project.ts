@@ -11,6 +11,19 @@ export const ProjectMemberRoleSchema = z.object({
 });
 export type ProjectMemberRole = z.infer<typeof ProjectMemberRoleSchema>;
 
+export const ProjectBOMItemSchema = z.object({
+  component: z.string().min(1, 'Component required'),
+  partNumber: z.string().min(1, 'Part number required'),
+  function: z.string().min(1, 'Function required'),
+});
+export type ProjectBOMItem = z.infer<typeof ProjectBOMItemSchema>;
+
+export const ProjectSpecItemSchema = z.object({
+  label: z.string().min(1, 'Spec label required'),
+  value: z.string().min(1, 'Spec value required'),
+});
+export type ProjectSpecItem = z.infer<typeof ProjectSpecItemSchema>;
+
 export const ProjectSchema = z.object({
   id: z.string().uuid().optional(),
   slug: z.string().min(3).regex(/^[a-z0-9-]+$/, 'Slug must be lowercase alphanumeric with hyphens'),
@@ -25,9 +38,12 @@ export const ProjectSchema = z.object({
   featured: z.boolean().default(false),
   posterAssetUrl: z.string().optional().nullable().or(z.literal('')),
   model3dAssetUrl: z.string().optional().nullable().or(z.literal('')),
+  specs: z.array(ProjectSpecItemSchema).optional(),
+  bom: z.array(ProjectBOMItemSchema).optional(),
   team: z.array(ProjectMemberRoleSchema).default([]),
   status: ContentStatusSchema.default('DRAFT'),
   createdAt: z.string().datetime().optional(),
   updatedAt: z.string().datetime().optional(),
 });
 export type Project = z.infer<typeof ProjectSchema>;
+

@@ -3,10 +3,11 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Cpu, Menu, X, ArrowUpRight } from 'lucide-react';
+import { Menu, X, ArrowUpRight } from 'lucide-react';
 import { ThemeToggle } from './ThemeToggle';
 
 const NAV_ITEMS = [
+  { label: 'Home', href: '/' },
   { label: 'Projects', href: '/projects' },
   { label: 'Achievements', href: '/achievements' },
   { label: 'Gallery', href: '/gallery' },
@@ -23,13 +24,19 @@ export function Navbar() {
     <header className="sticky top-0 z-50 w-full border-b border-border/80 bg-bg-0/80 backdrop-blur-md">
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
         {/* Brand */}
-        <Link href="/" className="flex items-center gap-2.5 font-bold tracking-tight">
-          <div className="flex h-9 w-9 items-center justify-center rounded-lg border border-accent/40 bg-accent/10 text-accent shadow-sm">
-            <Cpu className="h-5 w-5" />
+        <Link href="/" className="flex items-center gap-3 font-bold tracking-tight group">
+          <div className="relative flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-accent/40 bg-surface/80 p-1 shadow-[0_0_15px_rgba(0,229,255,0.25)] transition-all group-hover:shadow-[0_0_22px_rgba(0,229,255,0.45)] group-hover:border-accent">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/traic-logo.png" alt="TRAIC Official Logo" className="h-full w-full object-contain" />
           </div>
           <div className="flex flex-col">
-            <span className="text-lg font-black tracking-wider text-text-1">TRAIC</span>
-            <span className="hidden text-[10px] tracking-widest text-text-2 uppercase sm:inline-block">Robotics & AI Club</span>
+            <div className="flex items-center gap-1.5">
+              <span className="text-lg sm:text-xl font-black tracking-wider text-text-1 group-hover:text-accent transition-colors">TRAIC</span>
+              <span className="h-1.5 w-1.5 rounded-full bg-accent animate-pulse" />
+            </div>
+            <span className="text-[8px] sm:text-[9px] tracking-wider sm:tracking-widest text-accent font-mono uppercase block leading-tight">
+              HONOR • HONESTY • SACRIFICE
+            </span>
           </div>
         </Link>
 
@@ -43,8 +50,8 @@ export function Navbar() {
                 href={item.href}
                 className={`rounded-md px-3.5 py-1.5 text-sm font-medium transition-colors ${
                   isActive
-                    ? 'bg-surface text-accent-2 border border-border'
-                    : 'text-text-2 hover:bg-surface/60 hover:text-text-1'
+                    ? 'text-accent font-semibold'
+                    : 'text-text-2 hover:text-text-1'
                 }`}
               >
                 {item.label}
@@ -87,23 +94,19 @@ export function Navbar() {
                 key={item.href}
                 href={item.href}
                 onClick={() => setIsOpen(false)}
-                className={`rounded-md px-3 py-2 text-sm font-medium ${
+                className={`rounded-md px-3 py-2 text-sm font-medium transition-colors ${
                   pathname === item.href
-                    ? 'bg-surface text-accent-2 font-semibold'
+                    ? 'text-accent bg-accent/10 font-semibold'
                     : 'text-text-2 hover:bg-surface hover:text-text-1'
                 }`}
               >
                 {item.label}
               </Link>
             ))}
-            <div className="flex items-center justify-between border-t border-border/80 pt-3 mt-2 px-1">
-              <span className="text-xs font-mono text-text-2">THEME PREFERENCE:</span>
-              <ThemeToggle />
-            </div>
             <Link
               href="/join"
               onClick={() => setIsOpen(false)}
-              className="mt-2 flex items-center justify-center gap-2 rounded-lg bg-accent px-4 py-2.5 text-sm font-semibold text-bg-0"
+              className="mt-3 flex items-center justify-center gap-2 rounded-lg bg-accent px-4 py-2.5 text-sm font-semibold text-bg-0"
             >
               <span>Join TRAIC</span>
               <ArrowUpRight className="h-4 w-4" />

@@ -47,6 +47,10 @@ adminRouter.get('/admin/stats', (_req, res) => {
 });
 
 // PROJECTS CRUD
+adminRouter.get('/admin/projects', (_req, res) => {
+  res.json({ success: true, data: store.getProjects(false) });
+});
+
 adminRouter.post('/admin/projects', (req, res, next) => {
   const parsed = ProjectSchema.omit({ id: true, createdAt: true, updatedAt: true }).safeParse(req.body);
   if (!parsed.success) {
@@ -76,6 +80,10 @@ adminRouter.delete('/admin/projects/:id', (req, res, next) => {
 });
 
 // EVENTS CRUD
+adminRouter.get('/admin/events', (_req, res) => {
+  res.json({ success: true, data: store.getEvents(false) });
+});
+
 adminRouter.post('/admin/events', (req, res, next) => {
   const parsed = EventSchema.omit({ id: true }).safeParse(req.body);
   if (!parsed.success) {
@@ -105,6 +113,10 @@ adminRouter.delete('/admin/events/:id', (req, res, next) => {
 });
 
 // ACHIEVEMENTS CRUD
+adminRouter.get('/admin/achievements', (_req, res) => {
+  res.json({ success: true, data: store.getAchievements(false) });
+});
+
 adminRouter.post('/admin/achievements', (req, res, next) => {
   const parsed = AchievementSchema.omit({ id: true }).safeParse(req.body);
   if (!parsed.success) {
@@ -134,6 +146,10 @@ adminRouter.delete('/admin/achievements/:id', (req, res, next) => {
 });
 
 // MEMBERS CRUD
+adminRouter.get('/admin/members', (_req, res) => {
+  res.json({ success: true, data: store.getMembers(false) });
+});
+
 adminRouter.post('/admin/members', (req, res, next) => {
   const parsed = MemberSchema.omit({ id: true }).safeParse(req.body);
   if (!parsed.success) {
@@ -163,6 +179,10 @@ adminRouter.delete('/admin/members/:id', (req, res, next) => {
 });
 
 // ALUMNI CRUD
+adminRouter.get('/admin/alumni', (_req, res) => {
+  res.json({ success: true, data: store.getAlumni(false) });
+});
+
 adminRouter.post('/admin/alumni', (req, res, next) => {
   const parsed = AlumniSchema.omit({ id: true }).safeParse(req.body);
   if (!parsed.success) {
@@ -191,7 +211,16 @@ adminRouter.delete('/admin/alumni/:id', (req, res, next) => {
   res.json({ success: true, message: 'Alumni removed successfully' });
 });
 
+// TRACKS (Curriculum)
+adminRouter.get('/admin/tracks', (_req, res) => {
+  res.json({ success: true, data: store.getTracks(false) });
+});
+
 // SETTINGS (announcements, stats, headlines)
+adminRouter.get('/admin/settings', (_req, res) => {
+  res.json({ success: true, data: store.getSettings() });
+});
+
 adminRouter.put('/admin/settings', (req, res, next) => {
   const parsed = SiteSettingSchema.partial().safeParse(req.body);
   if (!parsed.success) {
@@ -205,6 +234,15 @@ adminRouter.put('/admin/settings', (req, res, next) => {
 // APPLICATIONS REVIEW
 adminRouter.get('/admin/applications', (_req, res) => {
   res.json({ success: true, data: store.getApplications() });
+});
+
+adminRouter.put('/admin/applications/:id', (req, res, next) => {
+  const updated = store.updateApplication(req.params.id, req.body);
+  if (!updated) {
+    return next(new NotFoundError(`Application ${req.params.id} not found`));
+  }
+  logger.info({ applicationId: updated.id, status: updated.status }, 'Admin updated application');
+  res.json({ success: true, data: updated });
 });
 
 adminRouter.delete('/admin/applications/:id', (req, res, next) => {

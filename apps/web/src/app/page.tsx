@@ -9,7 +9,6 @@ import {
   Calendar,
   Layers,
   ChevronRight,
-  Activity,
   Wrench,
   GraduationCap,
   Box,
@@ -158,18 +157,23 @@ export default function HomePage() {
     modelUrl?: string;
   } | null>(null);
 
+  const [heroHeadline, setHeroHeadline] = useState('Where Physical Hardware Meets Intelligent Code');
+  const [heroSubheadline, setHeroSubheadline] = useState('We are TRAIC — an engineering collective building autonomous robotics, custom 4-layer PCBs, and edge AI systems that solve real-world problems and win national championships like SIH and Robocon.');
+
   useEffect(() => {
     const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
 
     fetch(`${API_BASE}/public/settings`)
       .then((res) => res.json())
       .then((res) => {
+        if (res.data?.heroHeadline) setHeroHeadline(res.data.heroHeadline);
+        if (res.data?.heroSubheadline) setHeroSubheadline(res.data.heroSubheadline);
         if (res.data?.stats) {
           setStats([
             { value: `${res.data.stats.yearsActive ?? '5'}+`, label: 'Years of Engineering' },
-            { value: `${res.data.stats.projectsCount ?? '42'}+`, label: 'Hardware & AI Projects' },
-            { value: `${res.data.stats.awardsCount ?? '28'}+`, label: 'National Awards Won' },
-            { value: `${res.data.stats.buildersCount ?? '95'}+`, label: 'Active Student Builders' },
+            { value: `${res.data.stats.projectsBuilt ?? res.data.stats.projectsCount ?? '42'}+`, label: 'Hardware & AI Projects' },
+            { value: `${res.data.stats.awardsWon ?? res.data.stats.awardsCount ?? '28'}+`, label: 'National Awards Won' },
+            { value: `${res.data.stats.activeMembers ?? res.data.stats.buildersCount ?? '95'}+`, label: 'Active Student Builders' },
           ]);
         }
       })
@@ -254,33 +258,24 @@ export default function HomePage() {
       )}
 
       {/* HERO SECTION WITH DEDICATED 3D STAGE & ZERO TEXT OVERLAP */}
-      <section className="relative overflow-hidden pt-12 pb-20 md:pt-16 md:pb-28 circuit-pattern">
+      <section className="relative overflow-hidden pt-6 pb-12 sm:pt-8 sm:pb-16 md:pt-10 md:pb-20 circuit-pattern">
         {/* Subtle Ambient Glows */}
         <div className="absolute top-1/4 left-1/4 w-[500px] h-[300px] bg-accent/8 blur-[140px] pointer-events-none rounded-full" />
         <div className="absolute top-1/2 right-1/4 w-[400px] h-[250px] bg-accent-2/8 blur-[140px] pointer-events-none rounded-full" />
 
         <div className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-8 items-center">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-8 items-center">
             {/* Left Column: Typography, Badges, CTAs, Live Hardware Terminal */}
             <div className="lg:col-span-7 flex flex-col justify-center">
               <AnimeGlowHero>
-                {/* Badge */}
-                <div className="anime-reveal inline-flex items-center gap-2 rounded-full border border-border bg-surface/80 px-4 py-1.5 text-xs font-mono font-medium text-accent-2 backdrop-blur-sm shadow-sm mb-6">
-                  <span className="flex h-2 w-2 rounded-full bg-accent animate-pulse" />
-                  <span>COLLEGE HARDWARE & SOFTWARE COLLECTIVE // EST. 5+ YEARS</span>
-                </div>
-
                 {/* Main Title */}
                 <h1 className="anime-reveal text-3xl sm:text-5xl lg:text-6xl font-black tracking-tight text-text-1 leading-[1.1]">
-                  Where Physical Hardware Meets{' '}
-                  <span className="text-transparent bg-clip-text bg-gradient-to-r from-accent via-amber-300 to-accent-2">
-                    Intelligent Code
-                  </span>
+                  {heroHeadline}
                 </h1>
 
                 {/* Subtitle */}
                 <p className="anime-reveal mt-5 text-base sm:text-lg text-text-2 leading-relaxed max-w-2xl">
-                  We are TRAIC — an engineering collective building autonomous robotics, custom 4-layer PCBs, and edge AI systems that solve real-world problems and win national championships like SIH and Robocon.
+                  {heroSubheadline}
                 </p>
 
                 {/* Action CTAs */}
@@ -301,26 +296,6 @@ export default function HomePage() {
                   </Link>
                 </div>
 
-                {/* Interactive hardware console snippet */}
-                <div className="anime-reveal mt-8 rounded-xl border border-border bg-bg-1/90 p-4 text-left font-mono text-xs shadow-2xl backdrop-blur-md">
-                  <div className="flex items-center justify-between border-b border-border/80 pb-2.5 mb-2.5">
-                    <div className="flex items-center gap-2">
-                      <span className="h-2.5 w-2.5 rounded-full bg-danger/80" />
-                      <span className="h-2.5 w-2.5 rounded-full bg-accent/80" />
-                      <span className="h-2.5 w-2.5 rounded-full bg-success/80" />
-                      <span className="ml-2 text-text-2">traic-core-v2 // telemetry_stream</span>
-                    </div>
-                    <div className="flex items-center gap-1.5 text-success text-[11px]">
-                      <Activity className="h-3 w-3 animate-pulse" />
-                      <span>ALL NODES NOMINAL</span>
-                    </div>
-                  </div>
-                  <div className="space-y-1 text-text-2">
-                    <p><span className="text-accent-2">[INIT]</span> ROS2 Humble micro-agent active on STM32H7 dual-core target.</p>
-                    <p><span className="text-success">[OK]</span> CAN-FD bus synchronized @ 5 Mbps. 4/4 Motor Controllers acked.</p>
-                    <p className="text-text-1 font-semibold"><span className="text-accent-2">[TRAIC]</span> Ready to build. 0 compiler errors. 0 design rule violations.</p>
-                  </div>
-                </div>
               </AnimeGlowHero>
             </div>
 

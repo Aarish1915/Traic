@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import {
-  Cpu,
   Layers,
   Trophy,
   Calendar,
@@ -76,24 +75,25 @@ export function Sidebar({ activeTab, setActiveTab, counts, loading, onSync, onLo
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
             <div
               style={{
-                width: '38px',
-                height: '38px',
-                backgroundColor: 'rgba(255, 159, 28, 0.15)',
-                border: '1px solid rgba(255, 159, 28, 0.4)',
-                borderRadius: '8px',
+                width: '42px',
+                height: '42px',
+                backgroundColor: 'rgba(0, 229, 255, 0.12)',
+                border: '1px solid rgba(0, 229, 255, 0.45)',
+                borderRadius: '10px',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                color: '#FF9F1C',
                 flexShrink: 0,
+                padding: '4px',
+                boxShadow: '0 0 16px rgba(0, 229, 255, 0.25)',
               }}
             >
-              <Cpu size={22} />
+              <img src="/traic-logo.png" alt="TRAIC Logo" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
             </div>
             <div>
-              <div style={{ fontWeight: 900, fontSize: '16px', letterSpacing: '0.5px' }}>TRAIC STUDIO</div>
-              <div style={{ fontSize: '10px', color: '#9AA3B5', textTransform: 'uppercase', letterSpacing: '1px' }}>
-                Coordinator Console
+              <div style={{ fontWeight: 900, fontSize: '15px', letterSpacing: '0.5px', color: '#F1F5F9' }}>TRAIC STUDIO</div>
+              <div style={{ fontSize: '9px', color: '#00E5FF', fontFamily: 'monospace', letterSpacing: '0.8px', textTransform: 'uppercase' }}>
+                COORDINATOR CONSOLE
               </div>
             </div>
           </div>

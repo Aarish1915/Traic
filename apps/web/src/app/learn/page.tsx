@@ -1,7 +1,19 @@
+'use client';
+
+import { useState, useEffect } from 'react';
 import { BookOpen, CheckCircle, Wrench, ArrowRight } from 'lucide-react';
 import Link from 'next/link';
 
-const TRACKS = [
+interface TrackItem {
+  id?: string;
+  level: string;
+  title: string;
+  summary: string;
+  tools: string[];
+  outcomes: string[];
+}
+
+const DEFAULT_TRACKS: TrackItem[] = [
   {
     level: 'FOUNDATION',
     title: 'Robotics & Hardware Systems',
@@ -38,6 +50,30 @@ const TRACKS = [
 ];
 
 export default function LearnPage() {
+  const [tracks, setTracks] = useState<TrackItem[]>(DEFAULT_TRACKS);
+
+  useEffect(() => {
+    const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
+    fetch(`${API_BASE}/public/tracks`)
+      .then((res) => (res.ok ? res.json() : null))
+      .then((res) => {
+        if (res && res.data && Array.isArray(res.data) && res.data.length > 0) {
+          setTracks(
+            res.data.map((t: any) => ({
+              id: t.id,
+              level: t.level || 'CORE',
+              title: t.title || 'Engineering Track',
+              summary: t.summary || '',
+              tools: Array.isArray(t.tools) ? t.tools : [],
+              outcomes: Array.isArray(t.outcomes) ? t.outcomes : [],
+            }))
+          );
+        }
+      })
+      .catch((err) => {
+        console.warn('Failed to load dynamic tracks, falling back to default curriculum:', err);
+      });
+  }, []);
   return (
     <div className="min-h-screen bg-bg-0 py-16">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
@@ -57,7 +93,7 @@ export default function LearnPage() {
 
         {/* Tracks */}
         <div className="space-y-8">
-          {TRACKS.map((track) => (
+          {tracks.map((track) => (
             <div
               key={track.title}
               className="rounded-2xl border border-border bg-surface/70 p-8 shadow-sm transition-all hover:border-accent-2/40"

@@ -55,6 +55,7 @@ const PAST_EVENTS = [
 
 export default function EventsPage() {
   const [upcomingEvents, setUpcomingEvents] = useState(UPCOMING_EVENTS);
+  const [pastEvents, setPastEvents] = useState(PAST_EVENTS);
 
   useEffect(() => {
     const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
@@ -62,19 +63,37 @@ export default function EventsPage() {
       .then((res) => res.json())
       .then((res) => {
         if (res.data && res.data.length > 0) {
-          setUpcomingEvents(
-            res.data.map((e: any) => ({
-              slug: e.slug,
-              title: e.title,
-              type: e.type || 'Technical Event',
-              startsAt: e.startsAt ? new Date(e.startsAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'Upcoming',
-              venue: e.venue || 'TRAIC Maker Space',
-              mode: e.mode || 'OFFLINE',
-              tagline: e.tagline || e.descriptionMd,
-              tracks: e.tracks || ['Robotics', 'Embedded', 'AI'],
-              registrationOpen: e.registrationOpen !== false,
-            }))
-          );
+          const now = new Date();
+          const upcoming = res.data.filter((e: any) => !e.startsAt || new Date(e.startsAt) >= now);
+          const past = res.data.filter((e: any) => e.startsAt && new Date(e.startsAt) < now);
+
+          if (upcoming.length > 0) {
+            setUpcomingEvents(
+              upcoming.map((e: any) => ({
+                slug: e.slug,
+                title: e.title,
+                type: e.type || 'Technical Event',
+                startsAt: e.startsAt ? new Date(e.startsAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'Upcoming',
+                venue: e.venue || 'TRAIC Maker Space',
+                mode: e.mode || 'OFFLINE',
+                tagline: e.tagline || e.descriptionMd,
+                tracks: e.tracks || ['Robotics', 'Embedded', 'AI'],
+                registrationOpen: e.registrationOpen !== false,
+              }))
+            );
+          }
+
+          if (past.length > 0) {
+            setPastEvents(
+              past.map((e: any) => ({
+                title: e.title,
+                date: e.startsAt ? new Date(e.startsAt).toLocaleDateString('en-US', { month: 'short', year: 'numeric' }) : 'Archive',
+                venue: e.venue || 'TRAIC Lab',
+                attendees: e.attendees || 'Club & Community',
+                outcome: e.tagline || e.descriptionMd,
+              }))
+            );
+          }
         }
       })
       .catch(() => {});
@@ -180,7 +199,7 @@ export default function EventsPage() {
             Past Events Archive
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {PAST_EVENTS.map((item) => (
+            {pastEvents.map((item) => (
               <div
                 key={item.title}
                 className="rounded-xl border border-border bg-surface/50 p-6"

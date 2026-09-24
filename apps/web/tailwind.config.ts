@@ -20,11 +20,13 @@ const config: Config = {
         accent: {
           DEFAULT: 'rgb(var(--accent) / <alpha-value>)',
           hover: 'rgb(var(--accent-hover) / <alpha-value>)',
+          fg: 'rgb(var(--accent-fg) / <alpha-value>)',
           glow: 'rgba(var(--accent) / 0.15)',
         },
         'accent-2': {
           DEFAULT: 'rgb(var(--accent-2) / <alpha-value>)',
           hover: 'rgb(var(--accent-2-hover) / <alpha-value>)',
+          fg: 'rgb(var(--accent-2-fg) / <alpha-value>)',
           glow: 'rgba(var(--accent-2) / 0.15)',
         },
         success: '#34D399',

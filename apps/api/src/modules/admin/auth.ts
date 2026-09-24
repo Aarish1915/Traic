@@ -214,9 +214,18 @@ export function requireAdminAuth(req: Request, res: Response, next: NextFunction
 const publicSubmissionTracker = new Map<string, { count: number; resetAt: number }>();
 export function publicFormRateLimiter(req: Request, res: Response, next: NextFunction): void {
   const ip = getClientIp(req);
+
+  // Honeypot check for bots: reject if hidden bot trap field is populated
+  if (req.body && req.body._traic_hp_trap) {
+    logger.warn({ ip }, 'Bot trap triggered: automated spam submission blocked');
+    // Silently return 200 OK so bots think they succeeded without writing anything to DB
+    res.status(200).json({ success: true, message: 'Application received' });
+    return;
+  }
+
   const now = Date.now();
   const windowMs = 60 * 60 * 1000; // 1 hour window
-  const maxSubmissions = 10;
+  const maxSubmissions = env.NODE_ENV === 'production' ? 10 : 100;
 
   const entry = publicSubmissionTracker.get(ip) || { count: 0, resetAt: now + windowMs };
 
@@ -234,14 +243,6 @@ export function publicFormRateLimiter(req: Request, res: Response, next: NextFun
       success: false,
       error: 'Too many submissions from this connection. Please try again later.',
     });
-    return;
-  }
-
-  // Honeypot check for bots: reject if hidden bot trap field is populated
-  if (req.body && req.body._traic_hp_trap) {
-    logger.warn({ ip }, 'Bot trap triggered: automated spam submission blocked');
-    // Silently return 200 OK so bots think they succeeded without writing anything to DB
-    res.status(200).json({ success: true, message: 'Received' });
     return;
   }
 
