@@ -1,4 +1,41 @@
+import fs from 'node:fs';
+import path from 'node:path';
 import { z } from 'zod';
+
+function loadDotenv() {
+  const possiblePaths = [
+    path.resolve(process.cwd(), '.env'),
+    path.resolve(process.cwd(), '..', '.env'),
+    path.resolve(process.cwd(), '../..', '.env'),
+    path.resolve(process.cwd(), 'apps/api/.env'),
+  ];
+  for (const envPath of possiblePaths) {
+    if (fs.existsSync(envPath)) {
+      try {
+        const content = fs.readFileSync(envPath, 'utf-8');
+        for (const line of content.split('\n')) {
+          const trimmed = line.trim();
+          if (!trimmed || trimmed.startsWith('#')) continue;
+          const eqIdx = trimmed.indexOf('=');
+          if (eqIdx !== -1) {
+            const key = trimmed.slice(0, eqIdx).trim();
+            const val = trimmed.slice(eqIdx + 1).trim().replace(/^["']|["']$/g, '');
+            if (!(key in process.env)) {
+              process.env[key] = val;
+            }
+          }
+        }
+      } catch (_) {}
+    }
+  }
+}
+
+loadDotenv();
+
+// Support common aliases from Neon Console (e.g. neondb=...)
+if (!process.env.DATABASE_URL && (process.env.neondb || process.env.NEON_DATABASE_URL)) {
+  process.env.DATABASE_URL = process.env.neondb || process.env.NEON_DATABASE_URL;
+}
 
 const EnvSchema = z.object({
   NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
@@ -21,3 +58,4 @@ export function loadEnv(): Env {
 }
 
 export const env = loadEnv();
+

@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "tsx watch src/server.ts",
-    "build": "esbuild src/server.ts --bundle --platform=node --target=node22 --format=esm --outfile=dist/server.js --external:express --external:cors --external:helmet --external:zod --external:pino --external:pino-pretty --external:cookie-parser",
+    "build": "esbuild src/server.ts --bundle --platform=node --target=node22 --format=esm --outfile=dist/server.js --external:express --external:cors --external:helmet --external:zod --external:pino --external:pino-pretty --external:cookie-parser --external:pg",
     "start": "node dist/server.js",
     "typecheck": "tsc --noEmit",
     "lint": "echo \"API linted\""
@@ -16,6 +16,7 @@
     "cors": "^2.8.5",
     "express": "^5.0.1",
     "helmet": "^8.0.0",
+    "pg": "^8.23.0",
     "pino": "^9.6.0",
     "pino-pretty": "^13.0.0",
     "zod": "^3.24.2"
@@ -26,6 +27,7 @@
     "@types/cors": "^2.8.17",
     "@types/express": "^5.0.0",
     "@types/node": "^22.13.9",
+    "@types/pg": "^8.23.1",
     "esbuild": "^0.28.2",
     "tsx": "^4.19.3",
     "typescript": "^5.8.2"

@@ -14,6 +14,7 @@ import type {
 import crypto from 'node:crypto';
 import fs from 'node:fs';
 import path from 'node:path';
+import { db } from '../db/postgres';
 
 // Initial seed states
 const initialProjects: Project[] = [
@@ -429,6 +430,7 @@ class DataStore {
     }
     this.dbFilePath = path.join(dataDir, 'traic_store.json');
     this.load();
+    this.initPostgresSync();
   }
 
   private load(): void {
@@ -452,6 +454,68 @@ class DataStore {
       }
     } catch (e) {
       console.warn('DataStore: Could not load persistence file, using seed memory:', e);
+    }
+  }
+
+  private async initPostgresSync(): Promise<void> {
+    try {
+      const connected = await db.init();
+      if (!connected) return;
+
+      const projectCount = await db.count('projects');
+      if (projectCount === 0) {
+        // Initial migration of current memory/file data to Neon PostgreSQL
+        for (const p of this.projects) await db.upsert('projects', p.id, p);
+        for (const e of this.events) await db.upsert('events', e.id, e);
+        for (const a of this.achievements) await db.upsert('achievements', a.id, a);
+        for (const m of this.members) await db.upsert('members', m.id, m);
+        for (const al of this.alumni) await db.upsert('alumni', al.id, al);
+        for (const t of this.tracks) await db.upsert('tracks', t.id, t);
+        for (const b of this.banners) await db.upsert('banners', b.id, b);
+        for (const g of this.gallery) await db.upsert('gallery', g.id, g);
+        await db.upsert('settings', 'default', this.settings);
+        for (const ap of this.applications) await db.upsert('applications', ap.id, ap);
+      } else {
+        // Hydrate in-memory store from remote PostgreSQL
+        const [
+          remoteProjects,
+          remoteEvents,
+          remoteAch,
+          remoteMem,
+          remoteAlumni,
+          remoteTracks,
+          remoteBanners,
+          remoteGallery,
+          remoteSettings,
+          remoteApps,
+        ] = await Promise.all([
+          db.loadAll<Project>('projects'),
+          db.loadAll<Event>('events'),
+          db.loadAll<Achievement>('achievements'),
+          db.loadAll<Member>('members'),
+          db.loadAll<Alumni>('alumni'),
+          db.loadAll<Track>('tracks'),
+          db.loadAll<Banner>('banners'),
+          db.loadAll<GalleryItem>('gallery'),
+          db.loadAll<SiteSetting>('settings'),
+          db.loadAll<JoinApplication>('applications'),
+        ]);
+
+        if (remoteProjects.length > 0) this.projects = remoteProjects;
+        if (remoteEvents.length > 0) this.events = remoteEvents;
+        if (remoteAch.length > 0) this.achievements = remoteAch;
+        if (remoteMem.length > 0) this.members = remoteMem;
+        if (remoteAlumni.length > 0) this.alumni = remoteAlumni;
+        if (remoteTracks.length > 0) this.tracks = remoteTracks;
+        if (remoteBanners.length > 0) this.banners = remoteBanners;
+        if (remoteGallery.length > 0) this.gallery = remoteGallery;
+        if (remoteSettings.length > 0 && remoteSettings[0]) this.settings = remoteSettings[0];
+        if (remoteApps.length > 0) this.applications = remoteApps;
+
+        this.persist();
+      }
+    } catch (err) {
+      console.warn('DataStore: Remote PostgreSQL sync error:', err);
     }
   }
 
@@ -503,6 +567,7 @@ class DataStore {
     };
     this.projects.unshift(newProject);
     this.persist();
+    db.upsert('projects', newProject.id, newProject);
     return newProject;
   }
   updateProject(id: string, data: Partial<Project>) {
@@ -514,13 +579,16 @@ class DataStore {
       updatedAt: new Date().toISOString(),
     };
     this.persist();
+    db.upsert('projects', this.projects[idx].id, this.projects[idx]);
     return this.projects[idx];
   }
   deleteProject(id: string) {
     const idx = this.projects.findIndex((p) => p.id === id);
     if (idx === -1) return false;
+    const target = this.projects[idx];
     this.projects.splice(idx, 1);
     this.persist();
+    db.delete('projects', target.id);
     return true;
   }
 
@@ -547,6 +615,7 @@ class DataStore {
     };
     this.events.unshift(newEvent);
     this.persist();
+    db.upsert('events', newEvent.id, newEvent);
     return newEvent;
   }
   updateEvent(id: string, data: Partial<Event>) {
@@ -554,13 +623,16 @@ class DataStore {
     if (idx === -1) return null;
     this.events[idx] = { ...this.events[idx], ...data };
     this.persist();
+    db.upsert('events', this.events[idx].id, this.events[idx]);
     return this.events[idx];
   }
   deleteEvent(id: string) {
     const idx = this.events.findIndex((e) => e.id === id);
     if (idx === -1) return false;
+    const target = this.events[idx];
     this.events.splice(idx, 1);
     this.persist();
+    db.delete('events', target.id);
     return true;
   }
 
@@ -578,6 +650,7 @@ class DataStore {
     };
     this.achievements.unshift(newAch);
     this.persist();
+    db.upsert('achievements', newAch.id, newAch);
     return newAch;
   }
   updateAchievement(id: string, data: Partial<Achievement>) {
@@ -585,13 +658,16 @@ class DataStore {
     if (idx === -1) return null;
     this.achievements[idx] = { ...this.achievements[idx], ...data };
     this.persist();
+    db.upsert('achievements', this.achievements[idx].id, this.achievements[idx]);
     return this.achievements[idx];
   }
   deleteAchievement(id: string) {
     const idx = this.achievements.findIndex((a) => a.id === id);
     if (idx === -1) return false;
+    const target = this.achievements[idx];
     this.achievements.splice(idx, 1);
     this.persist();
+    db.delete('achievements', target.id);
     return true;
   }
 
@@ -607,6 +683,7 @@ class DataStore {
     };
     this.members.push(newMember);
     this.persist();
+    db.upsert('members', newMember.id, newMember);
     return newMember;
   }
   updateMember(id: string, data: Partial<Member>) {
@@ -614,13 +691,16 @@ class DataStore {
     if (idx === -1) return null;
     this.members[idx] = { ...this.members[idx], ...data };
     this.persist();
+    db.upsert('members', this.members[idx].id, this.members[idx]);
     return this.members[idx];
   }
   deleteMember(id: string) {
     const idx = this.members.findIndex((m) => m.id === id);
     if (idx === -1) return false;
+    const target = this.members[idx];
     this.members.splice(idx, 1);
     this.persist();
+    db.delete('members', target.id);
     return true;
   }
 
@@ -638,6 +718,7 @@ class DataStore {
     };
     this.alumni.unshift(newAlumni);
     this.persist();
+    db.upsert('alumni', newAlumni.id, newAlumni);
     return newAlumni;
   }
   updateAlumni(id: string, data: Partial<Alumni>) {
@@ -645,13 +726,16 @@ class DataStore {
     if (idx === -1) return null;
     this.alumni[idx] = { ...this.alumni[idx], ...data };
     this.persist();
+    db.upsert('alumni', this.alumni[idx].id, this.alumni[idx]);
     return this.alumni[idx];
   }
   deleteAlumni(id: string) {
     const idx = this.alumni.findIndex((al) => al.id === id);
     if (idx === -1) return false;
+    const target = this.alumni[idx];
     this.alumni.splice(idx, 1);
     this.persist();
+    db.delete('alumni', target.id);
     return true;
   }
 
@@ -670,6 +754,7 @@ class DataStore {
       socials: data.socials ? { ...this.settings.socials, ...data.socials } : this.settings.socials,
     };
     this.persist();
+    db.upsert('settings', 'default', this.settings);
     return this.settings;
   }
 
@@ -685,6 +770,7 @@ class DataStore {
     };
     this.applications.unshift(newApp);
     this.persist();
+    db.upsert('applications', newApp.id, newApp);
     return newApp;
   }
   updateApplication(id: string, data: Partial<JoinApplication>) {
@@ -692,13 +778,16 @@ class DataStore {
     if (idx === -1) return null;
     this.applications[idx] = { ...this.applications[idx], ...data };
     this.persist();
+    db.upsert('applications', this.applications[idx].id, this.applications[idx]);
     return this.applications[idx];
   }
   deleteApplication(id: string) {
     const idx = this.applications.findIndex((a) => a.id === id);
     if (idx === -1) return false;
+    const target = this.applications[idx];
     this.applications.splice(idx, 1);
     this.persist();
+    db.delete('applications', target.id);
     return true;
   }
 
@@ -708,6 +797,33 @@ class DataStore {
       return this.tracks.filter((t) => (t as any).active !== false);
     }
     return this.tracks;
+  }
+  createTrack(data: Omit<Track, 'id'>) {
+    const newTrack: Track = {
+      ...data,
+      id: crypto.randomUUID(),
+    };
+    this.tracks.push(newTrack);
+    this.persist();
+    db.upsert('tracks', newTrack.id, newTrack);
+    return newTrack;
+  }
+  updateTrack(id: string, data: Partial<Track>) {
+    const idx = this.tracks.findIndex((t) => t.id === id);
+    if (idx === -1) return null;
+    this.tracks[idx] = { ...this.tracks[idx], ...data };
+    this.persist();
+    db.upsert('tracks', this.tracks[idx].id, this.tracks[idx]);
+    return this.tracks[idx];
+  }
+  deleteTrack(id: string) {
+    const idx = this.tracks.findIndex((t) => t.id === id);
+    if (idx === -1) return false;
+    const target = this.tracks[idx];
+    this.tracks.splice(idx, 1);
+    this.persist();
+    db.delete('tracks', target.id);
+    return true;
   }
 
   // Banners CRUD
@@ -725,6 +841,7 @@ class DataStore {
     };
     this.banners.unshift(newBanner);
     this.persist();
+    db.upsert('banners', newBanner.id, newBanner);
     return newBanner;
   }
   updateBanner(id: string, data: Partial<Banner>) {
@@ -732,13 +849,16 @@ class DataStore {
     if (idx === -1) return null;
     this.banners[idx] = { ...this.banners[idx], ...data };
     this.persist();
+    db.upsert('banners', this.banners[idx].id, this.banners[idx]);
     return this.banners[idx];
   }
   deleteBanner(id: string) {
     const idx = this.banners.findIndex((b) => b.id === id);
     if (idx === -1) return false;
+    const target = this.banners[idx];
     this.banners.splice(idx, 1);
     this.persist();
+    db.delete('banners', target.id);
     return true;
   }
 
@@ -756,6 +876,7 @@ class DataStore {
     };
     this.gallery.unshift(item);
     this.persist();
+    db.upsert('gallery', item.id, item);
     return item;
   }
   updateGalleryItem(id: string, data: Partial<GalleryItem>) {
@@ -763,13 +884,16 @@ class DataStore {
     if (idx === -1) return null;
     this.gallery[idx] = { ...this.gallery[idx], ...data };
     this.persist();
+    db.upsert('gallery', this.gallery[idx].id, this.gallery[idx]);
     return this.gallery[idx];
   }
   deleteGalleryItem(id: string) {
     const idx = this.gallery.findIndex((g) => g.id === id);
     if (idx === -1) return false;
+    const target = this.gallery[idx];
     this.gallery.splice(idx, 1);
     this.persist();
+    db.delete('gallery', target.id);
     return true;
   }
 
@@ -785,6 +909,7 @@ class DataStore {
     };
     this.messages.unshift(newMsg);
     this.persist();
+    db.upsert('messages', newMsg.id, newMsg);
     return newMsg;
   }
 }
