@@ -61,14 +61,16 @@ adminRouter.post('/admin/projects', (req, res, next) => {
   res.status(201).json({ success: true, data: created });
 });
 
-adminRouter.put('/admin/projects/:id', (req, res, next) => {
+const updateProject = (req: any, res: any, next: any) => {
   const updated = store.updateProject(req.params.id, req.body);
   if (!updated) {
     return next(new NotFoundError(`Project ${req.params.id} not found`));
   }
   logger.info({ projectId: updated.id }, 'Admin updated project');
   res.json({ success: true, data: updated });
-});
+};
+adminRouter.put('/admin/projects/:id', updateProject);
+adminRouter.patch('/admin/projects/:id', updateProject);
 
 adminRouter.delete('/admin/projects/:id', (req, res, next) => {
   const deleted = store.deleteProject(req.params.id);
@@ -94,14 +96,16 @@ adminRouter.post('/admin/events', (req, res, next) => {
   res.status(201).json({ success: true, data: created });
 });
 
-adminRouter.put('/admin/events/:id', (req, res, next) => {
+const updateEvent = (req: any, res: any, next: any) => {
   const updated = store.updateEvent(req.params.id, req.body);
   if (!updated) {
     return next(new NotFoundError(`Event ${req.params.id} not found`));
   }
   logger.info({ eventId: updated.id }, 'Admin updated event');
   res.json({ success: true, data: updated });
-});
+};
+adminRouter.put('/admin/events/:id', updateEvent);
+adminRouter.patch('/admin/events/:id', updateEvent);
 
 adminRouter.delete('/admin/events/:id', (req, res, next) => {
   const deleted = store.deleteEvent(req.params.id);
@@ -127,14 +131,16 @@ adminRouter.post('/admin/achievements', (req, res, next) => {
   res.status(201).json({ success: true, data: created });
 });
 
-adminRouter.put('/admin/achievements/:id', (req, res, next) => {
+const updateAchievement = (req: any, res: any, next: any) => {
   const updated = store.updateAchievement(req.params.id, req.body);
   if (!updated) {
     return next(new NotFoundError(`Achievement ${req.params.id} not found`));
   }
   logger.info({ achievementId: updated.id }, 'Admin updated achievement');
   res.json({ success: true, data: updated });
-});
+};
+adminRouter.put('/admin/achievements/:id', updateAchievement);
+adminRouter.patch('/admin/achievements/:id', updateAchievement);
 
 adminRouter.delete('/admin/achievements/:id', (req, res, next) => {
   const deleted = store.deleteAchievement(req.params.id);
@@ -160,14 +166,16 @@ adminRouter.post('/admin/members', (req, res, next) => {
   res.status(201).json({ success: true, data: created });
 });
 
-adminRouter.put('/admin/members/:id', (req, res, next) => {
+const updateMember = (req: any, res: any, next: any) => {
   const updated = store.updateMember(req.params.id, req.body);
   if (!updated) {
     return next(new NotFoundError(`Member ${req.params.id} not found`));
   }
   logger.info({ memberId: updated.id }, 'Admin updated member');
   res.json({ success: true, data: updated });
-});
+};
+adminRouter.put('/admin/members/:id', updateMember);
+adminRouter.patch('/admin/members/:id', updateMember);
 
 adminRouter.delete('/admin/members/:id', (req, res, next) => {
   const deleted = store.deleteMember(req.params.id);
@@ -193,14 +201,16 @@ adminRouter.post('/admin/alumni', (req, res, next) => {
   res.status(201).json({ success: true, data: created });
 });
 
-adminRouter.put('/admin/alumni/:id', (req, res, next) => {
+const updateAlumni = (req: any, res: any, next: any) => {
   const updated = store.updateAlumni(req.params.id, req.body);
   if (!updated) {
     return next(new NotFoundError(`Alumni ${req.params.id} not found`));
   }
   logger.info({ alumniId: updated.id }, 'Admin updated alumni');
   res.json({ success: true, data: updated });
-});
+};
+adminRouter.put('/admin/alumni/:id', updateAlumni);
+adminRouter.patch('/admin/alumni/:id', updateAlumni);
 
 adminRouter.delete('/admin/alumni/:id', (req, res, next) => {
   const deleted = store.deleteAlumni(req.params.id);
@@ -221,7 +231,7 @@ adminRouter.get('/admin/settings', (_req, res) => {
   res.json({ success: true, data: store.getSettings() });
 });
 
-adminRouter.put('/admin/settings', (req, res, next) => {
+const updateSettings = (req: any, res: any, next: any) => {
   const parsed = SiteSettingSchema.partial().safeParse(req.body);
   if (!parsed.success) {
     return next(new ValidationError('Invalid settings payload', parsed.error.flatten().fieldErrors));
@@ -229,21 +239,25 @@ adminRouter.put('/admin/settings', (req, res, next) => {
   const updated = store.updateSettings(parsed.data as any);
   logger.info('Admin updated site settings');
   res.json({ success: true, data: updated });
-});
+};
+adminRouter.put('/admin/settings', updateSettings);
+adminRouter.patch('/admin/settings', updateSettings);
 
 // APPLICATIONS REVIEW
 adminRouter.get('/admin/applications', (_req, res) => {
   res.json({ success: true, data: store.getApplications() });
 });
 
-adminRouter.put('/admin/applications/:id', (req, res, next) => {
+const updateApplication = (req: any, res: any, next: any) => {
   const updated = store.updateApplication(req.params.id, req.body);
   if (!updated) {
     return next(new NotFoundError(`Application ${req.params.id} not found`));
   }
   logger.info({ applicationId: updated.id, status: updated.status }, 'Admin updated application');
   res.json({ success: true, data: updated });
-});
+};
+adminRouter.put('/admin/applications/:id', updateApplication);
+adminRouter.patch('/admin/applications/:id', updateApplication);
 
 adminRouter.delete('/admin/applications/:id', (req, res, next) => {
   const deleted = store.deleteApplication(req.params.id);
@@ -269,14 +283,16 @@ adminRouter.post('/admin/banners', (req, res, next) => {
   res.status(201).json({ success: true, data: created });
 });
 
-adminRouter.put('/admin/banners/:id', (req, res, next) => {
+const updateBanner = (req: any, res: any, next: any) => {
   const updated = store.updateBanner(req.params.id, req.body);
   if (!updated) {
     return next(new NotFoundError(`Banner ${req.params.id} not found`));
   }
   logger.info({ bannerId: updated.id }, 'Admin updated banner');
   res.json({ success: true, data: updated });
-});
+};
+adminRouter.put('/admin/banners/:id', updateBanner);
+adminRouter.patch('/admin/banners/:id', updateBanner);
 
 adminRouter.delete('/admin/banners/:id', (req, res, next) => {
   const deleted = store.deleteBanner(req.params.id);
@@ -302,14 +318,16 @@ adminRouter.post('/admin/gallery', (req, res, next) => {
   res.status(201).json({ success: true, data: created });
 });
 
-adminRouter.put('/admin/gallery/:id', (req, res, next) => {
+const updateGallery = (req: any, res: any, next: any) => {
   const updated = store.updateGalleryItem(req.params.id, req.body);
   if (!updated) {
     return next(new NotFoundError(`Gallery item ${req.params.id} not found`));
   }
   logger.info({ galleryId: updated.id }, 'Admin updated gallery item');
   res.json({ success: true, data: updated });
-});
+};
+adminRouter.put('/admin/gallery/:id', updateGallery);
+adminRouter.patch('/admin/gallery/:id', updateGallery);
 
 adminRouter.delete('/admin/gallery/:id', (req, res, next) => {
   const deleted = store.deleteGalleryItem(req.params.id);

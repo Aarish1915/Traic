@@ -12,6 +12,8 @@ import type {
   GalleryItem,
 } from '@traic/shared';
 import crypto from 'node:crypto';
+import fs from 'node:fs';
+import path from 'node:path';
 
 // Initial seed states
 const initialProjects: Project[] = [
@@ -404,6 +406,8 @@ const initialApplications: JoinApplication[] = [
 ];
 
 class DataStore {
+  private dbFilePath: string;
+
   public projects: Project[] = [...initialProjects];
   public achievements: Achievement[] = [...initialAchievements];
   public events: Event[] = [...initialEvents];
@@ -415,6 +419,64 @@ class DataStore {
   public settings: SiteSetting = { ...initialSettings };
   public applications: JoinApplication[] = [...initialApplications];
   public messages: ContactMessage[] = [];
+
+  constructor() {
+    const dataDir = path.resolve(process.cwd(), 'data');
+    if (!fs.existsSync(dataDir)) {
+      try {
+        fs.mkdirSync(dataDir, { recursive: true });
+      } catch (_) {}
+    }
+    this.dbFilePath = path.join(dataDir, 'traic_store.json');
+    this.load();
+  }
+
+  private load(): void {
+    try {
+      if (fs.existsSync(this.dbFilePath)) {
+        const raw = fs.readFileSync(this.dbFilePath, 'utf-8');
+        const parsed = JSON.parse(raw);
+        if (Array.isArray(parsed.projects)) this.projects = parsed.projects;
+        if (Array.isArray(parsed.achievements)) this.achievements = parsed.achievements;
+        if (Array.isArray(parsed.events)) this.events = parsed.events;
+        if (Array.isArray(parsed.members)) this.members = parsed.members;
+        if (Array.isArray(parsed.alumni)) this.alumni = parsed.alumni;
+        if (Array.isArray(parsed.tracks)) this.tracks = parsed.tracks;
+        if (Array.isArray(parsed.banners)) this.banners = parsed.banners;
+        if (Array.isArray(parsed.gallery)) this.gallery = parsed.gallery;
+        if (parsed.settings && typeof parsed.settings === 'object') this.settings = parsed.settings;
+        if (Array.isArray(parsed.applications)) this.applications = parsed.applications;
+        if (Array.isArray(parsed.messages)) this.messages = parsed.messages;
+      } else {
+        this.persist();
+      }
+    } catch (e) {
+      console.warn('DataStore: Could not load persistence file, using seed memory:', e);
+    }
+  }
+
+  public persist(): void {
+    try {
+      const data = {
+        projects: this.projects,
+        achievements: this.achievements,
+        events: this.events,
+        members: this.members,
+        alumni: this.alumni,
+        tracks: this.tracks,
+        banners: this.banners,
+        gallery: this.gallery,
+        settings: this.settings,
+        applications: this.applications,
+        messages: this.messages,
+      };
+      const tempPath = `${this.dbFilePath}.tmp`;
+      fs.writeFileSync(tempPath, JSON.stringify(data, null, 2), 'utf-8');
+      fs.renameSync(tempPath, this.dbFilePath);
+    } catch (err) {
+      console.error('DataStore: Failed to persist to disk:', err);
+    }
+  }
 
   // Projects CRUD
   getProjects(publishedOnly = false) {
@@ -440,6 +502,7 @@ class DataStore {
       updatedAt: new Date().toISOString(),
     };
     this.projects.unshift(newProject);
+    this.persist();
     return newProject;
   }
   updateProject(id: string, data: Partial<Project>) {
@@ -450,12 +513,14 @@ class DataStore {
       ...data,
       updatedAt: new Date().toISOString(),
     };
+    this.persist();
     return this.projects[idx];
   }
   deleteProject(id: string) {
     const idx = this.projects.findIndex((p) => p.id === id);
     if (idx === -1) return false;
     this.projects.splice(idx, 1);
+    this.persist();
     return true;
   }
 
@@ -481,18 +546,21 @@ class DataStore {
       id: crypto.randomUUID(),
     };
     this.events.unshift(newEvent);
+    this.persist();
     return newEvent;
   }
   updateEvent(id: string, data: Partial<Event>) {
     const idx = this.events.findIndex((e) => e.id === id);
     if (idx === -1) return null;
     this.events[idx] = { ...this.events[idx], ...data };
+    this.persist();
     return this.events[idx];
   }
   deleteEvent(id: string) {
     const idx = this.events.findIndex((e) => e.id === id);
     if (idx === -1) return false;
     this.events.splice(idx, 1);
+    this.persist();
     return true;
   }
 
@@ -509,18 +577,21 @@ class DataStore {
       id: crypto.randomUUID(),
     };
     this.achievements.unshift(newAch);
+    this.persist();
     return newAch;
   }
   updateAchievement(id: string, data: Partial<Achievement>) {
     const idx = this.achievements.findIndex((a) => a.id === id);
     if (idx === -1) return null;
     this.achievements[idx] = { ...this.achievements[idx], ...data };
+    this.persist();
     return this.achievements[idx];
   }
   deleteAchievement(id: string) {
     const idx = this.achievements.findIndex((a) => a.id === id);
     if (idx === -1) return false;
     this.achievements.splice(idx, 1);
+    this.persist();
     return true;
   }
 
@@ -535,18 +606,21 @@ class DataStore {
       id: crypto.randomUUID(),
     };
     this.members.push(newMember);
+    this.persist();
     return newMember;
   }
   updateMember(id: string, data: Partial<Member>) {
     const idx = this.members.findIndex((m) => m.id === id);
     if (idx === -1) return null;
     this.members[idx] = { ...this.members[idx], ...data };
+    this.persist();
     return this.members[idx];
   }
   deleteMember(id: string) {
     const idx = this.members.findIndex((m) => m.id === id);
     if (idx === -1) return false;
     this.members.splice(idx, 1);
+    this.persist();
     return true;
   }
 
@@ -563,18 +637,21 @@ class DataStore {
       id: crypto.randomUUID(),
     };
     this.alumni.unshift(newAlumni);
+    this.persist();
     return newAlumni;
   }
   updateAlumni(id: string, data: Partial<Alumni>) {
     const idx = this.alumni.findIndex((al) => al.id === id);
     if (idx === -1) return null;
     this.alumni[idx] = { ...this.alumni[idx], ...data };
+    this.persist();
     return this.alumni[idx];
   }
   deleteAlumni(id: string) {
     const idx = this.alumni.findIndex((al) => al.id === id);
     if (idx === -1) return false;
     this.alumni.splice(idx, 1);
+    this.persist();
     return true;
   }
 
@@ -592,6 +669,7 @@ class DataStore {
         : this.settings.announcement,
       socials: data.socials ? { ...this.settings.socials, ...data.socials } : this.settings.socials,
     };
+    this.persist();
     return this.settings;
   }
 
@@ -606,18 +684,21 @@ class DataStore {
       createdAt: new Date().toISOString(),
     };
     this.applications.unshift(newApp);
+    this.persist();
     return newApp;
   }
   updateApplication(id: string, data: Partial<JoinApplication>) {
     const idx = this.applications.findIndex((a) => a.id === id);
     if (idx === -1) return null;
     this.applications[idx] = { ...this.applications[idx], ...data };
+    this.persist();
     return this.applications[idx];
   }
   deleteApplication(id: string) {
     const idx = this.applications.findIndex((a) => a.id === id);
     if (idx === -1) return false;
     this.applications.splice(idx, 1);
+    this.persist();
     return true;
   }
 
@@ -643,18 +724,21 @@ class DataStore {
       createdAt: new Date().toISOString(),
     };
     this.banners.unshift(newBanner);
+    this.persist();
     return newBanner;
   }
   updateBanner(id: string, data: Partial<Banner>) {
     const idx = this.banners.findIndex((b) => b.id === id);
     if (idx === -1) return null;
     this.banners[idx] = { ...this.banners[idx], ...data };
+    this.persist();
     return this.banners[idx];
   }
   deleteBanner(id: string) {
     const idx = this.banners.findIndex((b) => b.id === id);
     if (idx === -1) return false;
     this.banners.splice(idx, 1);
+    this.persist();
     return true;
   }
 
@@ -671,18 +755,21 @@ class DataStore {
       id: crypto.randomUUID(),
     };
     this.gallery.unshift(item);
+    this.persist();
     return item;
   }
   updateGalleryItem(id: string, data: Partial<GalleryItem>) {
     const idx = this.gallery.findIndex((g) => g.id === id);
     if (idx === -1) return null;
     this.gallery[idx] = { ...this.gallery[idx], ...data };
+    this.persist();
     return this.gallery[idx];
   }
   deleteGalleryItem(id: string) {
     const idx = this.gallery.findIndex((g) => g.id === id);
     if (idx === -1) return false;
     this.gallery.splice(idx, 1);
+    this.persist();
     return true;
   }
 
@@ -697,6 +784,7 @@ class DataStore {
       createdAt: new Date().toISOString(),
     };
     this.messages.unshift(newMsg);
+    this.persist();
     return newMsg;
   }
 }

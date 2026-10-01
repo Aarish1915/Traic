@@ -48,10 +48,10 @@ export function HeroHardwareViewport() {
             onClick={() => setMode('image')}
             className={`flex items-center gap-1 px-2.5 py-1 rounded transition-all font-semibold ${
               mode === 'image'
-                ? 'bg-accent text-bg-0 shadow-sm'
+                ? 'bg-accent-2 text-bg-0 shadow-sm'
                 : 'text-text-2 hover:text-text-1'
             }`}
-            title="Fast, ultra-lightweight image mode (recommended for all devices)"
+            title="Fast, ultra-lightweight image mode (recommended for low-end devices)"
           >
             <Zap className="h-3 w-3" />
             <span>2D LITE</span>
@@ -60,10 +60,10 @@ export function HeroHardwareViewport() {
             onClick={() => setMode('3d')}
             className={`flex items-center gap-1 px-2.5 py-1 rounded transition-all font-semibold ${
               mode === '3d'
-                ? 'bg-accent-2 text-bg-0 shadow-sm'
+                ? 'bg-accent text-accent-fg shadow-sm'
                 : 'text-text-2 hover:text-text-1'
             }`}
-            title="Interactive 3D WebGL mode (for high-end devices)"
+            title="Interactive 3D WebGL mode"
           >
             <Box className="h-3 w-3" />
             <span>3D VIEW</span>

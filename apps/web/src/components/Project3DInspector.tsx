@@ -357,35 +357,80 @@ export function Project3DInspector({
         buildProceduralModel();
       }
 
-      // UNIFIED W3C POINTER EVENTS (TOUCH, PENCIL & MOUSE) FOR IPHONE, ANDROID & DESKTOP
+      // ROCK-SOLID TOUCH & MOUSE INTERACTION (WITH PINCH-TO-ZOOM ON MOBILE)
       const dom = renderer.domElement;
-      let prevPointerX = 0;
-      let prevPointerY = 0;
 
-      const onPointerDown = (e: PointerEvent) => {
-        isDragging = true;
-        prevPointerX = e.clientX;
-        prevPointerY = e.clientY;
-        try {
-          dom.setPointerCapture(e.pointerId);
-        } catch (_) {}
+      let touchPrevX = 0;
+      let touchPrevY = 0;
+      let initialPinchDistance = 0;
+      let initialCameraZ = 12;
+
+      const getTouchDistance = (t1: Touch, t2: Touch) => {
+        const dx = t1.clientX - t2.clientX;
+        const dy = t1.clientY - t2.clientY;
+        return Math.sqrt(dx * dx + dy * dy);
       };
 
-      const onPointerMove = (e: PointerEvent) => {
-        if (!isDragging) return;
-        const dx = e.clientX - prevPointerX;
-        const dy = e.clientY - prevPointerY;
-        group.rotation.y += dx * 0.012;
-        group.rotation.x += dy * 0.008;
-        prevPointerX = e.clientX;
-        prevPointerY = e.clientY;
+      const onTouchStart = (e: TouchEvent) => {
+        if (e.touches.length === 1) {
+          isDragging = true;
+          touchPrevX = e.touches[0].clientX;
+          touchPrevY = e.touches[0].clientY;
+        } else if (e.touches.length === 2 && camera) {
+          isDragging = false;
+          initialPinchDistance = getTouchDistance(e.touches[0], e.touches[1]);
+          initialCameraZ = camera.position.z;
+        }
       };
 
-      const onPointerUp = (e: PointerEvent) => {
+      const onTouchMove = (e: TouchEvent) => {
+        if (e.cancelable) e.preventDefault(); // Stop iOS Safari gesture cancelation
+
+        if (e.touches.length === 1 && isDragging) {
+          const curX = e.touches[0].clientX;
+          const curY = e.touches[0].clientY;
+          const dx = curX - touchPrevX;
+          const dy = curY - touchPrevY;
+          group.rotation.y += dx * 0.012;
+          group.rotation.x = Math.max(-0.6, Math.min(0.8, group.rotation.x + dy * 0.008));
+          touchPrevX = curX;
+          touchPrevY = curY;
+        } else if (e.touches.length === 2 && camera && initialPinchDistance > 0) {
+          const currentDistance = getTouchDistance(e.touches[0], e.touches[1]);
+          if (currentDistance > 10) {
+            const ratio = initialPinchDistance / currentDistance;
+            camera.position.z = Math.min(Math.max(initialCameraZ * ratio, 3.5), 24);
+          }
+        }
+      };
+
+      const onTouchEnd = () => {
         isDragging = false;
-        try {
-          dom.releasePointerCapture(e.pointerId);
-        } catch (_) {}
+        initialPinchDistance = 0;
+      };
+
+      // Desktop Mouse handlers
+      let mousePrevX = 0;
+      let mousePrevY = 0;
+
+      const onMouseDown = (e: MouseEvent) => {
+        isDragging = true;
+        mousePrevX = e.clientX;
+        mousePrevY = e.clientY;
+      };
+
+      const onMouseMove = (e: MouseEvent) => {
+        if (!isDragging) return;
+        const dx = e.clientX - mousePrevX;
+        const dy = e.clientY - mousePrevY;
+        group.rotation.y += dx * 0.01;
+        group.rotation.x = Math.max(-0.6, Math.min(0.8, group.rotation.x + dy * 0.007));
+        mousePrevX = e.clientX;
+        mousePrevY = e.clientY;
+      };
+
+      const onMouseUp = () => {
+        isDragging = false;
       };
 
       const onWheel = (e: WheelEvent) => {
@@ -394,11 +439,30 @@ export function Project3DInspector({
         camera.position.z = Math.min(Math.max(camera.position.z + e.deltaY * 0.015, 3.5), 24);
       };
 
-      dom.addEventListener('pointerdown', onPointerDown);
-      dom.addEventListener('pointermove', onPointerMove);
-      dom.addEventListener('pointerup', onPointerUp);
-      dom.addEventListener('pointercancel', onPointerUp);
+      // WebGL Context Recovery Listeners
+      const onContextLost = (e: Event) => {
+        e.preventDefault();
+        console.warn('WebGL Context Lost in Inspector modal');
+        if (animId) cancelAnimationFrame(animId);
+      };
+
+      const onContextRestored = () => {
+        console.info('WebGL Context Restored in Inspector modal');
+        renderLoop();
+      };
+
+      dom.addEventListener('touchstart', onTouchStart, { passive: true });
+      dom.addEventListener('touchmove', onTouchMove, { passive: false });
+      dom.addEventListener('touchend', onTouchEnd, { passive: true });
+      dom.addEventListener('touchcancel', onTouchEnd, { passive: true });
+
+      dom.addEventListener('mousedown', onMouseDown);
+      window.addEventListener('mousemove', onMouseMove);
+      window.addEventListener('mouseup', onMouseUp);
       dom.addEventListener('wheel', onWheel, { passive: false });
+
+      dom.addEventListener('webglcontextlost', onContextLost, false);
+      dom.addEventListener('webglcontextrestored', onContextRestored, false);
 
       // Handle Resizing
       const updateSize = () => {
@@ -428,11 +492,16 @@ export function Project3DInspector({
       cleanupFn = () => {
         isMounted = false;
         if (resizeObserver) resizeObserver.disconnect();
-        dom.removeEventListener('pointerdown', onPointerDown);
-        dom.removeEventListener('pointermove', onPointerMove);
-        dom.removeEventListener('pointerup', onPointerUp);
-        dom.removeEventListener('pointercancel', onPointerUp);
+        dom.removeEventListener('touchstart', onTouchStart);
+        dom.removeEventListener('touchmove', onTouchMove);
+        dom.removeEventListener('touchend', onTouchEnd);
+        dom.removeEventListener('touchcancel', onTouchEnd);
+        dom.removeEventListener('mousedown', onMouseDown);
+        window.removeEventListener('mousemove', onMouseMove);
+        window.removeEventListener('mouseup', onMouseUp);
         dom.removeEventListener('wheel', onWheel);
+        dom.removeEventListener('webglcontextlost', onContextLost);
+        dom.removeEventListener('webglcontextrestored', onContextRestored);
         if (animId) cancelAnimationFrame(animId);
         if (renderer) {
           if (renderer.domElement && mount.contains(renderer.domElement)) {

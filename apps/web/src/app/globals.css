@@ -5,19 +5,19 @@
 :root,
 html.dark,
 [data-theme="dark"] {
-  --bg-0: 5 8 16;
-  --bg-1: 10 16 28;
-  --surface: 15 23 38;
-  --surface-hover: 22 34 54;
-  --border: 33 49 76;
-  --text-1: 241 245 249;
+  --bg-0: 7 9 14;
+  --bg-1: 14 19 31;
+  --surface: 20 28 46;
+  --surface-hover: 29 40 64;
+  --border: 36 50 77;
+  --text-1: 248 250 252;
   --text-2: 148 163 184;
-  --accent: 0 229 255;
-  --accent-hover: 56 189 248;
-  --accent-fg: 5 8 16;
-  --accent-2: 14 165 233;
-  --accent-2-hover: 2 132 199;
-  --accent-2-fg: 241 245 249;
+  --accent: 255 159 28;
+  --accent-hover: 251 146 60;
+  --accent-fg: 7 9 14;
+  --accent-2: 56 189 248;
+  --accent-2-hover: 14 165 233;
+  --accent-2-fg: 7 9 14;
 }
 
 :root[data-theme="light"],
@@ -28,15 +28,15 @@ body.light {
   --bg-0: 248 250 252;
   --bg-1: 241 245 249;
   --surface: 255 255 255;
-  --surface-hover: 241 245 249;
+  --surface-hover: 226 232 240;
   --border: 203 213 225;
   --text-1: 15 23 42;
   --text-2: 71 85 105;
-  --accent: 2 132 199;
-  --accent-hover: 3 105 161;
+  --accent: 234 88 12;
+  --accent-hover: 194 65 12;
   --accent-fg: 255 255 255;
-  --accent-2: 14 165 233;
-  --accent-2-hover: 2 132 199;
+  --accent-2: 2 132 199;
+  --accent-2-hover: 3 105 161;
   --accent-2-fg: 255 255 255;
 }
 

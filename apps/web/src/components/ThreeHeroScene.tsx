@@ -64,7 +64,7 @@ export function ThreeHeroScene() {
       renderer.domElement.style.display = 'block';
       renderer.domElement.style.width = '100%';
       renderer.domElement.style.height = '100%';
-      renderer.domElement.style.touchAction = 'none'; // Lock pointer capture for fluid 3D drag
+      renderer.domElement.style.touchAction = 'pan-y'; // Allow smooth vertical page scroll while capturing horizontal 3D drag
       container.appendChild(renderer.domElement);
 
       // PARTICLE CIRCUIT DUST
@@ -238,42 +238,115 @@ export function ThreeHeroScene() {
       });
       window.addEventListener('traic-theme-change', handleThemeChange);
 
-      // UNIFIED W3C POINTER EVENTS (TOUCH, PENCIL & MOUSE) FOR IPHONE, ANDROID & DESKTOP
+      // DUAL-LAYER GESTURE ENGINE (TOUCH WITH SCROLL DISAMBIGUATION + DESKTOP MOUSE)
       const dom = renderer.domElement;
-      let prevPointerX = 0;
-      let prevPointerY = 0;
 
-      const onPointerDown = (e: PointerEvent) => {
+      // Mobile Touch Handlers
+      let touchStartX = 0;
+      let touchStartY = 0;
+      let touchLastX = 0;
+      let touchLastY = 0;
+      let touchIntent: 'undetermined' | 'scroll' | 'rotate' = 'undetermined';
+
+      const onTouchStart = (e: TouchEvent) => {
+        if (e.touches.length !== 1) return;
         isDragging = true;
-        prevPointerX = e.clientX;
-        prevPointerY = e.clientY;
-        try {
-          dom.setPointerCapture(e.pointerId);
-        } catch (_) {}
+        touchStartX = e.touches[0].clientX;
+        touchStartY = e.touches[0].clientY;
+        touchLastX = touchStartX;
+        touchLastY = touchStartY;
+        touchIntent = 'undetermined';
       };
 
-      const onPointerMove = (e: PointerEvent) => {
-        if (!isDragging) return;
-        const dx = e.clientX - prevPointerX;
-        const dy = e.clientY - prevPointerY;
-        targetRotY += dx * 0.012;
-        targetRotX += dy * 0.008;
-        targetRotX = Math.max(-0.6, Math.min(0.8, targetRotX));
-        prevPointerX = e.clientX;
-        prevPointerY = e.clientY;
+      const onTouchMove = (e: TouchEvent) => {
+        if (!isDragging || e.touches.length !== 1) return;
+        const curX = e.touches[0].clientX;
+        const curY = e.touches[0].clientY;
+        const dx = curX - touchLastX;
+        const dy = curY - touchLastY;
+
+        if (touchIntent === 'undetermined') {
+          const totalDx = Math.abs(curX - touchStartX);
+          const totalDy = Math.abs(curY - touchStartY);
+
+          if (totalDx < 5 && totalDy < 5) return;
+
+          if (totalDy > totalDx * 1.1) {
+            // Primarily vertical swipe: let the page scroll freely on mobile!
+            touchIntent = 'scroll';
+            isDragging = false;
+            return;
+          } else {
+            // Primarily horizontal swipe: user is rotating the 3D chip!
+            touchIntent = 'rotate';
+          }
+        }
+
+        if (touchIntent === 'rotate') {
+          if (e.cancelable) {
+            e.preventDefault(); // Stop iOS Safari from canceling touch or scrolling page
+          }
+          targetRotY += dx * 0.012;
+          targetRotX += dy * 0.008;
+          targetRotX = Math.max(-0.6, Math.min(0.8, targetRotX));
+          touchLastX = curX;
+          touchLastY = curY;
+        }
       };
 
-      const onPointerUp = (e: PointerEvent) => {
+      const onTouchEnd = () => {
         isDragging = false;
-        try {
-          dom.releasePointerCapture(e.pointerId);
-        } catch (_) {}
+        touchIntent = 'undetermined';
       };
 
-      dom.addEventListener('pointerdown', onPointerDown);
-      dom.addEventListener('pointermove', onPointerMove);
-      dom.addEventListener('pointerup', onPointerUp);
-      dom.addEventListener('pointercancel', onPointerUp);
+      // Desktop Mouse Drag Controls
+      let mouseLastX = 0;
+      let mouseLastY = 0;
+
+      const onMouseDown = (e: MouseEvent) => {
+        isDragging = true;
+        mouseLastX = e.clientX;
+        mouseLastY = e.clientY;
+      };
+
+      const onMouseMove = (e: MouseEvent) => {
+        if (!isDragging) return;
+        const dx = e.clientX - mouseLastX;
+        const dy = e.clientY - mouseLastY;
+        targetRotY += dx * 0.01;
+        targetRotX += dy * 0.007;
+        targetRotX = Math.max(-0.6, Math.min(0.8, targetRotX));
+        mouseLastX = e.clientX;
+        mouseLastY = e.clientY;
+      };
+
+      const onMouseUp = () => {
+        isDragging = false;
+      };
+
+      // WebGL Context Recovery Listeners for Mobile Safari / Backgrounding
+      const onContextLost = (e: Event) => {
+        e.preventDefault();
+        console.warn('WebGL context lost on device, pausing animation');
+        if (animationFrameId) cancelAnimationFrame(animationFrameId);
+      };
+
+      const onContextRestored = () => {
+        console.info('WebGL context restored, resuming animation');
+        animate();
+      };
+
+      dom.addEventListener('touchstart', onTouchStart, { passive: true });
+      dom.addEventListener('touchmove', onTouchMove, { passive: false });
+      dom.addEventListener('touchend', onTouchEnd, { passive: true });
+      dom.addEventListener('touchcancel', onTouchEnd, { passive: true });
+
+      dom.addEventListener('mousedown', onMouseDown);
+      window.addEventListener('mousemove', onMouseMove);
+      window.addEventListener('mouseup', onMouseUp);
+
+      dom.addEventListener('webglcontextlost', onContextLost, false);
+      dom.addEventListener('webglcontextrestored', onContextRestored, false);
 
       // Resize handling
       const updateDimensions = () => {
@@ -328,10 +401,15 @@ export function ThreeHeroScene() {
         themeObserver.disconnect();
         window.removeEventListener('traic-theme-change', handleThemeChange);
         if (resizeObserver) resizeObserver.disconnect();
-        dom.removeEventListener('pointerdown', onPointerDown);
-        dom.removeEventListener('pointermove', onPointerMove);
-        dom.removeEventListener('pointerup', onPointerUp);
-        dom.removeEventListener('pointercancel', onPointerUp);
+        dom.removeEventListener('touchstart', onTouchStart);
+        dom.removeEventListener('touchmove', onTouchMove);
+        dom.removeEventListener('touchend', onTouchEnd);
+        dom.removeEventListener('touchcancel', onTouchEnd);
+        dom.removeEventListener('mousedown', onMouseDown);
+        window.removeEventListener('mousemove', onMouseMove);
+        window.removeEventListener('mouseup', onMouseUp);
+        dom.removeEventListener('webglcontextlost', onContextLost);
+        dom.removeEventListener('webglcontextrestored', onContextRestored);
         cancelAnimationFrame(animationFrameId);
         if (renderer) {
           if (renderer.domElement && container.contains(renderer.domElement)) {
@@ -381,8 +459,13 @@ export function ThreeHeroScene() {
     <div
       ref={containerRef}
       className="w-full h-full min-h-[280px] select-none relative cursor-grab active:cursor-grabbing"
-      style={{ touchAction: 'none' }}
+      style={{ touchAction: 'pan-y' }}
       aria-label="Interactive 3D STM32 Silicon Chip Node"
-    />
+    >
+      {/* Mobile Touch Rotation Helper Cue */}
+      <div className="sm:hidden absolute bottom-2 left-1/2 -translate-x-1/2 z-10 pointer-events-none flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-bg-0/85 border border-accent/40 backdrop-blur-md text-[9px] font-mono text-accent whitespace-nowrap shadow-md">
+        <span>↔ Swipe horizontally to rotate</span>
+      </div>
+    </div>
   );
 }
