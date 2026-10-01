@@ -51,20 +51,49 @@ export function ThreeHeroScene() {
       }
       camera.lookAt(0, 0, 0);
 
-      // Robust WebGL renderer initialization for iOS Safari & Android
-      renderer = new THREE.WebGLRenderer({
+      // Robust WebGL context acquisition with WebGL2 -> WebGL1 fallback for iOS Safari & Android
+      const canvas = document.createElement('canvas');
+      canvas.style.display = 'block';
+      canvas.style.width = '100%';
+      canvas.style.height = '100%';
+      canvas.style.touchAction = 'pan-y'; // Allow smooth vertical page scroll while capturing horizontal 3D drag
+
+      const ctxAttrs: WebGLContextAttributes = {
         alpha: true,
         antialias: false,
-        powerPreference: 'low-power',
-        precision: 'mediump',
+        depth: true,
+        stencil: false,
+        powerPreference: 'default',
+        preserveDrawingBuffer: false,
         failIfMajorPerformanceCaveat: false,
+      };
+
+      let gl: WebGLRenderingContext | WebGL2RenderingContext | null = null;
+      try {
+        gl = canvas.getContext('webgl2', ctxAttrs);
+      } catch (_) {}
+      if (!gl) {
+        try {
+          gl = (canvas.getContext('webgl', ctxAttrs) ||
+            canvas.getContext('experimental-webgl', ctxAttrs)) as any;
+        } catch (_) {}
+      }
+
+      if (!gl) {
+        console.warn('WebGL is not supported or context could not be created on this device');
+        setWebGLSupported(false);
+        return undefined;
+      }
+
+      renderer = new THREE.WebGLRenderer({
+        canvas,
+        context: gl,
+        alpha: true,
+        antialias: false,
+        powerPreference: 'default',
       });
       renderer.setSize(initialWidth, initialHeight);
-      renderer.setPixelRatio(Math.min(typeof window !== 'undefined' ? window.devicePixelRatio || 1 : 1, 1.25));
-      renderer.domElement.style.display = 'block';
-      renderer.domElement.style.width = '100%';
-      renderer.domElement.style.height = '100%';
-      renderer.domElement.style.touchAction = 'pan-y'; // Allow smooth vertical page scroll while capturing horizontal 3D drag
+      renderer.setPixelRatio(Math.min(typeof window !== 'undefined' ? window.devicePixelRatio || 1 : 1, 1.5));
       container.appendChild(renderer.domElement);
 
       // PARTICLE CIRCUIT DUST
@@ -416,7 +445,6 @@ export function ThreeHeroScene() {
             container.removeChild(renderer.domElement);
           }
           renderer.dispose();
-          renderer.forceContextLoss(); // Guarantees iOS Safari reclaims GPU WebGL context
         }
       };
     } catch (e) {

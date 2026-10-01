@@ -2,20 +2,12 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import dynamic from 'next/dynamic';
 import { Cpu, ExternalLink, Filter, Box, ArrowRight, Radio } from 'lucide-react';
 import { GithubIcon } from '@/components/icons';
 import { TelemetryModal } from '@/components/TelemetryModal';
+import { Project3DInspector } from '@/components/Project3DInspector';
+import { ProjectCard3DPreview } from '@/components/ProjectCard3DPreview';
 import type { ProjectCategory } from '@traic/shared';
-
-const Project3DInspector = dynamic(
-  () => import('@/components/Project3DInspector').then((m) => m.Project3DInspector),
-  { ssr: false }
-);
-const ProjectCard3DPreview = dynamic(
-  () => import('@/components/ProjectCard3DPreview').then((m) => m.ProjectCard3DPreview),
-  { ssr: false }
-);
 
 const PROJECTS = [
   {
@@ -217,6 +209,14 @@ export default function ProjectsPage() {
                   category={project.category}
                   slug={project.slug}
                   title={project.title}
+                  onInspect={() =>
+                    setInspectingProject({
+                      title: project.title,
+                      category: project.category,
+                      tech: project.tech,
+                      modelUrl: project.modelUrl,
+                    })
+                  }
                 />
 
                 <Link
@@ -259,6 +259,7 @@ export default function ProjectsPage() {
 
                     {project.slug === 'telemetry-ground-station' ? (
                       <button
+                        type="button"
                         onClick={() => setShowTelemetry(true)}
                         className="inline-flex items-center gap-1 text-accent font-semibold hover:underline py-1"
                         title="Open Interactive Telemetry Simulator"
@@ -288,15 +289,18 @@ export default function ProjectsPage() {
                   </div>
 
                   <button
-                    onClick={() =>
+                    type="button"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
                       setInspectingProject({
                         title: project.title,
                         category: project.category,
                         tech: project.tech,
                         modelUrl: project.modelUrl,
-                      })
-                    }
-                    className="w-full sm:w-auto inline-flex items-center justify-center gap-1.5 rounded-lg border border-accent-2/50 bg-accent-2/10 px-3.5 py-2 text-xs font-mono font-semibold text-accent-2 hover:bg-accent-2 hover:text-bg-0 transition-colors shrink-0"
+                      });
+                    }}
+                    className="w-full sm:w-auto inline-flex items-center justify-center gap-1.5 rounded-lg border border-accent-2/50 bg-accent-2/10 px-3.5 py-2 text-xs font-mono font-semibold text-accent-2 hover:bg-accent-2 hover:text-bg-0 transition-colors shrink-0 cursor-pointer"
                   >
                     <Box className="h-3.5 w-3.5" />
                     <span>Inspect 3D</span>

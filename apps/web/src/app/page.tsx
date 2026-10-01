@@ -14,17 +14,10 @@ import {
   Box,
   Camera,
 } from 'lucide-react';
-import dynamic from 'next/dynamic';
 import { AnimeGlowHero } from '@/components/AnimeGlowHero';
 import { HeroHardwareViewport } from '@/components/HeroHardwareViewport';
-const Project3DInspector = dynamic(
-  () => import('@/components/Project3DInspector').then((m) => m.Project3DInspector),
-  { ssr: false }
-);
-const ProjectCard3DPreview = dynamic(
-  () => import('@/components/ProjectCard3DPreview').then((m) => m.ProjectCard3DPreview),
-  { ssr: false }
-);
+import { Project3DInspector } from '@/components/Project3DInspector';
+import { ProjectCard3DPreview } from '@/components/ProjectCard3DPreview';
 
 const STATS = [
   { value: '5+', label: 'Years of Engineering' },
@@ -375,6 +368,14 @@ export default function HomePage() {
                     category={project.category}
                     slug={project.slug}
                     title={project.title}
+                    onInspect={() =>
+                      setInspectingProject({
+                        title: project.title,
+                        category: project.category,
+                        tech: project.tech,
+                        modelUrl: (project as any).modelUrl,
+                      })
+                    }
                   />
 
                   <Link
@@ -410,15 +411,18 @@ export default function HomePage() {
                     </Link>
 
                     <button
-                      onClick={() =>
+                      type="button"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
                         setInspectingProject({
                           title: project.title,
                           category: project.category,
                           tech: project.tech,
                           modelUrl: (project as any).modelUrl,
-                        })
-                      }
-                      className="w-full sm:w-auto inline-flex items-center justify-center gap-1.5 rounded-lg border border-accent-2/40 bg-accent-2/10 px-3 py-1.5 text-xs font-mono font-semibold text-accent-2 hover:bg-accent-2 hover:text-bg-0 transition-colors"
+                        });
+                      }}
+                      className="w-full sm:w-auto inline-flex items-center justify-center gap-1.5 rounded-lg border border-accent-2/40 bg-accent-2/10 px-3 py-1.5 text-xs font-mono font-semibold text-accent-2 hover:bg-accent-2 hover:text-bg-0 transition-colors cursor-pointer"
                     >
                       <Box className="h-3.5 w-3.5" />
                       <span>Inspect 3D</span>

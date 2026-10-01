@@ -169,11 +169,16 @@ export function ProjectDetailClient({ project }: { project: ProjectDetail }) {
                   <Cpu className="h-3.5 w-3.5 text-accent" />
                   CAD PREVIEW
                 </span>
-                <span className="text-[10px] text-accent border border-accent/40 rounded px-1.5 py-0.5">SWIPE 3D</span>
+                <span className="text-[10px] text-accent border border-accent/40 rounded px-1.5 py-0.5">INSPECT 3D</span>
               </div>
 
               <div className="relative flex-1 w-full min-h-[220px]">
-                <ProjectCard3DPreview category={project.category} slug={project.slug} title={project.title} />
+                <ProjectCard3DPreview
+                  category={project.category}
+                  slug={project.slug}
+                  title={project.title}
+                  onInspect={() => setInspectingCAD(true)}
+                />
               </div>
 
               <div className="px-3 py-2 border-t border-border/60 bg-surface/80 text-center">

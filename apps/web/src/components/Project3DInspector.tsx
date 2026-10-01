@@ -124,19 +124,48 @@ export function Project3DInspector({
       camera.lookAt(0, 0, 0);
       cameraRef.current = camera;
 
-      renderer = new THREE.WebGLRenderer({
-        antialias: false,
+      const canvas = document.createElement('canvas');
+      canvas.style.display = 'block';
+      canvas.style.width = '100%';
+      canvas.style.height = '100%';
+      canvas.style.touchAction = 'none'; // Dedicated modal canvas captures touches
+
+      const ctxAttrs: WebGLContextAttributes = {
         alpha: true,
-        powerPreference: 'low-power',
-        precision: 'mediump',
+        antialias: false,
+        depth: true,
+        stencil: false,
+        powerPreference: 'default',
+        preserveDrawingBuffer: false,
         failIfMajorPerformanceCaveat: false,
+      };
+
+      let gl: WebGLRenderingContext | WebGL2RenderingContext | null = null;
+      try {
+        gl = canvas.getContext('webgl2', ctxAttrs);
+      } catch (_) {}
+      if (!gl) {
+        try {
+          gl = (canvas.getContext('webgl', ctxAttrs) ||
+            canvas.getContext('experimental-webgl', ctxAttrs)) as any;
+        } catch (_) {}
+      }
+
+      if (!gl) {
+        console.warn('WebGL is not available in Project3DInspector, switching to 2D CAD mode');
+        setViewMode('2d');
+        return undefined;
+      }
+
+      renderer = new THREE.WebGLRenderer({
+        canvas,
+        context: gl,
+        alpha: true,
+        antialias: false,
+        powerPreference: 'default',
       });
       renderer.setSize(w, h);
-      renderer.setPixelRatio(Math.min(typeof window !== 'undefined' ? window.devicePixelRatio || 1 : 1, 1.25));
-      renderer.domElement.style.display = 'block';
-      renderer.domElement.style.width = '100%';
-      renderer.domElement.style.height = '100%';
-      renderer.domElement.style.touchAction = 'none'; // Dedicated modal canvas captures touches
+      renderer.setPixelRatio(Math.min(typeof window !== 'undefined' ? window.devicePixelRatio || 1 : 1, 1.5));
       mount.appendChild(renderer.domElement);
 
       const group = new THREE.Group();
@@ -508,7 +537,6 @@ export function Project3DInspector({
             mount.removeChild(renderer.domElement);
           }
           renderer.dispose();
-          renderer.forceContextLoss(); // Guarantees iOS Safari reclaims GPU WebGL context
         }
       };
     } catch (err) {
@@ -522,7 +550,10 @@ export function Project3DInspector({
   }, [category, wireframe, modelUrl, viewMode]);
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-bg-0/90 backdrop-blur-md p-2 sm:p-4">
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-bg-0/90 backdrop-blur-md p-2 sm:p-4 overscroll-contain select-none"
+      style={{ touchAction: 'none' }}
+    >
       <div className="relative flex flex-col md:flex-row w-full max-w-5xl h-[92vh] sm:h-[86vh] max-h-[720px] overflow-hidden rounded-2xl border border-border bg-bg-1 shadow-2xl">
         {/* Left Column: 3D Viewport OR 2D Schematic Stage */}
         <div className="relative w-full h-[340px] sm:h-[400px] md:h-full md:flex-1 bg-bg-0 cursor-grab active:cursor-grabbing select-none overflow-hidden shrink-0 flex flex-col justify-between">
@@ -539,6 +570,7 @@ export function Project3DInspector({
               {/* Mode Switcher Toggle */}
               <div className="flex items-center gap-0.5 rounded border border-border/80 bg-bg-0/90 p-0.5 text-[10px] font-mono">
                 <button
+                  type="button"
                   onClick={() => setViewMode('3d')}
                   className={`flex items-center gap-1 px-2.5 py-1 rounded font-semibold transition-all ${
                     viewMode === '3d'
@@ -551,6 +583,7 @@ export function Project3DInspector({
                   <span>3D</span>
                 </button>
                 <button
+                  type="button"
                   onClick={() => setViewMode('2d')}
                   className={`flex items-center gap-1 px-2.5 py-1 rounded font-semibold transition-all ${
                     viewMode === '2d'
@@ -578,6 +611,7 @@ export function Project3DInspector({
 
               {/* Clean Inline Close Button for Mobile & Desktop */}
               <button
+                type="button"
                 onClick={onClose}
                 className="rounded-lg p-1.5 text-text-2 hover:bg-surface hover:text-text-1 transition-colors border border-border/60 bg-surface/80"
                 aria-label="Close modal"
@@ -617,6 +651,7 @@ export function Project3DInspector({
           {/* Floating Toolset Overlay - Positioned Safely with No Overlap */}
           <div className="absolute bottom-3 left-3 sm:bottom-4 sm:left-4 z-30 flex items-center gap-1 sm:gap-1.5 rounded-lg border border-border bg-surface/90 p-1 sm:p-1.5 backdrop-blur-md shadow-xl">
             <button
+              type="button"
               onClick={() => handleZoom(-2)}
               title="Zoom In (+)"
               className="rounded p-1.5 text-text-2 hover:bg-bg-1 hover:text-text-1 transition-colors min-w-[32px] min-h-[32px] flex items-center justify-center"
@@ -624,6 +659,7 @@ export function Project3DInspector({
               <ZoomIn className="h-4 w-4" />
             </button>
             <button
+              type="button"
               onClick={() => handleZoom(2)}
               title="Zoom Out (-)"
               className="rounded p-1.5 text-text-2 hover:bg-bg-1 hover:text-text-1 transition-colors min-w-[32px] min-h-[32px] flex items-center justify-center"
@@ -632,6 +668,7 @@ export function Project3DInspector({
             </button>
             <div className="h-4 w-[1px] bg-border mx-0.5 sm:mx-1" />
             <button
+              type="button"
               onClick={handleReset}
               title="Reset View"
               className="rounded p-1.5 text-text-2 hover:bg-bg-1 hover:text-text-1 transition-colors min-w-[32px] min-h-[32px] flex items-center justify-center"
@@ -642,6 +679,7 @@ export function Project3DInspector({
             {viewMode === '3d' && (
               <>
                 <button
+                  type="button"
                   onClick={() => setAutoSpin(!autoSpin)}
                   title={autoSpin ? 'Pause Rotation' : 'Auto Rotate'}
                   className={`rounded p-1.5 transition-colors min-w-[32px] min-h-[32px] flex items-center justify-center ${
@@ -651,6 +689,7 @@ export function Project3DInspector({
                   {autoSpin ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
                 </button>
                 <button
+                  type="button"
                   onClick={() => setWireframe(!wireframe)}
                   title={wireframe ? 'Shaded View' : 'Wireframe View'}
                   className={`rounded p-1.5 transition-colors min-w-[32px] min-h-[32px] flex items-center justify-center ${
@@ -700,6 +739,7 @@ export function Project3DInspector({
                 </div>
                 <div className="grid grid-cols-3 gap-2">
                   <button
+                    type="button"
                     onClick={() => setCameraView('iso')}
                     className={`rounded border py-1.5 px-1 text-[11px] sm:text-xs font-mono font-semibold transition-all ${
                       currentView === 'iso'
@@ -711,6 +751,7 @@ export function Project3DInspector({
                     <span className="sm:hidden">ISO</span>
                   </button>
                   <button
+                    type="button"
                     onClick={() => setCameraView('top')}
                     className={`rounded border py-1.5 px-1 text-[11px] sm:text-xs font-mono font-semibold transition-all ${
                       currentView === 'top'
@@ -722,6 +763,7 @@ export function Project3DInspector({
                     <span className="sm:hidden">TOP</span>
                   </button>
                   <button
+                    type="button"
                     onClick={() => setCameraView('front')}
                     className={`rounded border py-1.5 px-1 text-[11px] sm:text-xs font-mono font-semibold transition-all ${
                       currentView === 'front'
@@ -769,6 +811,7 @@ export function Project3DInspector({
 
           <div className="mt-6 pt-4 border-t border-border">
             <button
+              type="button"
               onClick={onClose}
               className="w-full rounded-lg bg-surface border border-border py-2 text-xs font-semibold text-text-1 hover:bg-surface-hover transition-colors"
             >

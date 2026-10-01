@@ -1,32 +1,8 @@
 'use client';
 
 import { useState } from 'react';
-import dynamic from 'next/dynamic';
 import { Cpu, Zap, Activity, Box, Sparkles } from 'lucide-react';
-
-// Dynamically import ThreeHeroScene only on user demand with high-tech HUD skeleton
-const ThreeHeroScene = dynamic(
-  () => import('./ThreeHeroScene').then((mod) => mod.ThreeHeroScene),
-  {
-    ssr: false,
-    loading: () => (
-      <div className="w-full h-full min-h-[320px] flex flex-col items-center justify-center p-6 text-center bg-bg-0/95 font-mono select-none">
-        <div className="relative mb-4">
-          <div className="h-12 w-12 border-2 border-accent/30 border-t-accent rounded-full animate-spin" />
-          <div className="absolute inset-0 flex items-center justify-center text-[10px] text-accent font-bold">
-            3D
-          </div>
-        </div>
-        <div className="text-xs font-bold text-accent-2 tracking-widest uppercase">
-          INITIALIZING WEBGL CORE // TRAIC-H7
-        </div>
-        <div className="text-[10px] text-text-2 mt-1.5 font-mono">
-          Compiling shaders • Binding 480MHz telemetry die
-        </div>
-      </div>
-    ),
-  }
-);
+import { ThreeHeroScene } from './ThreeHeroScene';
 
 export function HeroHardwareViewport() {
   const [mode, setMode] = useState<'image' | '3d'>('3d');
@@ -45,7 +21,11 @@ export function HeroHardwareViewport() {
         {/* 2D Lite vs 3D Interactive Selector */}
         <div className="flex items-center gap-1 rounded-lg border border-border/80 bg-bg-0/80 p-0.5 text-[10px] font-mono shrink-0">
           <button
-            onClick={() => setMode('image')}
+            type="button"
+            onClick={(e) => {
+              e.preventDefault();
+              setMode('image');
+            }}
             className={`flex items-center gap-1 px-2.5 py-1 rounded transition-all font-semibold ${
               mode === 'image'
                 ? 'bg-accent-2 text-bg-0 shadow-sm'
@@ -57,7 +37,11 @@ export function HeroHardwareViewport() {
             <span>2D LITE</span>
           </button>
           <button
-            onClick={() => setMode('3d')}
+            type="button"
+            onClick={(e) => {
+              e.preventDefault();
+              setMode('3d');
+            }}
             className={`flex items-center gap-1 px-2.5 py-1 rounded transition-all font-semibold ${
               mode === '3d'
                 ? 'bg-accent text-accent-fg shadow-sm'
