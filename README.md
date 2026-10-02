@@ -6,9 +6,12 @@
 [![Express 5](https://img.shields.io/badge/Express-5.0.1-green)](https://expressjs.com/)
 [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-Neon_Serverless-4169E1)](https://neon.tech/)
 [![Three.js](https://img.shields.io/badge/Three.js-WebGL_3D-orange)](https://threejs.org/)
-[![Tests](https://img.shields.io/badge/Tests-50%2F50_Passing-brightgreen)](TESTING.md)
+[![Tests](https://img.shields.io/badge/Tests-61%2F61_Passing-brightgreen)](README.md)
+[![Documentation](https://img.shields.io/badge/Docs-Full_System_Specification-blueviolet)](DOCUMENTATION.md)
 
 > The official engineering platform for **TRAIC** — a premier collegiate community designing custom PCBs, programming autonomous robots, and deploying edge AI systems.
+>
+> 📖 **Comprehensive System Documentation**: For complete API specs, database schemas, graphics architecture, threat model, and runbooks, see [DOCUMENTATION.md](DOCUMENTATION.md).
 
 ---
 
@@ -30,11 +33,9 @@ Coordinator / Admin
                                                                 │
                                    ┌────────────────────────────┴────────────────────────────┐
                                    ▼                                                         ▼
-                       In-Memory RAM Cache                                        Dual-Mode Persistence
-                   (Sub-millisecond reads: 0.8ms)                       ┌────────────────────┴────────────────────┐
-                                                                        ▼                                         ▼
-                                                             Neon PostgreSQL (Cloud)                     Atomic Disk Storage
-                                                             (ACID JSONB Store: 11 Tables)              (traic_store.json)
+                       In-Memory RAM Cache                                        Cloud Neon Database
+                    (Sub-millisecond reads: 0.8ms)                               (ACID JSONB Store: 11 Tables)
+                                                                                  (SSL Encrypted AWS Cloud)
 ```
 
 ---
@@ -52,7 +53,7 @@ Tested and verified against live services with the automated full-system benchma
 | **Admin API** (`/admin/auth/login`) | Master Key Auth | **3.54 ms** | 200 OK | Timing-safe crypto + 256-bit token |
 | **Admin API** (`/admin/projects`) | Create Project | **5.99 ms** | 201 Created | Instant memory update + Neon write-through |
 | **Admin API** (`/admin/projects/:id`) | Toggle Visibility | **4.86 ms** | 200 OK | Instant 1-click status flip (`PUBLISHED` ↔ `DRAFT`) |
-| **Admin API** (`/admin/projects/:id`) | Delete Project | **4.75 ms** | 200 OK | Clean purge from memory, disk, and Neon |
+| **Admin API** (`/admin/projects/:id`) | Delete Project | **4.75 ms** | 200 OK | Clean purge from memory and Neon cloud |
 | **Admin Portal** (`/`) | Load SPA Shell | **10.56 ms** | 200 OK | Vite 6 chunked distribution |
 | **Public Web** (`/`) | Home SSG Page | **347.16 ms** | 200 OK | Statically generated Next.js 15 bundle |
 
@@ -66,10 +67,9 @@ Tested and verified against live services with the automated full-system benchma
 - **Project CAD Inspector**: Full-screen modal supporting procedural 3D models (Autonomous Rover, Multi-layer PCB, Satellite Dish), camera angle presets (Isometric, Top, Front), wireframe mode, and pinch-to-zoom.
 - **Low-Power Fallback**: 2D Lite mode and `webglcontextlost`/`webglcontextrestored` event resilience for budget phones.
 
-### 2. Autonomous Dual-Mode Database Engine
-- **Cloud Mode (Production)**: When `DATABASE_URL` is set, auto-connects to **Neon Serverless PostgreSQL** over SSL, auto-provisions all 11 tables with `JSONB` document storage, and writes through asynchronously.
-- **Offline Mode (Local Dev)**: When `DATABASE_URL` is omitted, operates with **Atomic Disk Persistence** (`data/traic_store.json`), allowing developers to work 100% offline with zero external infrastructure.
-- **Sub-Millisecond Read Latency**: All public requests are served directly from RAM (`< 1ms`), outperforming remote database queries by over 50x.
+### 2. Cloud-Native Serverless Database Engine
+- **Neon PostgreSQL (Cloud Persistence)**: Direct cloud connection to **Neon Serverless PostgreSQL** over SSL via pg.Pool with automated 11-table JSONB document storage.
+- **Sub-Millisecond Read Latency**: All public requests are served directly from RAM (< 1ms), outperforming remote database queries by over 50x while guaranteeing complete ACID safety in the cloud.
 
 ### 3. High-Security Admin Console (`apps/admin`)
 - **Timing-Safe Auth Gate**: Restricts access behind `ADMIN_PASSWORD` verified via constant-time string comparison (`crypto.timingSafeEqual`) to prevent side-channel timing attacks.
@@ -90,8 +90,6 @@ traic/
 ├── packages/
 │   ├── shared/               # Single source of truth for Zod schemas & types
 │   └── config/               # Base tsconfig, eslint, and prettier presets
-├── data/
-│   └── traic_store.json      # Atomic local disk backup store
 ├── Dockerfile                # Multi-stage Alpine container for API
 ├── Dockerfile.web            # Multi-stage container for Next.js standalone
 ├── Dockerfile.admin          # High-speed Nginx container for Admin SPA
@@ -128,7 +126,7 @@ ADMIN_PASSWORD=traic_admin_2025!
 SESSION_SECRET=your_super_secret_session_key_min_16_chars
 PORT=4000
 ```
-*(If `DATABASE_URL` is omitted, the API will automatically use local atomic file persistence).*
+*(Neon PostgreSQL connection string with SSL encryption configured).*
 
 ### 3. Launch Development Servers
 ```bash
@@ -154,7 +152,7 @@ pnpm lint
 # Production build verification (Next.js SSG + Vite bundle + esbuild standalone)
 pnpm build
 
-# Run 50-point full-stack integration & cyber defense suite
+# Run 61-point full-stack integration & cyber defense suite
 node scratch/test_full_suite.mjs
 ```
 

@@ -24,7 +24,7 @@ class PostgresDatabase {
 
   constructor() {
     if (!env.DATABASE_URL) {
-      logger.info('Database: No DATABASE_URL provided. Running with Atomic Disk Persistence (traic_store.json).');
+      logger.error('Database: CRITICAL: No DATABASE_URL provided. Neon Serverless PostgreSQL connection required.');
       return;
     }
 
@@ -48,7 +48,7 @@ class PostgresDatabase {
         logger.error({ err }, 'PostgreSQL Pool background client error');
       });
     } catch (err) {
-      logger.warn({ err }, 'Failed to initialize PostgreSQL pool; falling back to local file store.');
+      logger.error({ err }, 'Failed to initialize Neon PostgreSQL connection pool.');
       this.pool = null;
     }
   }
@@ -78,7 +78,7 @@ class PostgresDatabase {
 
       return true;
     } catch (err) {
-      logger.warn({ err }, 'PostgreSQL connection/init failed. Running with local atomic file store fallback.');
+      logger.error({ err }, 'Neon PostgreSQL connection/initialization failed.');
       this.isConnected = false;
       return false;
     }

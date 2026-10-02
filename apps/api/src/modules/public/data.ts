@@ -12,8 +12,6 @@ import type {
   GalleryItem,
 } from '@traic/shared';
 import crypto from 'node:crypto';
-import fs from 'node:fs';
-import path from 'node:path';
 import { db } from '../db/postgres';
 
 // Initial seed states
@@ -407,7 +405,6 @@ const initialApplications: JoinApplication[] = [
 ];
 
 class DataStore {
-  private dbFilePath: string;
 
   public projects: Project[] = [...initialProjects];
   public achievements: Achievement[] = [...initialAchievements];
@@ -421,40 +418,17 @@ class DataStore {
   public applications: JoinApplication[] = [...initialApplications];
   public messages: ContactMessage[] = [];
 
+  private isInitialized = false;
+
   constructor() {
-    const dataDir = path.resolve(process.cwd(), 'data');
-    if (!fs.existsSync(dataDir)) {
-      try {
-        fs.mkdirSync(dataDir, { recursive: true });
-      } catch (_) {}
-    }
-    this.dbFilePath = path.join(dataDir, 'traic_store.json');
-    this.load();
-    this.initPostgresSync();
+    // Background kickstart if not explicitly awaited
+    this.init().catch((err) => console.warn('DataStore: background init warning:', err));
   }
 
-  private load(): void {
-    try {
-      if (fs.existsSync(this.dbFilePath)) {
-        const raw = fs.readFileSync(this.dbFilePath, 'utf-8');
-        const parsed = JSON.parse(raw);
-        if (Array.isArray(parsed.projects)) this.projects = parsed.projects;
-        if (Array.isArray(parsed.achievements)) this.achievements = parsed.achievements;
-        if (Array.isArray(parsed.events)) this.events = parsed.events;
-        if (Array.isArray(parsed.members)) this.members = parsed.members;
-        if (Array.isArray(parsed.alumni)) this.alumni = parsed.alumni;
-        if (Array.isArray(parsed.tracks)) this.tracks = parsed.tracks;
-        if (Array.isArray(parsed.banners)) this.banners = parsed.banners;
-        if (Array.isArray(parsed.gallery)) this.gallery = parsed.gallery;
-        if (parsed.settings && typeof parsed.settings === 'object') this.settings = parsed.settings;
-        if (Array.isArray(parsed.applications)) this.applications = parsed.applications;
-        if (Array.isArray(parsed.messages)) this.messages = parsed.messages;
-      } else {
-        this.persist();
-      }
-    } catch (e) {
-      console.warn('DataStore: Could not load persistence file, using seed memory:', e);
-    }
+  public async init(): Promise<void> {
+    if (this.isInitialized) return;
+    await this.initPostgresSync();
+    this.isInitialized = true;
   }
 
   private async initPostgresSync(): Promise<void> {
@@ -511,36 +485,12 @@ class DataStore {
         if (remoteGallery.length > 0) this.gallery = remoteGallery;
         if (remoteSettings.length > 0 && remoteSettings[0]) this.settings = remoteSettings[0];
         if (remoteApps.length > 0) this.applications = remoteApps;
-
-        this.persist();
       }
     } catch (err) {
       console.warn('DataStore: Remote PostgreSQL sync error:', err);
     }
   }
 
-  public persist(): void {
-    try {
-      const data = {
-        projects: this.projects,
-        achievements: this.achievements,
-        events: this.events,
-        members: this.members,
-        alumni: this.alumni,
-        tracks: this.tracks,
-        banners: this.banners,
-        gallery: this.gallery,
-        settings: this.settings,
-        applications: this.applications,
-        messages: this.messages,
-      };
-      const tempPath = `${this.dbFilePath}.tmp`;
-      fs.writeFileSync(tempPath, JSON.stringify(data, null, 2), 'utf-8');
-      fs.renameSync(tempPath, this.dbFilePath);
-    } catch (err) {
-      console.error('DataStore: Failed to persist to disk:', err);
-    }
-  }
 
   // Projects CRUD
   getProjects(publishedOnly = false) {
@@ -566,7 +516,6 @@ class DataStore {
       updatedAt: new Date().toISOString(),
     };
     this.projects.unshift(newProject);
-    this.persist();
     db.upsert('projects', newProject.id, newProject);
     return newProject;
   }
@@ -578,7 +527,6 @@ class DataStore {
       ...data,
       updatedAt: new Date().toISOString(),
     };
-    this.persist();
     db.upsert('projects', this.projects[idx].id, this.projects[idx]);
     return this.projects[idx];
   }
@@ -587,7 +535,6 @@ class DataStore {
     if (idx === -1) return false;
     const target = this.projects[idx];
     this.projects.splice(idx, 1);
-    this.persist();
     db.delete('projects', target.id);
     return true;
   }
@@ -614,7 +561,6 @@ class DataStore {
       id: crypto.randomUUID(),
     };
     this.events.unshift(newEvent);
-    this.persist();
     db.upsert('events', newEvent.id, newEvent);
     return newEvent;
   }
@@ -622,7 +568,6 @@ class DataStore {
     const idx = this.events.findIndex((e) => e.id === id);
     if (idx === -1) return null;
     this.events[idx] = { ...this.events[idx], ...data };
-    this.persist();
     db.upsert('events', this.events[idx].id, this.events[idx]);
     return this.events[idx];
   }
@@ -631,7 +576,6 @@ class DataStore {
     if (idx === -1) return false;
     const target = this.events[idx];
     this.events.splice(idx, 1);
-    this.persist();
     db.delete('events', target.id);
     return true;
   }
@@ -649,7 +593,6 @@ class DataStore {
       id: crypto.randomUUID(),
     };
     this.achievements.unshift(newAch);
-    this.persist();
     db.upsert('achievements', newAch.id, newAch);
     return newAch;
   }
@@ -657,7 +600,6 @@ class DataStore {
     const idx = this.achievements.findIndex((a) => a.id === id);
     if (idx === -1) return null;
     this.achievements[idx] = { ...this.achievements[idx], ...data };
-    this.persist();
     db.upsert('achievements', this.achievements[idx].id, this.achievements[idx]);
     return this.achievements[idx];
   }
@@ -666,7 +608,6 @@ class DataStore {
     if (idx === -1) return false;
     const target = this.achievements[idx];
     this.achievements.splice(idx, 1);
-    this.persist();
     db.delete('achievements', target.id);
     return true;
   }
@@ -682,7 +623,6 @@ class DataStore {
       id: crypto.randomUUID(),
     };
     this.members.push(newMember);
-    this.persist();
     db.upsert('members', newMember.id, newMember);
     return newMember;
   }
@@ -690,7 +630,6 @@ class DataStore {
     const idx = this.members.findIndex((m) => m.id === id);
     if (idx === -1) return null;
     this.members[idx] = { ...this.members[idx], ...data };
-    this.persist();
     db.upsert('members', this.members[idx].id, this.members[idx]);
     return this.members[idx];
   }
@@ -699,7 +638,6 @@ class DataStore {
     if (idx === -1) return false;
     const target = this.members[idx];
     this.members.splice(idx, 1);
-    this.persist();
     db.delete('members', target.id);
     return true;
   }
@@ -717,7 +655,6 @@ class DataStore {
       id: crypto.randomUUID(),
     };
     this.alumni.unshift(newAlumni);
-    this.persist();
     db.upsert('alumni', newAlumni.id, newAlumni);
     return newAlumni;
   }
@@ -725,7 +662,6 @@ class DataStore {
     const idx = this.alumni.findIndex((al) => al.id === id);
     if (idx === -1) return null;
     this.alumni[idx] = { ...this.alumni[idx], ...data };
-    this.persist();
     db.upsert('alumni', this.alumni[idx].id, this.alumni[idx]);
     return this.alumni[idx];
   }
@@ -734,7 +670,6 @@ class DataStore {
     if (idx === -1) return false;
     const target = this.alumni[idx];
     this.alumni.splice(idx, 1);
-    this.persist();
     db.delete('alumni', target.id);
     return true;
   }
@@ -753,7 +688,6 @@ class DataStore {
         : this.settings.announcement,
       socials: data.socials ? { ...this.settings.socials, ...data.socials } : this.settings.socials,
     };
-    this.persist();
     db.upsert('settings', 'default', this.settings);
     return this.settings;
   }
@@ -769,7 +703,6 @@ class DataStore {
       createdAt: new Date().toISOString(),
     };
     this.applications.unshift(newApp);
-    this.persist();
     db.upsert('applications', newApp.id, newApp);
     return newApp;
   }
@@ -777,7 +710,6 @@ class DataStore {
     const idx = this.applications.findIndex((a) => a.id === id);
     if (idx === -1) return null;
     this.applications[idx] = { ...this.applications[idx], ...data };
-    this.persist();
     db.upsert('applications', this.applications[idx].id, this.applications[idx]);
     return this.applications[idx];
   }
@@ -786,7 +718,6 @@ class DataStore {
     if (idx === -1) return false;
     const target = this.applications[idx];
     this.applications.splice(idx, 1);
-    this.persist();
     db.delete('applications', target.id);
     return true;
   }
@@ -804,7 +735,6 @@ class DataStore {
       id: crypto.randomUUID(),
     };
     this.tracks.push(newTrack);
-    this.persist();
     db.upsert('tracks', newTrack.id, newTrack);
     return newTrack;
   }
@@ -812,7 +742,6 @@ class DataStore {
     const idx = this.tracks.findIndex((t) => t.id === id);
     if (idx === -1) return null;
     this.tracks[idx] = { ...this.tracks[idx], ...data };
-    this.persist();
     db.upsert('tracks', this.tracks[idx].id, this.tracks[idx]);
     return this.tracks[idx];
   }
@@ -821,7 +750,6 @@ class DataStore {
     if (idx === -1) return false;
     const target = this.tracks[idx];
     this.tracks.splice(idx, 1);
-    this.persist();
     db.delete('tracks', target.id);
     return true;
   }
@@ -840,7 +768,6 @@ class DataStore {
       createdAt: new Date().toISOString(),
     };
     this.banners.unshift(newBanner);
-    this.persist();
     db.upsert('banners', newBanner.id, newBanner);
     return newBanner;
   }
@@ -848,7 +775,6 @@ class DataStore {
     const idx = this.banners.findIndex((b) => b.id === id);
     if (idx === -1) return null;
     this.banners[idx] = { ...this.banners[idx], ...data };
-    this.persist();
     db.upsert('banners', this.banners[idx].id, this.banners[idx]);
     return this.banners[idx];
   }
@@ -857,7 +783,6 @@ class DataStore {
     if (idx === -1) return false;
     const target = this.banners[idx];
     this.banners.splice(idx, 1);
-    this.persist();
     db.delete('banners', target.id);
     return true;
   }
@@ -875,7 +800,6 @@ class DataStore {
       id: crypto.randomUUID(),
     };
     this.gallery.unshift(item);
-    this.persist();
     db.upsert('gallery', item.id, item);
     return item;
   }
@@ -883,7 +807,6 @@ class DataStore {
     const idx = this.gallery.findIndex((g) => g.id === id);
     if (idx === -1) return null;
     this.gallery[idx] = { ...this.gallery[idx], ...data };
-    this.persist();
     db.upsert('gallery', this.gallery[idx].id, this.gallery[idx]);
     return this.gallery[idx];
   }
@@ -892,7 +815,6 @@ class DataStore {
     if (idx === -1) return false;
     const target = this.gallery[idx];
     this.gallery.splice(idx, 1);
-    this.persist();
     db.delete('gallery', target.id);
     return true;
   }
@@ -908,7 +830,6 @@ class DataStore {
       createdAt: new Date().toISOString(),
     };
     this.messages.unshift(newMsg);
-    this.persist();
     db.upsert('messages', newMsg.id, newMsg);
     return newMsg;
   }
