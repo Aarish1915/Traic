@@ -127,3 +127,17 @@ html.light .metallic-card {
   border-top: 2px solid #0284c7;
   box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.06);
 }
+
+/* Aerospace Bezel & Chamfered Frame */
+.aerospace-bezel {
+  border: 1.5px solid rgba(0, 229, 255, 0.4);
+  box-shadow: 0 0 20px rgba(0, 229, 255, 0.25);
+  backdrop-filter: blur(12px);
+}
+
+html.light .aerospace-bezel,
+[data-theme="light"] .aerospace-bezel {
+  border: 1.5px solid rgba(2, 132, 199, 0.45);
+  box-shadow: 0 4px 16px rgba(2, 132, 199, 0.15);
+}
+

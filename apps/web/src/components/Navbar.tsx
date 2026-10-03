@@ -24,17 +24,17 @@ export function Navbar() {
     <header className="sticky top-0 z-50 w-full border-b border-border/80 bg-bg-0/80 backdrop-blur-md">
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
         {/* Brand */}
-        <Link href="/" className="flex items-center gap-3 font-bold tracking-tight group">
-          <div className="relative flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-accent/40 bg-surface/80 p-1 shadow-[0_0_15px_rgba(0,229,255,0.25)] transition-all group-hover:shadow-[0_0_22px_rgba(0,229,255,0.45)] group-hover:border-accent">
+        <Link href="/" className="flex items-center gap-3.5 font-bold tracking-tight group">
+          <div className="relative flex h-11 w-11 sm:h-12 sm:w-12 shrink-0 items-center justify-center rounded-xl border-[1.5px] border-accent/45 bg-surface/90 p-1 shadow-[0_0_20px_rgba(0,229,255,0.25)] transition-all group-hover:shadow-[0_0_28px_rgba(0,229,255,0.5)] group-hover:border-accent">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/traic-logo.png" alt="TRAIC Official Logo" className="h-full w-full object-contain" />
+            <img src="/traic-logo.png" alt="TRAIC Official Logo" className="h-full w-full object-contain filter drop-shadow-sm" />
           </div>
           <div className="flex flex-col">
             <div className="flex items-center gap-1.5">
               <span className="text-lg sm:text-xl font-black tracking-wider text-text-1 group-hover:text-accent transition-colors">TRAIC</span>
               <span className="h-1.5 w-1.5 rounded-full bg-accent animate-pulse" />
             </div>
-            <span className="text-[8px] sm:text-[9px] tracking-wider sm:tracking-widest text-accent font-mono uppercase block leading-tight">
+            <span className="text-[8px] sm:text-[9px] tracking-[0.14em] text-accent font-mono uppercase block leading-tight font-semibold">
               HONOR • HONESTY • SACRIFICE
             </span>
           </div>

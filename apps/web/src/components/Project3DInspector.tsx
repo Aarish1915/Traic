@@ -12,6 +12,7 @@ import {
   Pause,
   Box,
   Zap,
+  Layers,
 } from 'lucide-react';
 
 interface Project3DInspectorProps {
@@ -20,6 +21,14 @@ interface Project3DInspectorProps {
   techStack: string[];
   modelUrl?: string;
   onClose: () => void;
+}
+
+interface ComponentTelemetry {
+  name: string;
+  category: string;
+  spec: string;
+  bus: string;
+  status: string;
 }
 
 export function Project3DInspector({
@@ -33,6 +42,8 @@ export function Project3DInspector({
   const [viewMode, setViewMode] = useState<'3d' | '2d'>('3d');
   const [wireframe, setWireframe] = useState(false);
   const [autoSpin, setAutoSpin] = useState(true);
+  const [isExploded, setIsExploded] = useState(false);
+  const [hoveredComponent, setHoveredComponent] = useState<ComponentTelemetry | null>(null);
   const [isLoadingModel, setIsLoadingModel] = useState(false);
   const [isCustomModel, setIsCustomModel] = useState(false);
   const [currentView, setCurrentView] = useState<'iso' | 'top' | 'front'>('iso');
@@ -42,6 +53,8 @@ export function Project3DInspector({
   const groupRef = useRef<THREE.Group | null>(null);
   const autoSpinRef = useRef(autoSpin);
   autoSpinRef.current = autoSpin;
+  const isExplodedRef = useRef(isExploded);
+  isExplodedRef.current = isExploded;
 
   // Determine fallback 2D CAD schematic image based on category
   let schematicImage = '/images/projects/project-pcb-cad.jpg';
@@ -189,11 +202,69 @@ export function Project3DInspector({
       dirLight2.position.set(-8, -6, -6);
       scene.add(dirLight2);
 
+      // Interactive meshes array for Raycasting
+      const interactiveMeshes: THREE.Mesh[] = [];
+      const raycaster = new THREE.Raycaster();
+      const mouseCoords = new THREE.Vector2();
+      let hoveredMesh: THREE.Mesh | null = null;
+      let origColor: THREE.Color | null = null;
+
+      const checkRaycast = (clientX: number, clientY: number) => {
+        if (!dom || !camera) return;
+        const rect = dom.getBoundingClientRect();
+        if (
+          clientX < rect.left ||
+          clientX > rect.right ||
+          clientY < rect.top ||
+          clientY > rect.bottom
+        ) {
+          if (hoveredMesh && origColor) {
+            const mat = hoveredMesh.material as THREE.MeshStandardMaterial;
+            if (mat?.color) mat.color.copy(origColor);
+            hoveredMesh = null;
+            origColor = null;
+          }
+          setHoveredComponent(null);
+          return;
+        }
+        mouseCoords.x = ((clientX - rect.left) / rect.width) * 2 - 1;
+        mouseCoords.y = -((clientY - rect.top) / rect.height) * 2 + 1;
+        raycaster.setFromCamera(mouseCoords, camera);
+        const hits = raycaster.intersectObjects(interactiveMeshes, false);
+        if (hits.length > 0) {
+          const firstHit = hits[0].object as THREE.Mesh;
+          if (firstHit.userData?.telemetry) {
+            if (hoveredMesh !== firstHit) {
+              if (hoveredMesh && origColor) {
+                const mat = hoveredMesh.material as THREE.MeshStandardMaterial;
+                if (mat?.color) mat.color.copy(origColor);
+              }
+              hoveredMesh = firstHit;
+              const mat = hoveredMesh.material as THREE.MeshStandardMaterial;
+              if (mat?.color) {
+                origColor = mat.color.clone();
+                mat.color.set(0x00e5ff); // Highlight with electric cyan
+              }
+            }
+            setHoveredComponent(firstHit.userData.telemetry);
+            return;
+          }
+        }
+        if (hoveredMesh && origColor) {
+          const mat = hoveredMesh.material as THREE.MeshStandardMaterial;
+          if (mat?.color) mat.color.copy(origColor);
+          hoveredMesh = null;
+          origColor = null;
+        }
+        setHoveredComponent(null);
+      };
+
       // Build rich procedural 3D model tailored to project category
       const buildProceduralModel = () => {
         while (group.children.length > 0) {
           group.remove(group.children[0]);
         }
+        interactiveMeshes.length = 0;
 
         if (category === 'HYBRID') {
           // 1. AUTONOMOUS ALL-TERRAIN ROVER
@@ -205,7 +276,17 @@ export function Project3DInspector({
             wireframe,
           });
           const chassis = new THREE.Mesh(chassisGeo, chassisMat);
+          chassis.userData.basePos = new THREE.Vector3(0, 0, 0);
+          chassis.userData.explodedPos = new THREE.Vector3(0, 0, 0);
+          chassis.userData.telemetry = {
+            name: 'UGV-X TITANIUM CHASSIS MONOCOQUE',
+            category: 'Structural Airframe & Electronics Bay',
+            spec: 'T6-6061 Aerospace Aluminum & Carbon Fiber',
+            bus: 'Internal Isolated Power/CAN Backbone',
+            status: 'STRUCTURAL NOMINAL',
+          };
           group.add(chassis);
+          interactiveMeshes.push(chassis);
 
           const edgeGeo = new THREE.EdgesGeometry(chassisGeo);
           const edgeMat = new THREE.LineBasicMaterial({ color: 0x38bdf8 });
@@ -220,18 +301,33 @@ export function Project3DInspector({
             [-2.1, -0.4, -1.6],
             [2.1, -0.4, -1.6],
           ];
+          const posNames = ['FL', 'FR', 'RL', 'RR'];
 
-          wheelCoords.forEach(([x, y, z]) => {
+          wheelCoords.forEach(([x, y, z], idx) => {
             const wheelGeo = new THREE.CylinderGeometry(0.85, 0.85, 0.55, 16);
             const wheel = new THREE.Mesh(wheelGeo, wheelMat);
             wheel.rotation.x = Math.PI / 2;
-            wheel.position.set(x, y, z);
+            const base = new THREE.Vector3(x, y, z);
+            const exploded = new THREE.Vector3(x > 0 ? x + 1.8 : x - 1.8, y, z > 0 ? z + 1.2 : z - 1.2);
+            wheel.position.copy(base);
+            wheel.userData.basePos = base;
+            wheel.userData.explodedPos = exploded;
+            wheel.userData.telemetry = {
+              name: `${posNames[idx]} BLDC HUB DRIVE`,
+              category: 'Planetary Traction Drivetrain',
+              spec: '350W 48V FOC Drive • 32 Nm Stall Torque',
+              bus: 'CAN 2.0B / Dual Hall Differential Feedback',
+              status: 'ACTIVE // 48.0V NOMINAL',
+            };
             group.add(wheel);
+            interactiveMeshes.push(wheel);
 
             const rimGeo = new THREE.CylinderGeometry(0.45, 0.45, 0.6, 12);
             const rim = new THREE.Mesh(rimGeo, rimMat);
             rim.rotation.x = Math.PI / 2;
-            rim.position.set(x, y, z);
+            rim.position.copy(base);
+            rim.userData.basePos = base;
+            rim.userData.explodedPos = exploded;
             group.add(rim);
           });
 
@@ -241,14 +337,34 @@ export function Project3DInspector({
             new THREE.MeshStandardMaterial({ color: 0x334155, metalness: 0.7, wireframe })
           );
           lidarBase.position.set(0, 0.75, 0);
+          lidarBase.userData.basePos = new THREE.Vector3(0, 0.75, 0);
+          lidarBase.userData.explodedPos = new THREE.Vector3(0, 2.0, 0);
+          lidarBase.userData.telemetry = {
+            name: 'LIDAR GIMBAL RISER & DAMPER',
+            category: 'Sensor Vibration Isolation Mount',
+            spec: 'Tuned Viscoelastic Dampener • 45 Shore A',
+            bus: 'PWM Tilt Servo / UART Telemetry',
+            status: 'ISOLATED',
+          };
           group.add(lidarBase);
+          interactiveMeshes.push(lidarBase);
 
           const lidarPuck = new THREE.Mesh(
             new THREE.CylinderGeometry(0.4, 0.4, 0.4, 16),
             new THREE.MeshStandardMaterial({ color: 0x0284c7, metalness: 0.9, roughness: 0.1, wireframe })
           );
           lidarPuck.position.set(0, 1.15, 0);
+          lidarPuck.userData.basePos = new THREE.Vector3(0, 1.15, 0);
+          lidarPuck.userData.explodedPos = new THREE.Vector3(0, 3.4, 0);
+          lidarPuck.userData.telemetry = {
+            name: '360° SOLID-STATE TIME-OF-FLIGHT LIDAR',
+            category: 'Autonomous Spatial Perception Core',
+            spec: '16-Beam 100m Range @ 20Hz • 0.1° Resolution',
+            bus: '100BASE-T1 Automotive Ethernet',
+            status: 'SCANNING // 20.0 FPS',
+          };
           group.add(lidarPuck);
+          interactiveMeshes.push(lidarPuck);
         } else if (category === 'SOFTWARE') {
           // 2. SATELLITE GROUND STATION ANTENNA
           const basePedestal = new THREE.Mesh(
@@ -256,14 +372,34 @@ export function Project3DInspector({
             new THREE.MeshStandardMaterial({ color: 0x1e293b, metalness: 0.8, wireframe })
           );
           basePedestal.position.set(0, -1.2, 0);
+          basePedestal.userData.basePos = new THREE.Vector3(0, -1.2, 0);
+          basePedestal.userData.explodedPos = new THREE.Vector3(0, -2.6, 0);
+          basePedestal.userData.telemetry = {
+            name: 'AZ/EL DUAL-AXIS HARMONIC ROTATOR',
+            category: 'Precision Antenna Positioner',
+            spec: 'Harmonic Drive 0.01° Resolution • 45°/s',
+            bus: 'RS-485 / Modbus RTU @ 115200 bps',
+            status: 'LOCKED // SATELLITE TRACKING',
+          };
           group.add(basePedestal);
+          interactiveMeshes.push(basePedestal);
 
           const mast = new THREE.Mesh(
             new THREE.CylinderGeometry(0.3, 0.3, 2.2, 16),
             new THREE.MeshStandardMaterial({ color: 0x475569, metalness: 0.9, wireframe })
           );
           mast.position.set(0, 0.1, 0);
+          mast.userData.basePos = new THREE.Vector3(0, 0.1, 0);
+          mast.userData.explodedPos = new THREE.Vector3(0, 0.1, 0);
+          mast.userData.telemetry = {
+            name: 'CARBON COMPOSITE MAST',
+            category: 'Rigid High-Modulus Support Mast',
+            spec: '50mm OD Ultra-Stiff Carbon Fiber Tube',
+            bus: 'Internal Coaxial Run (RG-402 Low-Loss)',
+            status: 'STABLE',
+          };
           group.add(mast);
+          interactiveMeshes.push(mast);
 
           // Parabolic Dish
           const dishGeo = new THREE.SphereGeometry(2.4, 24, 16, 0, Math.PI * 2, 0, Math.PI / 2.6);
@@ -277,7 +413,17 @@ export function Project3DInspector({
           const dish = new THREE.Mesh(dishGeo, dishMat);
           dish.rotation.x = Math.PI / 4;
           dish.position.set(0, 1.5, 0);
+          dish.userData.basePos = new THREE.Vector3(0, 1.5, 0);
+          dish.userData.explodedPos = new THREE.Vector3(0, 3.0, -0.8);
+          dish.userData.telemetry = {
+            name: 'PARABOLIC DISH REFLECTOR',
+            category: 'High-Gain Microwave Dish',
+            spec: '2.4 GHz / 5.8 GHz Dual-Band Mesh • 24 dBi',
+            bus: 'Waveguide Feed Horn Interface',
+            status: 'RX ACTIVE // SNR +28dB',
+          };
           group.add(dish);
+          interactiveMeshes.push(dish);
 
           // Central Feed Horn
           const horn = new THREE.Mesh(
@@ -286,32 +432,108 @@ export function Project3DInspector({
           );
           horn.rotation.x = -Math.PI / 4;
           horn.position.set(0, 2.1, 0.7);
+          horn.userData.basePos = new THREE.Vector3(0, 2.1, 0.7);
+          horn.userData.explodedPos = new THREE.Vector3(0, 4.8, 1.8);
+          horn.userData.telemetry = {
+            name: 'CRYOGENIC-GRADE LNA & FEED HORN',
+            category: 'RF Front-End Receiver Core',
+            spec: '0.6 dB Noise Figure @ 2.4 GHz • 40 dB Gain',
+            bus: 'SMA 50-Ohm Coax to SDR Quadrature Demod',
+            status: 'ONLINE // LOW NOISE',
+          };
           group.add(horn);
+          interactiveMeshes.push(horn);
         } else {
-          // 3. PRECISION 4-LAYER HARDWARE PCB BOARD
-          const baseGeo = new THREE.BoxGeometry(7.0, 0.3, 4.8);
-          const baseMat = new THREE.MeshStandardMaterial({
-            color: 0x064e3b,
-            roughness: 0.3,
-            metalness: 0.5,
-            wireframe,
-          });
-          const baseMesh = new THREE.Mesh(baseGeo, baseMat);
-          group.add(baseMesh);
+          // 3. PRECISION 4-LAYER HARDWARE PCB BOARD (EXPLODED LAYER STACKUP)
+          // Layer 4 (Bottom GND Plane)
+          const l4Geo = new THREE.BoxGeometry(7.0, 0.08, 4.8);
+          const l4Mat = new THREE.MeshStandardMaterial({ color: 0x022c22, roughness: 0.3, metalness: 0.6, wireframe });
+          const l4Mesh = new THREE.Mesh(l4Geo, l4Mat);
+          l4Mesh.position.set(0, -0.15, 0);
+          l4Mesh.userData.basePos = new THREE.Vector3(0, -0.15, 0);
+          l4Mesh.userData.explodedPos = new THREE.Vector3(0, -2.0, 0);
+          l4Mesh.userData.telemetry = {
+            name: 'FR4 LAYER 4 // BOTTOM GROUND PLANE',
+            category: 'Continuous EMI Return Path Shield',
+            spec: '1.0 oz Solid Copper Shielding Plane',
+            bus: 'GND Shield Reference (0.00V)',
+            status: '0.00V REF // GROUNDED',
+          };
+          group.add(l4Mesh);
+          interactiveMeshes.push(l4Mesh);
 
-          const edgeGeo = new THREE.EdgesGeometry(baseGeo);
+          // Layer 3 (Power Plane)
+          const l3Geo = new THREE.BoxGeometry(7.0, 0.08, 4.8);
+          const l3Mat = new THREE.MeshStandardMaterial({ color: 0x78350f, roughness: 0.3, metalness: 0.7, wireframe });
+          const l3Mesh = new THREE.Mesh(l3Geo, l3Mat);
+          l3Mesh.position.set(0, -0.05, 0);
+          l3Mesh.userData.basePos = new THREE.Vector3(0, -0.05, 0);
+          l3Mesh.userData.explodedPos = new THREE.Vector3(0, -0.7, 0);
+          l3Mesh.userData.telemetry = {
+            name: 'FR4 LAYER 3 // POWER DISTRIBUTION PLANE',
+            category: 'Internal Split VCC Plane',
+            spec: '3.3V / 5.0V / 12.0V Split Plane • 8A Capacity',
+            bus: 'VCC Power Net',
+            status: '3.30V STABLE // 12mV RIPPLE',
+          };
+          group.add(l3Mesh);
+          interactiveMeshes.push(l3Mesh);
+
+          // Layer 2 (High-Speed Signal Plane)
+          const l2Geo = new THREE.BoxGeometry(7.0, 0.08, 4.8);
+          const l2Mat = new THREE.MeshStandardMaterial({ color: 0x0369a1, roughness: 0.3, metalness: 0.5, wireframe });
+          const l2Mesh = new THREE.Mesh(l2Geo, l2Mat);
+          l2Mesh.position.set(0, 0.05, 0);
+          l2Mesh.userData.basePos = new THREE.Vector3(0, 0.05, 0);
+          l2Mesh.userData.explodedPos = new THREE.Vector3(0, 0.7, 0);
+          l2Mesh.userData.telemetry = {
+            name: 'FR4 LAYER 2 // HIGH-SPEED SIGNAL ROUTING',
+            category: 'Impedance-Controlled Stripline Traces',
+            spec: '90-Ohm Differential Pairs (USB/CAN-FD/Ethernet)',
+            bus: 'High-Speed Bus Traces',
+            status: 'ROUTED // LENGTH MATCHED',
+          };
+          group.add(l2Mesh);
+          interactiveMeshes.push(l2Mesh);
+
+          // Layer 1 (Top SMT Substrate)
+          const l1Geo = new THREE.BoxGeometry(7.0, 0.12, 4.8);
+          const l1Mat = new THREE.MeshStandardMaterial({ color: 0x064e3b, roughness: 0.25, metalness: 0.5, wireframe });
+          const l1Mesh = new THREE.Mesh(l1Geo, l1Mat);
+          l1Mesh.position.set(0, 0.15, 0);
+          l1Mesh.userData.basePos = new THREE.Vector3(0, 0.15, 0);
+          l1Mesh.userData.explodedPos = new THREE.Vector3(0, 2.0, 0);
+          l1Mesh.userData.telemetry = {
+            name: 'FR4 LAYER 1 // TOP SMT SILKSCREEN & PADS',
+            category: 'Component Mounting & Microstrip Layer',
+            spec: 'ENIG Gold Surface Finish • 1.6mm Total Board Stack',
+            bus: 'Surface Mount Interconnect',
+            status: 'INSPECTED // 100% PASS',
+          };
+          group.add(l1Mesh);
+          interactiveMeshes.push(l1Mesh);
+
+          const edgeGeo = new THREE.EdgesGeometry(l1Geo);
           const edgeMat = new THREE.LineBasicMaterial({ color: 0x00e5ff });
-          group.add(new THREE.LineSegments(edgeGeo, edgeMat));
+          const edges = new THREE.LineSegments(edgeGeo, edgeMat);
+          edges.position.set(0, 0.15, 0);
+          edges.userData.basePos = new THREE.Vector3(0, 0.15, 0);
+          edges.userData.explodedPos = new THREE.Vector3(0, 2.0, 0);
+          group.add(edges);
 
+          // SMT Pads
           const padMat = new THREE.MeshBasicMaterial({ color: 0x38bdf8, wireframe });
           for (let x = -2.8; x <= 2.8; x += 0.9) {
             for (let z = -1.8; z <= 1.8; z += 1.1) {
-              const pad = new THREE.Mesh(new THREE.BoxGeometry(0.4, 0.32, 0.4), padMat);
-              pad.position.set(x, 0.05, z);
+              const pad = new THREE.Mesh(new THREE.BoxGeometry(0.4, 0.05, 0.4), padMat);
+              pad.position.set(x, 0.22, z);
+              pad.userData.basePos = new THREE.Vector3(x, 0.22, z);
+              pad.userData.explodedPos = new THREE.Vector3(x, 2.08, z);
               group.add(pad);
             }
           }
 
+          // STM32H7 MCU
           const mcuGeo = new THREE.BoxGeometry(2.2, 0.5, 2.2);
           const mcuMat = new THREE.MeshStandardMaterial({
             color: 0x0f172a,
@@ -320,22 +542,50 @@ export function Project3DInspector({
             wireframe,
           });
           const mcu = new THREE.Mesh(mcuGeo, mcuMat);
-          mcu.position.set(0, 0.28, 0);
+          mcu.position.set(0, 0.45, 0);
+          mcu.userData.basePos = new THREE.Vector3(0, 0.45, 0);
+          mcu.userData.explodedPos = new THREE.Vector3(0, 3.8, 0);
+          mcu.userData.telemetry = {
+            name: 'STM32H743ZI DUAL-CORE MICROCONTROLLER',
+            category: 'Primary Flight & Real-Time Computing Core',
+            spec: '480 MHz ARM Cortex-M7 + 240 MHz Cortex-M4 • 2MB Flash',
+            bus: 'CAN-FD, QSPI, SPI x6, I2C x4, USB-OTG High Speed',
+            status: 'ACTIVE // CLOCK 480 MHz NOMINAL',
+          };
           group.add(mcu);
+          interactiveMeshes.push(mcu);
 
+          // Decoupling Capacitors
           const capMat = new THREE.MeshStandardMaterial({ color: 0x38bdf8, metalness: 0.8, wireframe });
           const cap1 = new THREE.Mesh(new THREE.CylinderGeometry(0.32, 0.32, 0.8, 16), capMat);
-          cap1.position.set(2.4, 0.5, 1.4);
+          cap1.position.set(2.4, 0.6, 1.0);
+          cap1.userData.basePos = new THREE.Vector3(2.4, 0.6, 1.0);
+          cap1.userData.explodedPos = new THREE.Vector3(3.6, 3.2, 1.0);
+          cap1.userData.telemetry = {
+            name: 'TANTALUM POLYMER BYPASS CAPACITOR ARRAY',
+            category: 'Ultra-Low ESR High-Frequency Decoupling',
+            spec: '100uF 25V Low-ESR (< 15 mOhm) Surface Mount',
+            bus: 'VCC Transient Suppression Net',
+            status: 'CHARGED // 25V RATED',
+          };
           group.add(cap1);
+          interactiveMeshes.push(cap1);
 
-          const cap2 = cap1.clone();
-          cap2.position.set(2.4, 0.5, 0.5);
-          group.add(cap2);
-
+          // Shrouded I/O Terminals
           const headerMat = new THREE.MeshStandardMaterial({ color: 0x1e293b, metalness: 0.9, wireframe });
           const header = new THREE.Mesh(new THREE.BoxGeometry(0.6, 0.7, 3.2), headerMat);
-          header.position.set(-2.8, 0.45, 0);
+          header.position.set(-2.8, 0.55, 0);
+          header.userData.basePos = new THREE.Vector3(-2.8, 0.55, 0);
+          header.userData.explodedPos = new THREE.Vector3(-4.6, 2.8, 0);
+          header.userData.telemetry = {
+            name: 'SHROUDED INDUSTRIAL I/O TERMINAL BLOCK',
+            category: 'External CAN & JTAG Bus Interface',
+            spec: 'Gold-Plated 2.54mm Pitch 16-Pin Shrouded Header',
+            bus: 'CAN-FD / JTAG SWD / Isolated UART',
+            status: 'CONNECTED // SIGNALS OK',
+          };
           group.add(header);
+          interactiveMeshes.push(header);
         }
       };
 
@@ -433,9 +683,13 @@ export function Project3DInspector({
         }
       };
 
-      const onTouchEnd = () => {
+      const onTouchEnd = (e: TouchEvent) => {
         isDragging = false;
         initialPinchDistance = 0;
+        if (e.changedTouches && e.changedTouches.length === 1) {
+          const t = e.changedTouches[0];
+          checkRaycast(t.clientX, t.clientY);
+        }
       };
 
       // Desktop Mouse handlers
@@ -446,16 +700,20 @@ export function Project3DInspector({
         isDragging = true;
         mousePrevX = e.clientX;
         mousePrevY = e.clientY;
+        checkRaycast(e.clientX, e.clientY);
       };
 
       const onMouseMove = (e: MouseEvent) => {
-        if (!isDragging) return;
-        const dx = e.clientX - mousePrevX;
-        const dy = e.clientY - mousePrevY;
-        group.rotation.y += dx * 0.01;
-        group.rotation.x = Math.max(-0.6, Math.min(0.8, group.rotation.x + dy * 0.007));
-        mousePrevX = e.clientX;
-        mousePrevY = e.clientY;
+        if (isDragging) {
+          const dx = e.clientX - mousePrevX;
+          const dy = e.clientY - mousePrevY;
+          group.rotation.y += dx * 0.01;
+          group.rotation.x = Math.max(-0.6, Math.min(0.8, group.rotation.x + dy * 0.007));
+          mousePrevX = e.clientX;
+          mousePrevY = e.clientY;
+        } else {
+          checkRaycast(e.clientX, e.clientY);
+        }
       };
 
       const onMouseUp = () => {
@@ -506,12 +764,19 @@ export function Project3DInspector({
       resizeObserver = new ResizeObserver(() => updateSize());
       resizeObserver.observe(mount);
 
-      // Continuous Render Loop
+      // Continuous Render Loop with Exploded Assembly CAD lerp
       const renderLoop = () => {
         animId = requestAnimationFrame(renderLoop);
         if (autoSpinRef.current && !isDragging) {
           group.rotation.y += 0.006;
         }
+        // Smoothly lerp sub-components along their normal vectors based on isExploded state
+        group.traverse((obj) => {
+          if (obj.userData?.basePos && obj.userData?.explodedPos) {
+            const targetPos = isExplodedRef.current ? obj.userData.explodedPos : obj.userData.basePos;
+            obj.position.lerp(targetPos, 0.08);
+          }
+        });
         if (renderer && scene && camera) {
           renderer.render(scene, camera);
         }
@@ -646,10 +911,59 @@ export function Project3DInspector({
                 </div>
               </div>
             )}
+
+            {/* Live Raycast Telemetry HUD */}
+            {hoveredComponent && viewMode === '3d' && (
+              <div className="absolute top-3 left-3 sm:top-4 sm:left-4 z-40 max-w-[280px] sm:max-w-[320px] rounded-xl border border-accent/60 bg-bg-0/95 p-3 shadow-2xl backdrop-blur-md font-mono pointer-events-none transition-all duration-200">
+                <div className="flex items-center justify-between border-b border-border/80 pb-1.5 mb-1.5">
+                  <div className="flex items-center gap-1.5 min-w-0">
+                    <span className="h-2 w-2 rounded-full bg-accent animate-pulse shrink-0" />
+                    <span className="text-[11px] font-bold text-accent uppercase tracking-wider truncate">
+                      {hoveredComponent.name}
+                    </span>
+                  </div>
+                  <span className="text-[9px] px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-400 font-semibold border border-emerald-500/40 shrink-0">
+                    {hoveredComponent.status}
+                  </span>
+                </div>
+                <div className="text-[10px] space-y-1">
+                  <div className="flex justify-between gap-2">
+                    <span className="text-text-2 shrink-0">SUBSYSTEM:</span>
+                    <span className="font-semibold text-text-1 truncate">{hoveredComponent.category}</span>
+                  </div>
+                  <div className="flex justify-between gap-2">
+                    <span className="text-text-2 shrink-0">SPEC:</span>
+                    <span className="font-semibold text-accent-2 truncate">{hoveredComponent.spec}</span>
+                  </div>
+                  <div className="flex justify-between gap-2">
+                    <span className="text-text-2 shrink-0">INTERFACE:</span>
+                    <span className="font-semibold text-text-1 truncate">{hoveredComponent.bus}</span>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Floating Toolset Overlay - Positioned Safely with No Overlap */}
           <div className="absolute bottom-3 left-3 sm:bottom-4 sm:left-4 z-30 flex items-center gap-1 sm:gap-1.5 rounded-lg border border-border bg-surface/90 p-1 sm:p-1.5 backdrop-blur-md shadow-xl">
+            {viewMode === '3d' && (
+              <>
+                <button
+                  type="button"
+                  onClick={() => setIsExploded(!isExploded)}
+                  title={isExploded ? 'Compact Assembly' : 'Explode CAD Assembly'}
+                  className={`rounded p-1.5 transition-colors min-w-[32px] min-h-[32px] flex items-center justify-center gap-1 text-[11px] font-mono font-semibold ${
+                    isExploded
+                      ? 'text-accent bg-accent/20 border border-accent/40 shadow-sm'
+                      : 'text-text-2 hover:bg-bg-1 hover:text-text-1'
+                  }`}
+                >
+                  <Layers className="h-4 w-4" />
+                  <span className="hidden sm:inline">{isExploded ? 'COMPACT' : 'EXPLODE'}</span>
+                </button>
+                <div className="h-4 w-[1px] bg-border mx-0.5 sm:mx-1" />
+              </>
+            )}
             <button
               type="button"
               onClick={() => handleZoom(-2)}
@@ -775,6 +1089,41 @@ export function Project3DInspector({
                     <span className="sm:hidden">FRONT</span>
                   </button>
                 </div>
+              </div>
+            )}
+
+            {/* Exploded View Control & Active Telemetry in Inspector Column */}
+            {viewMode === '3d' && (
+              <div className="mt-4 rounded-xl border border-border/80 bg-bg-1/90 p-3 space-y-2.5">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-1.5 text-xs font-mono font-bold text-accent">
+                    <Layers className="h-3.5 w-3.5" />
+                    <span>EXPLODED CAD ASSEMBLY</span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setIsExploded(!isExploded)}
+                    className={`rounded px-2.5 py-1 text-[10px] font-mono font-bold transition-all ${
+                      isExploded
+                        ? 'bg-accent text-bg-0 shadow-sm'
+                        : 'bg-surface border border-border text-text-2 hover:text-text-1'
+                    }`}
+                  >
+                    {isExploded ? 'ACTIVE' : 'EXPAND'}
+                  </button>
+                </div>
+                <p className="text-[11px] text-text-2 leading-relaxed">
+                  {isExploded
+                    ? 'Sub-assemblies separated along normal vectors for internal component inspection.'
+                    : 'Click Expand or the Explode button to view internal PCB layers and drivetrain components.'}
+                </p>
+                {hoveredComponent && (
+                  <div className="rounded-lg border border-accent/40 bg-bg-0/90 p-2.5 text-[10px] font-mono space-y-1 animate-in fade-in">
+                    <div className="text-accent font-bold truncate">{hoveredComponent.name}</div>
+                    <div className="text-text-1">{hoveredComponent.spec}</div>
+                    <div className="text-text-2">Bus: {hoveredComponent.bus}</div>
+                  </div>
+                )}
               </div>
             )}
 

@@ -143,6 +143,8 @@ export default function HomePage() {
   const [achievements, setAchievements] = useState(HIGHLIGHT_ACHIEVEMENTS);
   const [alumni, setAlumni] = useState(FEATURED_ALUMNI);
   const [galleryPreview, setGalleryPreview] = useState(INITIAL_GALLERY_PREVIEW);
+  const [settings, setSettings] = useState<any>(null);
+  const [gear, setGear] = useState<any[]>(LAB_EQUIPMENT);
   const [inspectingProject, setInspectingProject] = useState<{
     title: string;
     category: string;
@@ -159,15 +161,27 @@ export default function HomePage() {
     fetch(`${API_BASE}/public/settings`)
       .then((res) => res.json())
       .then((res) => {
-        if (res.data?.heroHeadline) setHeroHeadline(res.data.heroHeadline);
-        if (res.data?.heroSubheadline) setHeroSubheadline(res.data.heroSubheadline);
-        if (res.data?.stats) {
-          setStats([
-            { value: `${res.data.stats.yearsActive ?? '5'}+`, label: 'Years of Engineering' },
-            { value: `${res.data.stats.projectsBuilt ?? res.data.stats.projectsCount ?? '42'}+`, label: 'Hardware & AI Projects' },
-            { value: `${res.data.stats.awardsWon ?? res.data.stats.awardsCount ?? '28'}+`, label: 'National Awards Won' },
-            { value: `${res.data.stats.activeMembers ?? res.data.stats.buildersCount ?? '95'}+`, label: 'Active Student Builders' },
-          ]);
+        if (res.data) {
+          setSettings(res.data);
+          if (res.data.heroHeadline) setHeroHeadline(res.data.heroHeadline);
+          if (res.data.heroSubheadline) setHeroSubheadline(res.data.heroSubheadline);
+          if (res.data.stats) {
+            setStats([
+              { value: `${res.data.stats.yearsActive ?? '5'}+`, label: res.data.stats.yearsActiveLabel || 'Years of Engineering' },
+              { value: `${res.data.stats.projectsBuilt ?? res.data.stats.projectsCount ?? '42'}+`, label: res.data.stats.projectsBuiltLabel || 'Hardware & AI Projects' },
+              { value: `${res.data.stats.awardsWon ?? res.data.stats.awardsCount ?? '28'}+`, label: res.data.stats.awardsWonLabel || 'National Awards Won' },
+              { value: `${res.data.stats.activeMembers ?? res.data.stats.buildersCount ?? '95'}+`, label: res.data.stats.activeMembersLabel || 'Active Student Builders' },
+            ]);
+          }
+        }
+      })
+      .catch(() => {});
+
+    fetch(`${API_BASE}/public/gear`)
+      .then((res) => res.json())
+      .then((res) => {
+        if (res.data && res.data.length > 0) {
+          setGear(res.data);
         }
       })
       .catch(() => {});
@@ -261,6 +275,12 @@ export default function HomePage() {
             {/* Left Column: Typography, Badges, CTAs, Live Hardware Terminal */}
             <div className="lg:col-span-7 flex flex-col justify-center">
               <AnimeGlowHero>
+                {/* System Telemetry Status Indicator (Zero Creed Duplication) */}
+                <div className="anime-reveal inline-flex items-center gap-2 rounded-full border border-accent/40 bg-surface/80 px-3.5 py-1 text-xs font-mono text-accent backdrop-blur-md mb-4 w-fit shadow-sm">
+                  <span className="h-2 w-2 rounded-full bg-accent animate-pulse" />
+                  <span className="font-semibold tracking-wider">HARDWARE LAB ACTIVE // COHORT 2025 ADMISSIONS OPEN</span>
+                </div>
+
                 {/* Main Title */}
                 <h1 className="anime-reveal text-3xl sm:text-5xl lg:text-6xl font-black tracking-tight text-text-1 leading-[1.1]">
                   {heroHeadline}
@@ -274,17 +294,17 @@ export default function HomePage() {
                 {/* Action CTAs */}
                 <div className="anime-reveal mt-8 flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4">
                   <Link
-                    href="/projects"
+                    href={settings?.heroPrimaryCtaUrl || '/projects'}
                     className="flex items-center justify-center gap-2 rounded-lg bg-accent px-6 py-3.5 text-sm font-semibold text-bg-0 shadow-lg transition-all hover:bg-accent-hover hover:glow-accent"
                   >
-                    <span>Explore Projects</span>
+                    <span>{settings?.heroPrimaryCtaText || 'Explore Projects'}</span>
                     <ArrowRight className="h-4 w-4" />
                   </Link>
                   <Link
-                    href="/join"
+                    href={settings?.heroSecondaryCtaUrl || '/join'}
                     className="flex items-center justify-center gap-2 rounded-lg border border-border bg-surface px-6 py-3.5 text-sm font-semibold text-text-1 transition-all hover:border-accent-2/50 hover:bg-surface-hover"
                   >
-                    <span>Join the 2025 Cohort</span>
+                    <span>{settings?.heroSecondaryCtaText || 'Join the 2025 Cohort'}</span>
                     <ChevronRight className="h-4 w-4 text-text-2" />
                   </Link>
                 </div>
@@ -301,28 +321,31 @@ export default function HomePage() {
       </section>
 
       {/* STAT STRIP WITH ANIME.JS SCROLL COUNTERS */}
-      <section className="border-y border-border bg-bg-1 py-10">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-2 gap-8 md:grid-cols-4" data-anime-scroll="stagger">
-            {stats.map((stat) => (
-              <div key={stat.label} className="text-center">
-                <p
-                  className="text-3xl sm:text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-accent to-accent-2"
-                  data-anime-scroll="counter"
-                  data-counter-target={String(stat.value).replace(/\D/g, '') || '0'}
-                  data-counter-suffix="+"
-                >
-                  {stat.value}
-                </p>
-                <p className="mt-1 text-sm font-medium text-text-2">{stat.label}</p>
-              </div>
-            ))}
+      {settings?.sectionToggles?.showStats !== false && (
+        <section className="border-y border-border bg-bg-1 py-10">
+          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            <div className="grid grid-cols-2 gap-8 md:grid-cols-4" data-anime-scroll="stagger">
+              {stats.map((stat) => (
+                <div key={stat.label} className="text-center">
+                  <p
+                    className="text-3xl sm:text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-accent to-accent-2"
+                    data-anime-scroll="counter"
+                    data-counter-target={String(stat.value).replace(/\D/g, '') || '0'}
+                    data-counter-suffix="+"
+                  >
+                    {stat.value}
+                  </p>
+                  <p className="mt-1 text-sm font-medium text-text-2">{stat.label}</p>
+                </div>
+              ))}
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
+      )}
 
       {/* FEATURED PROJECTS WITH 3D INSPECTION */}
-      <section className="py-20 bg-bg-0">
+      {settings?.sectionToggles?.showProjects !== false && (
+        <section className="py-20 bg-bg-0">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col md:flex-row md:items-end justify-between mb-12">
             <div>
@@ -434,150 +457,182 @@ export default function HomePage() {
           </div>
         </div>
       </section>
+      )}
 
       {/* MAKERSPACE LAB & EQUIPMENT INVENTORY */}
-      <section className="py-20 bg-bg-1 border-t border-border">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="text-center max-w-2xl mx-auto mb-14">
-            <div className="inline-flex items-center gap-1.5 text-xs font-mono text-accent uppercase tracking-wider mb-2">
-              <Wrench className="h-4 w-4" />
-              <span>Lab Infrastructure</span>
-            </div>
-            <h2 className="text-3xl sm:text-4xl font-black tracking-tight text-text-1">
-              Workshop & Fabrication Gear
-            </h2>
-            <p className="mt-3 text-sm text-text-2 leading-relaxed">
-              Our campus lab is fully equipped with industrial-grade test benches, prototyping tools, and compute clusters accessible to every community member.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6" data-anime-scroll="stagger">
-            {LAB_EQUIPMENT.map((eq) => (
-              <div
-                key={eq.name}
-                className="rounded-xl border border-border bg-surface/50 p-6 flex flex-col justify-between"
-              >
-                <div>
-                  <h3 className="text-lg font-bold text-text-1 mb-1">{eq.name}</h3>
-                  <p className="text-xs text-accent-2 font-mono">{eq.spec}</p>
-                </div>
-                <div className="mt-4 pt-3 border-t border-border/60 flex items-center gap-2 text-[11px] font-mono text-success">
-                  <span className="h-1.5 w-1.5 rounded-full bg-success animate-pulse" />
-                  <span>Available in Maker Space</span>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ACHIEVEMENTS / SOCIAL PROOF */}
-      <section className="py-20 bg-bg-0 border-t border-border">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="text-center max-w-2xl mx-auto mb-14">
-            <div className="inline-flex items-center gap-1.5 text-xs font-mono text-accent uppercase tracking-wider mb-2">
-              <Trophy className="h-4 w-4" />
-              <span>Track Record</span>
-            </div>
-            <h2 className="text-3xl sm:text-4xl font-black tracking-tight text-text-1">
-              Tested on National Arenas
-            </h2>
-            <p className="mt-3 text-sm text-text-2">
-              We don&apos;t just build laboratory prototypes — our robots and systems go head-to-head with the best teams across India.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6" data-anime-scroll="stagger">
-            {achievements.map((ach) => (
-              <div
-                key={ach.event}
-                className="relative rounded-xl border border-border bg-surface p-6 shadow-md"
-              >
-                <div className="flex items-center justify-between text-xs font-mono text-text-2 mb-3">
-                  <span className="text-accent font-semibold">{ach.year}</span>
-                  <span className="rounded bg-bg-0 px-2 py-0.5 border border-border">{ach.category}</span>
-                </div>
-                <h3 className="text-lg font-bold text-text-1">{ach.award}</h3>
-                <p className="text-sm font-semibold text-accent-2 mt-1">{ach.event}</p>
-                <p className="mt-3 text-xs leading-relaxed text-text-2">{ach.description}</p>
-              </div>
-            ))}
-          </div>
-
-          <div className="mt-10 text-center">
-            <Link
-              href="/achievements"
-              className="inline-flex items-center gap-1.5 text-sm font-semibold text-accent hover:underline"
-            >
-              <span>Explore our complete hall of achievements</span>
-              <ArrowRight className="h-4 w-4" />
-            </Link>
-          </div>
-        </div>
-      </section>
-
-      {/* FIELD DISPATCHES & PHOTO GALLERY PREVIEW */}
-      <section className="py-20 bg-bg-1 border-t border-border">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-col md:flex-row md:items-end justify-between mb-12">
-            <div>
+      {settings?.sectionToggles?.showGear !== false && (
+        <section className="py-20 bg-bg-1 border-t border-border">
+          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            <div className="text-center max-w-2xl mx-auto mb-14">
               <div className="inline-flex items-center gap-1.5 text-xs font-mono text-accent uppercase tracking-wider mb-2">
-                <Camera className="h-4 w-4" />
-                <span>Field Logs</span>
+                <Wrench className="h-4 w-4" />
+                <span>Lab Infrastructure</span>
               </div>
               <h2 className="text-3xl sm:text-4xl font-black tracking-tight text-text-1">
-                Field Dispatches & Lab Life
+                Workshop & Fabrication Gear
               </h2>
-              <p className="mt-2 text-sm text-text-2">
-                Real visual documentation from late-night debugging, national arenas, and CNC milling bays.
+              <p className="mt-3 text-sm text-text-2 leading-relaxed">
+                Our campus lab is fully equipped with industrial-grade test benches, prototyping tools, and compute clusters accessible to every community member.
               </p>
             </div>
-            <Link
-              href="/gallery"
-              className="mt-4 md:mt-0 inline-flex items-center gap-1.5 text-sm font-semibold text-accent-2 hover:underline"
-            >
-              <span>Explore all field photography</span>
-              <ArrowRight className="h-4 w-4" />
-            </Link>
-          </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6" data-anime-scroll="stagger">
-            {galleryPreview.map((item) => (
-              <Link
-                key={item.title}
-                href="/gallery"
-                className="group rounded-xl border border-border bg-surface/70 overflow-hidden shadow-sm transition-all hover:border-accent-2/50 hover:bg-surface hover:-translate-y-1 flex flex-col justify-between"
-              >
-                <div className="relative aspect-video w-full overflow-hidden bg-bg-0">
-                  <img
-                    src={item.imageUrl}
-                    alt={item.title}
-                    className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
-                    loading="lazy"
-                  />
-                  <div className="absolute top-2.5 left-2.5">
-                    <span className="rounded bg-bg-0/80 px-2 py-0.5 text-[10px] font-mono font-bold text-accent-2 backdrop-blur-md border border-border/60">
-                      {item.category}
-                    </span>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6" data-anime-scroll="stagger">
+              {gear.map((item) => {
+                const isOper = !item.status || item.status === 'OPERATIONAL';
+                const isInUse = item.status === 'IN_USE';
+                return (
+                  <div
+                    key={item.id || item.name}
+                    className="rounded-xl border border-border bg-surface/70 p-6 flex flex-col justify-between shadow-sm transition-all hover:border-accent/40 hover:bg-surface hover:-translate-y-1"
+                  >
+                    <div>
+                      <div className="flex items-center justify-between gap-2 mb-2">
+                        <span className="rounded bg-accent/10 border border-accent/30 px-2 py-0.5 text-[10px] font-mono font-bold text-accent uppercase">
+                          {item.category || 'HARDWARE'}
+                        </span>
+                        {item.model && (
+                          <span className="text-[10px] font-mono text-text-2 truncate max-w-[140px]">
+                            {item.model}
+                          </span>
+                        )}
+                      </div>
+                      <h3 className="text-base sm:text-lg font-bold text-text-1 mb-1.5">{item.name}</h3>
+                      <p className="text-xs text-text-2 leading-relaxed">
+                        {item.specifications || item.spec}
+                      </p>
+                    </div>
+                    <div className="mt-5 pt-3.5 border-t border-border/60 flex items-center justify-between text-[11px] font-mono">
+                      <div className="flex items-center gap-2">
+                        <span
+                          className={`h-2 w-2 rounded-full ${
+                            isOper ? 'bg-emerald-400 animate-pulse' : isInUse ? 'bg-amber-400' : 'bg-rose-400'
+                          }`}
+                        />
+                        <span className={isOper ? 'text-emerald-400 font-semibold' : isInUse ? 'text-amber-400' : 'text-rose-400'}>
+                          {isOper ? 'OPERATIONAL // READY' : isInUse ? 'IN USE // RESERVED' : 'MAINTENANCE'}
+                        </span>
+                      </div>
+                      <span className="text-[10px] text-text-2">MAKERSPACE BAY</span>
+                    </div>
                   </div>
-                </div>
-                <div className="p-4">
-                  <div className="flex items-center justify-between text-[11px] font-mono text-text-2 mb-1.5">
-                    <span>{item.date}</span>
-                    <span className="truncate max-w-[130px]">{item.location}</span>
-                  </div>
-                  <h3 className="text-sm font-bold text-text-1 group-hover:text-accent-2 transition-colors line-clamp-1">
-                    {item.title}
-                  </h3>
-                  <p className="mt-1 text-xs text-text-2 line-clamp-2 leading-relaxed">
-                    {item.caption}
-                  </p>
-                </div>
-              </Link>
-            ))}
+                );
+              })}
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
+      )}
+
+      {/* ACHIEVEMENTS / SOCIAL PROOF */}
+      {settings?.sectionToggles?.showAchievements !== false && (
+        <section className="py-20 bg-bg-0 border-t border-border">
+          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            <div className="text-center max-w-2xl mx-auto mb-14">
+              <div className="inline-flex items-center gap-1.5 text-xs font-mono text-accent uppercase tracking-wider mb-2">
+                <Trophy className="h-4 w-4" />
+                <span>Track Record</span>
+              </div>
+              <h2 className="text-3xl sm:text-4xl font-black tracking-tight text-text-1">
+                Tested on National Arenas
+              </h2>
+              <p className="mt-3 text-sm text-text-2">
+                We don&apos;t just build laboratory prototypes — our robots and systems go head-to-head with the best teams across India.
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6" data-anime-scroll="stagger">
+              {achievements.map((ach) => (
+                <div
+                  key={ach.event}
+                  className="relative rounded-xl border border-border bg-surface p-6 shadow-md"
+                >
+                  <div className="flex items-center justify-between text-xs font-mono text-text-2 mb-3">
+                    <span className="text-accent font-semibold">{ach.year}</span>
+                    <span className="rounded bg-bg-0 px-2 py-0.5 border border-border">{ach.category}</span>
+                  </div>
+                  <h3 className="text-lg font-bold text-text-1">{ach.award}</h3>
+                  <p className="text-sm font-semibold text-accent-2 mt-1">{ach.event}</p>
+                  <p className="mt-3 text-xs leading-relaxed text-text-2">{ach.description}</p>
+                </div>
+              ))}
+            </div>
+
+            <div className="mt-10 text-center">
+              <Link
+                href="/achievements"
+                className="inline-flex items-center gap-1.5 text-sm font-semibold text-accent hover:underline"
+              >
+                <span>Explore our complete hall of achievements</span>
+                <ArrowRight className="h-4 w-4" />
+              </Link>
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* FIELD DISPATCHES & PHOTO GALLERY PREVIEW */}
+      {settings?.sectionToggles?.showGallery !== false && (
+        <section className="py-20 bg-bg-1 border-t border-border">
+          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            <div className="flex flex-col md:flex-row md:items-end justify-between mb-12">
+              <div>
+                <div className="inline-flex items-center gap-1.5 text-xs font-mono text-accent uppercase tracking-wider mb-2">
+                  <Camera className="h-4 w-4" />
+                  <span>Field Logs</span>
+                </div>
+                <h2 className="text-3xl sm:text-4xl font-black tracking-tight text-text-1">
+                  Field Dispatches & Lab Life
+                </h2>
+                <p className="mt-2 text-sm text-text-2">
+                  Real visual documentation from late-night debugging, national arenas, and CNC milling bays.
+                </p>
+              </div>
+              <Link
+                href="/gallery"
+                className="mt-4 md:mt-0 inline-flex items-center gap-1.5 text-sm font-semibold text-accent-2 hover:underline"
+              >
+                <span>Explore all field photography</span>
+                <ArrowRight className="h-4 w-4" />
+              </Link>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6" data-anime-scroll="stagger">
+              {galleryPreview.map((item) => (
+                <Link
+                  key={item.title}
+                  href="/gallery"
+                  className="group rounded-xl border border-border bg-surface/70 overflow-hidden shadow-sm transition-all hover:border-accent-2/50 hover:bg-surface hover:-translate-y-1 flex flex-col justify-between"
+                >
+                  <div className="relative aspect-video w-full overflow-hidden bg-bg-0">
+                    <img
+                      src={item.imageUrl}
+                      alt={item.title}
+                      className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                      loading="lazy"
+                    />
+                    <div className="absolute top-2.5 left-2.5">
+                      <span className="rounded bg-bg-0/80 px-2 py-0.5 text-[10px] font-mono font-bold text-accent-2 backdrop-blur-md border border-border/60">
+                        {item.category}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="p-4">
+                    <div className="flex items-center justify-between text-[11px] font-mono text-text-2 mb-1.5">
+                      <span>{item.date}</span>
+                      <span className="truncate max-w-[130px]">{item.location}</span>
+                    </div>
+                    <h3 className="text-sm font-bold text-text-1 group-hover:text-accent-2 transition-colors line-clamp-1">
+                      {item.title}
+                    </h3>
+                    <p className="mt-1 text-xs text-text-2 line-clamp-2 leading-relaxed">
+                      {item.caption}
+                    </p>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* METHODOLOGY: HOW TRAIC WORKS */}
       <section className="py-20 bg-bg-1 border-t border-border">
