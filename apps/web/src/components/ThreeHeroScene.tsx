@@ -102,15 +102,17 @@ export function ThreeHeroScene() {
       const positions = new Float32Array(particleCount * 3);
       const colors = new Float32Array(particleCount * 3);
 
-      const colorAccent = new THREE.Color('#FF9F1C');
-      const colorCyan = new THREE.Color('#38BDF8');
+      const colorCyan = new THREE.Color('#00E5FF');
+      const colorSky = new THREE.Color('#38BDF8');
+      const colorIce = new THREE.Color('#E0F7FA');
 
       for (let i = 0; i < particleCount; i++) {
         positions[i * 3] = (Math.random() - 0.5) * 26;
         positions[i * 3 + 1] = (Math.random() - 0.5) * 18;
         positions[i * 3 + 2] = (Math.random() - 0.5) * 12;
 
-        const c = Math.random() > 0.4 ? colorCyan : colorAccent;
+        const rand = Math.random();
+        const c = rand > 0.6 ? colorCyan : rand > 0.3 ? colorSky : colorIce;
         colors[i * 3] = c.r;
         colors[i * 3 + 1] = c.g;
         colors[i * 3 + 2] = c.b;
@@ -148,7 +150,7 @@ export function ThreeHeroScene() {
       // Edge wireframe accent
       const dieEdgeGeo = new THREE.EdgesGeometry(dieGeo);
       const dieEdgeMat = new THREE.LineBasicMaterial({
-        color: isLightMode ? 0xd97706 : 0x38bdf8,
+        color: isLightMode ? 0x0284c7 : 0x00e5ff,
         linewidth: 1.5,
       });
       chipMesh.add(new THREE.LineSegments(dieEdgeGeo, dieEdgeMat));
@@ -221,8 +223,8 @@ export function ThreeHeroScene() {
         });
       } catch (_) {}
 
-      // 5. Pulsing Status LEDs on 4 Corners
-      const ledColors = [0x22c55e, 0x38bdf8, 0xf59e0b, 0xef4444];
+      // 5. Pulsing Status LEDs on 4 Corners (Logo Palette: Emerald, Cyan, Sky, Ice)
+      const ledColors = [0x10b981, 0x00e5ff, 0x38bdf8, 0xe0f7fa];
       const ledPositions = [
         [-2.7, 0.32, -2.7],
         [2.7, 0.32, -2.7],
@@ -239,11 +241,11 @@ export function ThreeHeroScene() {
         cornerLeds.push(ledMesh);
       });
 
-      // Lighting Setup
+      // Lighting Setup (Plasma Cyan Key Light & Sky Blue Rim/Fill)
       const ambientLight = new THREE.AmbientLight(0xffffff, isLightMode ? 1.6 : 1.1);
       scene.add(ambientLight);
 
-      const keyLight = new THREE.DirectionalLight(0xff9f1c, 2.6);
+      const keyLight = new THREE.DirectionalLight(0x00e5ff, 2.4);
       keyLight.position.set(8, 12, 10);
       scene.add(keyLight);
 

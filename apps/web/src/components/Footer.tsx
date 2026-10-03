@@ -32,7 +32,7 @@ export function Footer() {
             </p>
             <div className="mt-6 flex items-center gap-3 text-text-2">
               <a
-                href="https://github.com/Aarish1915/Traic"
+                href="https://github.com/traiccoer2025-code/WebSite"
                 target="_blank"
                 rel="noreferrer"
                 className="rounded-lg border border-border p-2 hover:border-accent hover:text-accent transition-colors"
@@ -140,7 +140,11 @@ export function Footer() {
         </div>
 
         <div className="mt-12 border-t border-border pt-8 flex flex-col sm:flex-row items-center justify-between text-xs text-text-2 gap-4">
-          <p>© {new Date().getFullYear()} TRAIC. All rights reserved.</p>
+          <div className="flex flex-col sm:flex-row items-center gap-2 sm:gap-4">
+            <p>© {new Date().getFullYear()} TRAIC. All rights reserved.</p>
+            <span className="hidden sm:inline text-border">•</span>
+            <span className="font-mono text-[10px] text-accent font-semibold tracking-widest uppercase">HONOR • HONESTY • SACRIFICE</span>
+          </div>
 
           {/* Go to Top Button */}
           <button

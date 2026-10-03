@@ -5,19 +5,19 @@
 :root,
 html.dark,
 [data-theme="dark"] {
-  --bg-0: 7 9 14;
-  --bg-1: 14 19 31;
-  --surface: 20 28 46;
-  --surface-hover: 29 40 64;
-  --border: 36 50 77;
-  --text-1: 248 250 252;
-  --text-2: 148 163 184;
-  --accent: 255 159 28;
-  --accent-hover: 251 146 60;
-  --accent-fg: 7 9 14;
-  --accent-2: 56 189 248;
+  --bg-0: 3 7 18;          /* #030712 - Deep Void Obsidian */
+  --bg-1: 8 14 30;         /* #080E1E - Abyssal Navy */
+  --surface: 15 23 42;      /* #0F172A - Titanium Slate */
+  --surface-hover: 30 41 59;/* #1E293B */
+  --border: 56 189 248;    /* #38BDF8 with alpha support */
+  --text-1: 248 250 252;   /* #F8FAFC - Pure Metallic White */
+  --text-2: 148 163 184;   /* #94A3B8 - Titanium Grey */
+  --accent: 0 229 255;     /* #00E5FF - Official Logo Electric Plasma Cyan */
+  --accent-hover: 0 180 216;/* #00B4D8 */
+  --accent-fg: 3 7 18;     /* #030712 - Deep Black for high contrast */
+  --accent-2: 56 189 248;  /* #38BDF8 - Circuit Trace Cyan */
   --accent-2-hover: 14 165 233;
-  --accent-2-fg: 7 9 14;
+  --accent-2-fg: 3 7 18;
 }
 
 :root[data-theme="light"],
@@ -25,18 +25,18 @@ html.light,
 [data-theme="light"],
 html[class~="light"],
 body.light {
-  --bg-0: 248 250 252;
-  --bg-1: 241 245 249;
-  --surface: 255 255 255;
+  --bg-0: 248 250 252;     /* #F8FAFC - Cleanroom Architectural Slate */
+  --bg-1: 241 245 249;     /* #F1F5F9 - Elevated Section */
+  --surface: 255 255 255;  /* #FFFFFF - Pure White Surface */
   --surface-hover: 226 232 240;
-  --border: 203 213 225;
-  --text-1: 15 23 42;
-  --text-2: 71 85 105;
-  --accent: 234 88 12;
-  --accent-hover: 194 65 12;
+  --border: 203 213 225;   /* #CBD5E1 - Precision Hairline */
+  --text-1: 15 23 42;      /* #0F172A - Deep Carbon Ink */
+  --text-2: 71 85 105;     /* #475569 - Secondary Slate */
+  --accent: 2 132 199;     /* #0284C7 - Surgical Cyan / Blue */
+  --accent-hover: 3 105 161;
   --accent-fg: 255 255 255;
-  --accent-2: 2 132 199;
-  --accent-2-hover: 3 105 161;
+  --accent-2: 14 165 233;  /* #0EA5E9 */
+  --accent-2-hover: 2 132 199;
   --accent-2-fg: 255 255 255;
 }
 
@@ -54,8 +54,8 @@ body {
 
 /* Subtle circuit grid pattern matching official logo's PCB traces */
 .circuit-pattern {
-  background-image: radial-gradient(rgba(0, 229, 255, 0.12) 1px, transparent 1px),
-                    radial-gradient(rgba(14, 165, 233, 0.06) 1px, transparent 1px);
+  background-image: radial-gradient(rgba(0, 229, 255, 0.15) 1px, transparent 1px),
+                    radial-gradient(rgba(14, 165, 233, 0.08) 1px, transparent 1px);
   background-size: 32px 32px;
   background-position: 0 0, 16px 16px;
 }
@@ -68,20 +68,24 @@ html.light .circuit-pattern,
 
 /* Glassmorphic border */
 .glass-panel {
-  background: rgba(15, 23, 38, 0.75);
-  backdrop-filter: blur(12px);
-  border: 1px solid rgba(33, 49, 76, 0.85);
+  background: rgba(15, 23, 42, 0.75);
+  backdrop-filter: blur(16px);
+  border: 1px solid rgba(56, 189, 248, 0.12);
+  border-top: 1px solid rgba(0, 229, 255, 0.35);
+  box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.5);
 }
 
 html.light .glass-panel,
 [data-theme="light"] .glass-panel {
   background: rgba(255, 255, 255, 0.9);
   border: 1px solid rgba(203, 213, 225, 0.9);
+  border-top: 1px solid rgba(2, 132, 199, 0.4);
   box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.05);
 }
 
 .glass-panel:hover {
   border-color: rgba(0, 229, 255, 0.4);
+  border-top-color: rgba(0, 229, 255, 0.7);
 }
 
 html.light .glass-panel:hover,
@@ -100,10 +104,26 @@ html.light .glow-accent,
 }
 
 .glow-cyan {
-  box-shadow: 0 0 25px rgba(0, 229, 255, 0.25);
+  box-shadow: 0 0 35px rgba(0, 229, 255, 0.3);
 }
 
 html.light .glow-cyan,
 [data-theme="light"] .glow-cyan {
   box-shadow: 0 0 25px rgba(2, 132, 199, 0.2);
+}
+
+/* Metallic Bezel Card matching logo */
+.metallic-card {
+  background: linear-gradient(135deg, rgba(15, 23, 42, 0.85) 0%, rgba(8, 14, 30, 0.9) 100%);
+  border: 1px solid rgba(56, 189, 248, 0.15);
+  border-top: 1.5px solid rgba(0, 229, 255, 0.4);
+  border-bottom: 1.5px solid rgba(15, 23, 42, 0.9);
+  box-shadow: 0 12px 35px -8px rgba(0, 0, 0, 0.6);
+}
+
+html.light .metallic-card {
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  border-top: 2px solid #0284c7;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.06);
 }

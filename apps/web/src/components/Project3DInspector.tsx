@@ -213,7 +213,7 @@ export function Project3DInspector({
 
           // 4 Heavy-Duty Off-Road Wheels
           const wheelMat = new THREE.MeshStandardMaterial({ color: 0x0f172a, roughness: 0.8, wireframe });
-          const rimMat = new THREE.MeshStandardMaterial({ color: 0xff9f1c, metalness: 0.9, wireframe });
+          const rimMat = new THREE.MeshStandardMaterial({ color: 0x00e5ff, metalness: 0.9, wireframe });
           const wheelCoords = [
             [-2.1, -0.4, 1.6],
             [2.1, -0.4, 1.6],
@@ -282,7 +282,7 @@ export function Project3DInspector({
           // Central Feed Horn
           const horn = new THREE.Mesh(
             new THREE.ConeGeometry(0.35, 1.2, 16),
-            new THREE.MeshStandardMaterial({ color: 0xff9f1c, metalness: 0.9, wireframe })
+            new THREE.MeshStandardMaterial({ color: 0x00e5ff, metalness: 0.9, wireframe })
           );
           horn.rotation.x = -Math.PI / 4;
           horn.position.set(0, 2.1, 0.7);
@@ -300,10 +300,10 @@ export function Project3DInspector({
           group.add(baseMesh);
 
           const edgeGeo = new THREE.EdgesGeometry(baseGeo);
-          const edgeMat = new THREE.LineBasicMaterial({ color: 0xffd166 });
+          const edgeMat = new THREE.LineBasicMaterial({ color: 0x00e5ff });
           group.add(new THREE.LineSegments(edgeGeo, edgeMat));
 
-          const padMat = new THREE.MeshBasicMaterial({ color: 0xffd166, wireframe });
+          const padMat = new THREE.MeshBasicMaterial({ color: 0x38bdf8, wireframe });
           for (let x = -2.8; x <= 2.8; x += 0.9) {
             for (let z = -1.8; z <= 1.8; z += 1.1) {
               const pad = new THREE.Mesh(new THREE.BoxGeometry(0.4, 0.32, 0.4), padMat);
