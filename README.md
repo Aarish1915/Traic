@@ -1,12 +1,11 @@
 # TRAIC — Technology, Robotics & AI Community
 
-[![CI Quality Gates](https://github.com/Aarish1915/Traic/actions/workflows/ci.yml/badge.svg)](https://github.com/Aarish1915/Traic/actions/workflows/ci.yml)
-[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![CI Quality Gates](https://github.com/traiccoer2025-code/WebSite/actions/workflows/ci.yml/badge.svg)](https://github.com/traiccoer2025-code/WebSite/actions/workflows/ci.yml)
 [![Next.js 15](https://img.shields.io/badge/Next.js-15.2.1-black)](https://nextjs.org/)
 [![Express 5](https://img.shields.io/badge/Express-5.0.1-green)](https://expressjs.com/)
 [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-Neon_Serverless-4169E1)](https://neon.tech/)
 [![Three.js](https://img.shields.io/badge/Three.js-WebGL_3D-orange)](https://threejs.org/)
-[![Tests](https://img.shields.io/badge/Tests-61%2F61_Passing-brightgreen)](README.md)
+[![Tests](https://img.shields.io/badge/Tests-69%2F69_Passing-brightgreen)](README.md)
 [![Documentation](https://img.shields.io/badge/Docs-Full_System_Specification-blueviolet)](DOCUMENTATION.md)
 
 > The official engineering platform for **TRAIC** — a premier collegiate community designing custom PCBs, programming autonomous robots, and deploying edge AI systems.
@@ -108,8 +107,8 @@ traic/
 
 ### 1. Installation
 ```bash
-git clone https://github.com/Aarish1915/Traic.git
-cd Traic
+git clone https://github.com/traiccoer2025-code/WebSite.git
+cd WebSite
 pnpm install --frozen-lockfile
 ```
 
@@ -152,8 +151,11 @@ pnpm lint
 # Production build verification (Next.js SSG + Vite bundle + esbuild standalone)
 pnpm build
 
-# Run 61-point full-stack integration & cyber defense suite
-node scratch/test_full_suite.mjs
+# Run offline schema & contract tests (runs in <400ms)
+pnpm test
+
+# Run 69-point full-stack integration & cyber defense suite
+pnpm test:integration
 ```
 
 ---
@@ -170,7 +172,3 @@ node scratch/test_full_suite.mjs
 2. Render automatically provisions the `traic-api` web service using Node 22, connects `/health` monitoring, and links environment variables.
 3. Add `DATABASE_URL` in the Render Environment tab to connect your Neon PostgreSQL cluster.
 
----
-
-## 📜 License
-Licensed under the [MIT License](LICENSE).

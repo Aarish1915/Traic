@@ -14,6 +14,7 @@ import type {
 } from '@traic/shared';
 import crypto from 'node:crypto';
 import { db } from '../db/postgres';
+import { logger } from '../../common/logger';
 
 // Initial seed states
 const initialProjects: Project[] = [
@@ -293,7 +294,7 @@ const initialSettings: SiteSetting = {
   contactEmail: 'traic@coer.ac.in',
   labLocation: 'Advanced Robotics Lab, Block C-302, COER University',
   socials: {
-    github: 'https://github.com/Aarish1915/Traic',
+    github: 'https://github.com/traiccoer2025-code/WebSite',
     linkedin: 'https://linkedin.com/company/traic',
     instagram: 'https://instagram.com/traic_club',
     youtube: 'https://youtube.com/@traic',
@@ -512,7 +513,7 @@ class DataStore {
 
   constructor() {
     // Background kickstart if not explicitly awaited
-    this.init().catch((err) => console.warn('DataStore: background init warning:', err));
+    this.init().catch((err) => logger.warn({ err }, 'DataStore: background init warning'));
   }
 
   public async init(): Promise<void> {
@@ -587,7 +588,7 @@ class DataStore {
         if (remoteApps.length > 0) this.applications = remoteApps;
       }
     } catch (err) {
-      console.warn('DataStore: Remote PostgreSQL sync error:', err);
+      logger.warn({ err }, 'DataStore: Remote PostgreSQL sync error');
     }
   }
 
