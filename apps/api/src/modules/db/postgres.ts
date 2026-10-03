@@ -14,6 +14,7 @@ const VALID_TABLES = [
   'settings',
   'applications',
   'messages',
+  'gear',
 ] as const;
 
 export type ValidTable = (typeof VALID_TABLES)[number];

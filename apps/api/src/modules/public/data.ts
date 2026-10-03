@@ -10,6 +10,7 @@ import type {
   ContactMessage,
   Banner,
   GalleryItem,
+  LabGear,
 } from '@traic/shared';
 import crypto from 'node:crypto';
 import { db } from '../db/postgres';
@@ -257,9 +258,15 @@ const initialTracks: Track[] = [
 
 const initialSettings: SiteSetting = {
   clubName: 'TRAIC',
-  tagline: 'Technology, Robotics & AI Community',
+  tagline: 'Engineering Community Building Hardware + Software',
+  mottoText: 'HONOR • HONESTY • SACRIFICE',
+  showMotto: true,
   heroHeadline: 'Where Physical Hardware Meets Intelligent Code',
-  heroSubheadline: 'We are a premier college community designing custom PCBs, programming autonomous robots, and deploying edge AI systems that win national competitions.',
+  heroSubheadline: 'We are a premier college engineering collective designing custom 4-layer PCBs, programming autonomous robots, and deploying edge AI systems that win national competitions.',
+  heroPrimaryCtaText: 'Explore Projects',
+  heroPrimaryCtaUrl: '/projects',
+  heroSecondaryCtaText: 'Join the 2025 Cohort',
+  heroSecondaryCtaUrl: '/join',
   announcement: {
     enabled: true,
     text: 'Applications for 2025 Cohort are now open! Join the hardware & software tracks.',
@@ -268,10 +275,23 @@ const initialSettings: SiteSetting = {
   },
   stats: {
     yearsActive: 5,
+    yearsActiveLabel: 'Years of Engineering',
     projectsBuilt: 42,
+    projectsBuiltLabel: 'Hardware & AI Projects',
     awardsWon: 28,
+    awardsWonLabel: 'National Awards Won',
     activeMembers: 95,
+    activeMembersLabel: 'Active Student Builders',
   },
+  sectionToggles: {
+    showStats: true,
+    showProjects: true,
+    showGear: true,
+    showAchievements: true,
+    showGallery: true,
+  },
+  contactEmail: 'traic@coer.ac.in',
+  labLocation: 'Advanced Robotics Lab, Block C-302, COER University',
   socials: {
     github: 'https://github.com/Aarish1915/Traic',
     linkedin: 'https://linkedin.com/company/traic',
@@ -280,6 +300,75 @@ const initialSettings: SiteSetting = {
     discord: 'https://discord.gg/traic',
   },
 };
+
+const initialGear: LabGear[] = [
+  {
+    id: 'e1111111-1111-1111-1111-111111111111',
+    name: 'Digital Storage Oscilloscope',
+    model: 'Rigol DS1054Z (4-Ch 50MHz)',
+    category: 'TESTING',
+    specifications: '4-Channel, 50MHz bandwidth, 1 GSa/s real-time sampling rate, hardware protocol decoding for I2C, SPI, UART, CAN.',
+    status: 'OPERATIONAL',
+    imageUrl: 'https://images.unsplash.com/photo-1581092160607-ee22621dd758?auto=format&fit=crop&w=600&q=80',
+    priority: 1,
+    isPublished: true,
+  },
+  {
+    id: 'e2222222-2222-2222-2222-222222222222',
+    name: 'High-Temp CoreXY 3D Printer',
+    model: 'Bambu Lab X1-Carbon Dual Extruder',
+    category: 'FABRICATION',
+    specifications: 'Dual automated bed leveling, AI LiDAR first-layer inspection, 500mm/s acceleration, enclosed chamber for Carbon-Fiber Nylon & PETG.',
+    status: 'OPERATIONAL',
+    imageUrl: 'https://images.unsplash.com/photo-1631556097152-c39479cbfeab?auto=format&fit=crop&w=600&q=80',
+    priority: 2,
+    isPublished: true,
+  },
+  {
+    id: 'e3333333-3333-3333-3333-333333333333',
+    name: 'SMD Soldering & Rework Station',
+    model: 'Weller WT1010 Precision Thermal Unit',
+    category: 'SOLDERING',
+    specifications: '90W digital microprocessor control, rapid 15s thermal recovery, hot air pencil with vacuum pickup for 0402 SMD & QFN packages.',
+    status: 'OPERATIONAL',
+    imageUrl: 'https://images.unsplash.com/photo-1597733336794-12d05021d510?auto=format&fit=crop&w=600&q=80',
+    priority: 3,
+    isPublished: true,
+  },
+  {
+    id: 'e4444444-4444-4444-4444-444444444444',
+    name: 'Edge AI Supercomputing Module',
+    model: 'NVIDIA Jetson AGX Orin Developer Kit',
+    category: 'COMPUTE',
+    specifications: '275 TOPS server-class AI compute, 64GB 256-bit LPDDR5, 2048-core NVIDIA Ampere architecture GPU with 64 Tensor cores.',
+    status: 'OPERATIONAL',
+    imageUrl: 'https://images.unsplash.com/photo-1550751827-4bd374c3f58b?auto=format&fit=crop&w=600&q=80',
+    priority: 4,
+    isPublished: true,
+  },
+  {
+    id: 'e5555555-5555-5555-5555-555555555555',
+    name: 'High-Speed Logic Analyzer',
+    model: 'Saleae Logic Pro 16 Channel',
+    category: 'TESTING',
+    specifications: '16 digital/analog channels, 500 MS/s digital sampling, 50 MS/s analog bandwidth, real-time USB 3.0 stream packet decoding.',
+    status: 'OPERATIONAL',
+    imageUrl: 'https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=600&q=80',
+    priority: 5,
+    isPublished: true,
+  },
+  {
+    id: 'e6666666-6666-6666-6666-666666666666',
+    name: 'Articulated Robotic Manipulator',
+    model: '6-DOF Collaborative Robotic Arm',
+    category: 'ROBOTICS',
+    specifications: '6-axis articulated arm with harmonic drive reducers, 5kg payload, 850mm reach, ROS2 MoveIt2 control and pneumatic vacuum gripper.',
+    status: 'OPERATIONAL',
+    imageUrl: 'https://images.unsplash.com/photo-1485827404703-89b55fcc595e?auto=format&fit=crop&w=600&q=80',
+    priority: 6,
+    isPublished: true,
+  },
+];
 
 const initialBanners: Banner[] = [
   {
@@ -414,6 +503,7 @@ class DataStore {
   public tracks: Track[] = [...initialTracks];
   public banners: Banner[] = [...initialBanners];
   public gallery: GalleryItem[] = [...initialGallery];
+  public gear: LabGear[] = [...initialGear];
   public settings: SiteSetting = { ...initialSettings };
   public applications: JoinApplication[] = [...initialApplications];
   public messages: ContactMessage[] = [];
@@ -447,6 +537,7 @@ class DataStore {
         for (const t of this.tracks) await db.upsert('tracks', t.id, t);
         for (const b of this.banners) await db.upsert('banners', b.id, b);
         for (const g of this.gallery) await db.upsert('gallery', g.id, g);
+        for (const gr of this.gear) await db.upsert('gear', gr.id, gr);
         await db.upsert('settings', 'default', this.settings);
         for (const ap of this.applications) await db.upsert('applications', ap.id, ap);
       } else {
@@ -460,6 +551,7 @@ class DataStore {
           remoteTracks,
           remoteBanners,
           remoteGallery,
+          remoteGear,
           remoteSettings,
           remoteApps,
         ] = await Promise.all([
@@ -471,6 +563,7 @@ class DataStore {
           db.loadAll<Track>('tracks'),
           db.loadAll<Banner>('banners'),
           db.loadAll<GalleryItem>('gallery'),
+          db.loadAll<LabGear>('gear'),
           db.loadAll<SiteSetting>('settings'),
           db.loadAll<JoinApplication>('applications'),
         ]);
@@ -483,7 +576,14 @@ class DataStore {
         if (remoteTracks.length > 0) this.tracks = remoteTracks;
         if (remoteBanners.length > 0) this.banners = remoteBanners;
         if (remoteGallery.length > 0) this.gallery = remoteGallery;
-        if (remoteSettings.length > 0 && remoteSettings[0]) this.settings = remoteSettings[0];
+        if (remoteGear.length > 0) {
+          this.gear = remoteGear;
+        } else {
+          for (const gr of this.gear) await db.upsert('gear', gr.id, gr);
+        }
+        if (remoteSettings.length > 0 && remoteSettings[0]) {
+          this.settings = { ...this.settings, ...remoteSettings[0] };
+        }
         if (remoteApps.length > 0) this.applications = remoteApps;
       }
     } catch (err) {
@@ -683,6 +783,9 @@ class DataStore {
       ...this.settings,
       ...data,
       stats: data.stats ? { ...this.settings.stats, ...data.stats } : this.settings.stats,
+      sectionToggles: data.sectionToggles
+        ? { ...this.settings.sectionToggles, ...data.sectionToggles }
+        : this.settings.sectionToggles,
       announcement: data.announcement
         ? { ...this.settings.announcement, ...data.announcement }
         : this.settings.announcement,
@@ -690,6 +793,55 @@ class DataStore {
     };
     db.upsert('settings', 'default', this.settings);
     return this.settings;
+  }
+
+  // Lab Gear CRUD
+  getGear(publishedOnly = false) {
+    if (publishedOnly) {
+      return this.gear.filter((g) => g.isPublished);
+    }
+    return this.gear;
+  }
+  getGearById(id: string) {
+    return this.gear.find((g) => g.id === id);
+  }
+  createGear(data: Omit<LabGear, 'id' | 'createdAt' | 'updatedAt'>) {
+    const newGear: LabGear = {
+      ...data,
+      id: crypto.randomUUID(),
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+    this.gear.push(newGear);
+    db.upsert('gear', newGear.id, newGear);
+    return newGear;
+  }
+  updateGear(id: string, data: Partial<LabGear>) {
+    const idx = this.gear.findIndex((g) => g.id === id);
+    if (idx === -1) return null;
+    this.gear[idx] = {
+      ...this.gear[idx],
+      ...data,
+      updatedAt: new Date().toISOString(),
+    };
+    db.upsert('gear', this.gear[idx].id, this.gear[idx]);
+    return this.gear[idx];
+  }
+  deleteGear(id: string) {
+    const idx = this.gear.findIndex((g) => g.id === id);
+    if (idx === -1) return false;
+    const target = this.gear[idx];
+    this.gear.splice(idx, 1);
+    db.delete('gear', target.id);
+    return true;
+  }
+  toggleGear(id: string) {
+    const item = this.gear.find((g) => g.id === id);
+    if (!item) return null;
+    item.isPublished = !item.isPublished;
+    item.updatedAt = new Date().toISOString();
+    db.upsert('gear', item.id, item);
+    return item;
   }
 
   // Applications

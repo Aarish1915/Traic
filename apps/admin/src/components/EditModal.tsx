@@ -72,6 +72,9 @@ export function EditModal({
         if (!payload.startsAt) {
           payload.startsAt = new Date().toISOString();
         }
+      } else if (type === 'gear') {
+        payload.priority = Number(payload.priority) || 1;
+        payload.isPublished = payload.isPublished !== false;
       }
 
       const res = await fetch(url, {
@@ -94,7 +97,7 @@ export function EditModal({
         throw new Error(errData?.error?.message || 'Operation failed');
       }
 
-      const itemLabel = type === 'gallery' ? 'Gallery dispatch' : type.slice(0, -1);
+      const itemLabel = type === 'gallery' ? 'Gallery dispatch' : type === 'gear' ? 'Lab equipment' : type.slice(0, -1);
       onSuccess(`${itemLabel} ${isEdit ? 'updated' : 'created'} successfully!`);
     } catch (err: any) {
       alert(err.message);
@@ -103,7 +106,7 @@ export function EditModal({
 
   const getTitle = () => {
     const isEdit = Boolean(initialData?.id);
-    const label = type === 'gallery' ? 'Field Dispatch' : type.slice(0, -1);
+    const label = type === 'gallery' ? 'Field Dispatch' : type === 'gear' ? 'Lab Equipment' : type.slice(0, -1);
     return `${isEdit ? 'Edit' : 'Create New'} ${label}`;
   };
 
@@ -145,6 +148,106 @@ export function EditModal({
         </div>
 
         <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+          {/* LAB GEAR FORM */}
+          {type === 'gear' && (
+            <>
+              <div>
+                <label style={{ display: 'block', fontSize: '11px', color: '#9AA3B5', marginBottom: '4px' }}>Equipment Name *</label>
+                <input
+                  required
+                  type="text"
+                  placeholder="e.g. Digital Storage Oscilloscope"
+                  value={formData.name || ''}
+                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                  style={{ width: '100%', padding: '8px 12px', borderRadius: '6px', backgroundColor: '#07080B', border: '1px solid #232838', color: '#E8EAF0' }}
+                />
+              </div>
+              <div>
+                <label style={{ display: 'block', fontSize: '11px', color: '#9AA3B5', marginBottom: '4px' }}>Model / Version *</label>
+                <input
+                  required
+                  type="text"
+                  placeholder="e.g. Rigol DS1054Z (4-Ch 50MHz)"
+                  value={formData.model || ''}
+                  onChange={(e) => setFormData({ ...formData, model: e.target.value })}
+                  style={{ width: '100%', padding: '8px 12px', borderRadius: '6px', backgroundColor: '#07080B', border: '1px solid #232838', color: '#E8EAF0' }}
+                />
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                <div>
+                  <label style={{ display: 'block', fontSize: '11px', color: '#9AA3B5', marginBottom: '4px' }}>Category *</label>
+                  <select
+                    value={formData.category || 'TESTING'}
+                    onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+                    style={{ width: '100%', padding: '8px 12px', borderRadius: '6px', backgroundColor: '#07080B', border: '1px solid #232838', color: '#E8EAF0' }}
+                  >
+                    <option value="TESTING">TESTING</option>
+                    <option value="SOLDERING">SOLDERING</option>
+                    <option value="FABRICATION">FABRICATION</option>
+                    <option value="COMPUTE">COMPUTE</option>
+                    <option value="ROBOTICS">ROBOTICS</option>
+                  </select>
+                </div>
+                <div>
+                  <label style={{ display: 'block', fontSize: '11px', color: '#9AA3B5', marginBottom: '4px' }}>Status *</label>
+                  <select
+                    value={formData.status || 'OPERATIONAL'}
+                    onChange={(e) => setFormData({ ...formData, status: e.target.value })}
+                    style={{ width: '100%', padding: '8px 12px', borderRadius: '6px', backgroundColor: '#07080B', border: '1px solid #232838', color: '#E8EAF0' }}
+                  >
+                    <option value="OPERATIONAL">OPERATIONAL</option>
+                    <option value="IN_USE">IN_USE</option>
+                    <option value="MAINTENANCE">MAINTENANCE</option>
+                  </select>
+                </div>
+              </div>
+              <div>
+                <label style={{ display: 'block', fontSize: '11px', color: '#9AA3B5', marginBottom: '4px' }}>Specifications & Capabilities *</label>
+                <textarea
+                  required
+                  rows={3}
+                  placeholder="e.g. 4-Channel, 50MHz bandwidth, 1 GSa/s real-time sampling rate, hardware protocol decoding for I2C, SPI, UART, CAN."
+                  value={formData.specifications || ''}
+                  onChange={(e) => setFormData({ ...formData, specifications: e.target.value })}
+                  style={{ width: '100%', padding: '8px 12px', borderRadius: '6px', backgroundColor: '#07080B', border: '1px solid #232838', color: '#E8EAF0', lineHeight: 1.4 }}
+                />
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                <div>
+                  <label style={{ display: 'block', fontSize: '11px', color: '#9AA3B5', marginBottom: '4px' }}>Priority Order</label>
+                  <input
+                    type="number"
+                    value={formData.priority ?? 1}
+                    onChange={(e) => setFormData({ ...formData, priority: e.target.value })}
+                    style={{ width: '100%', padding: '8px 12px', borderRadius: '6px', backgroundColor: '#07080B', border: '1px solid #232838', color: '#E8EAF0' }}
+                  />
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', paddingTop: '18px' }}>
+                  <input
+                    type="checkbox"
+                    id="gearIsPublished"
+                    checked={formData.isPublished !== false}
+                    onChange={(e) => setFormData({ ...formData, isPublished: e.target.checked })}
+                    style={{ width: '16px', height: '16px', accentColor: '#00E5FF', cursor: 'pointer' }}
+                  />
+                  <label htmlFor="gearIsPublished" style={{ fontSize: '12px', color: '#E8EAF0', cursor: 'pointer' }}>
+                    Publish to Live Site
+                  </label>
+                </div>
+              </div>
+              <div>
+                <label style={{ display: 'block', fontSize: '11px', color: '#9AA3B5', marginBottom: '4px' }}>Equipment Image URL</label>
+                <input
+                  type="text"
+                  placeholder="e.g. https://images.unsplash.com/... or /images/gear/oscilloscope.jpg"
+                  value={formData.imageUrl || ''}
+                  onChange={(e) => setFormData({ ...formData, imageUrl: e.target.value })}
+                  style={{ width: '100%', padding: '8px 12px', borderRadius: '6px', backgroundColor: '#07080B', border: '1px solid #232838', color: '#E8EAF0' }}
+                />
+              </div>
+            </>
+          )}
+
           {/* GALLERY FORM */}
           {type === 'gallery' && (
             <>

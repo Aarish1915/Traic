@@ -10,6 +10,7 @@ export function Header({ activeTab, onCreateNew }: HeaderProps) {
   const titles: Record<TabId, string> = {
     settings: 'Site Controls & Announcement Banner',
     '3d-models': 'Add Your 3D Projects & Asset Pipeline',
+    gear: 'Workshop Lab Gear & Hardware Inventory',
     banners: 'Banners & Top Alert Bar Management',
     gallery: 'Field Gallery & Media Dispatches',
     projects: 'Projects & Hardware Management',
@@ -25,6 +26,7 @@ export function Header({ activeTab, onCreateNew }: HeaderProps) {
 
   const createLabels: Record<string, string> = {
     projects: 'Project',
+    gear: 'Equipment Item',
     banners: 'Banner',
     gallery: 'Field Photo / Dispatch',
     events: 'Event',

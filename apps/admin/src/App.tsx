@@ -9,6 +9,7 @@ import type {
   JoinApplication,
   Banner,
   GalleryItem,
+  LabGear,
 } from '@traic/shared';
 import type { TabId } from './types';
 import { Toast } from './components/Toast';
@@ -18,6 +19,7 @@ import { ProjectsTab } from './components/tabs/ProjectsTab';
 import { ThreeDModelsTab } from './components/tabs/ThreeDModelsTab';
 import { BannersTab } from './components/tabs/BannersTab';
 import { GalleryTab } from './components/tabs/GalleryTab';
+import { GearTab } from './components/tabs/GearTab';
 import { EventsTab } from './components/tabs/EventsTab';
 import { AchievementsTab } from './components/tabs/AchievementsTab';
 import { MembersTab } from './components/tabs/MembersTab';
@@ -50,6 +52,7 @@ export function App() {
   const [alumni, setAlumni] = useState<Alumni[]>([]);
   const [banners, setBanners] = useState<Banner[]>([]);
   const [gallery, setGallery] = useState<GalleryItem[]>([]);
+  const [gear, setGear] = useState<LabGear[]>([]);
   const [settings, setSettings] = useState<SiteSetting | null>(null);
   const [applications, setApplications] = useState<JoinApplication[]>([]);
   const [loading, setLoading] = useState(false);
@@ -118,7 +121,7 @@ export function App() {
     const authHeaders: Record<string, string> = { Authorization: `Bearer ${token}` };
 
     try {
-      const [projRes, evRes, achRes, memRes, alRes, banRes, galRes, setRes, appRes] = await Promise.all([
+      const [projRes, evRes, achRes, memRes, alRes, banRes, galRes, gearRes, setRes, appRes] = await Promise.all([
         fetch(`${API_BASE}/admin/projects`, { headers: authHeaders }).then((r) => r.json()).catch(() => ({ data: [] })),
         fetch(`${API_BASE}/admin/events`, { headers: authHeaders }).then((r) => r.json()).catch(() => ({ data: [] })),
         fetch(`${API_BASE}/admin/achievements`, { headers: authHeaders }).then((r) => r.json()).catch(() => ({ data: [] })),
@@ -129,6 +132,7 @@ export function App() {
           return r.json();
         }).catch(() => ({ data: [] })),
         fetch(`${API_BASE}/admin/gallery`, { headers: authHeaders }).then((r) => r.json()).catch(() => ({ data: [] })),
+        fetch(`${API_BASE}/admin/gear`, { headers: authHeaders }).then((r) => r.json()).catch(() => ({ data: [] })),
         fetch(`${API_BASE}/admin/settings`, { headers: authHeaders }).then((r) => r.json()).catch(() => ({ data: null })),
         fetch(`${API_BASE}/admin/applications`, { headers: authHeaders }).then((r) => r.json()).catch(() => ({ data: [] })),
       ]);
@@ -140,6 +144,7 @@ export function App() {
       if (alRes.data) setAlumni(alRes.data);
       if (banRes.data) setBanners(banRes.data);
       if (galRes.data) setGallery(galRes.data);
+      if (gearRes.data) setGear(gearRes.data);
       if (setRes.data) setSettings(setRes.data);
       if (appRes.data) setApplications(appRes.data);
     } catch {
@@ -248,6 +253,23 @@ export function App() {
     }
   };
 
+  const handleToggleGear = async (id: string) => {
+    try {
+      const res = await fetch(`${API_BASE}/admin/gear/${id}/toggle`, {
+        method: 'PATCH',
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (res.ok) {
+        showToast('Lab gear visibility updated');
+        fetchAllData();
+      } else {
+        showToast('Failed to update gear visibility', 'error');
+      }
+    } catch {
+      showToast('Network error while updating gear visibility', 'error');
+    }
+  };
+
   const handleUpdateApplicationStatus = async (id: string, status: string) => {
     try {
       const res = await fetch(`${API_BASE}/admin/applications/${id}`, {
@@ -305,6 +327,7 @@ export function App() {
           models3d: projects.filter((p) => !!p.model3dAssetUrl).length,
           banners: banners.length,
           gallery: gallery.length,
+          gear: gear.length,
           events: events.length,
           achievements: achievements.length,
           members: members.length,
@@ -334,6 +357,15 @@ export function App() {
             copiedSlug={copiedSlug}
             onCopyPath={copyToClipboard}
             onEditProject={(p) => setEditingItem({ type: 'projects', data: p })}
+          />
+        )}
+
+        {activeTab === 'gear' && (
+          <GearTab
+            gear={gear}
+            onEdit={(g) => setEditingItem({ type: 'gear', data: g })}
+            onDelete={(id) => handleDelete('gear', id)}
+            onToggleVisibility={handleToggleGear}
           />
         )}
 

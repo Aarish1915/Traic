@@ -11,6 +11,7 @@ import {
   Megaphone,
   Box,
   Camera,
+  Wrench,
   LogOut,
   ExternalLink,
   Menu,
@@ -26,6 +27,7 @@ interface SidebarProps {
     models3d: number;
     banners: number;
     gallery: number;
+    gear: number;
     events: number;
     achievements: number;
     members: number;
@@ -57,6 +59,7 @@ export function Sidebar({ activeTab, setActiveTab, counts, loading, onSync, onLo
   const navItems = [
     { id: 'projects' as TabId, label: 'Projects & Hardware', icon: <Layers size={18} />, count: counts.projects },
     { id: '3d-models' as TabId, label: 'Add Your 3D & Models', icon: <Box size={18} />, count: counts.models3d },
+    { id: 'gear' as TabId, label: 'Lab Gear & Hardware', icon: <Wrench size={18} />, count: counts.gear },
     { id: 'banners' as TabId, label: 'Banners & Alert Bar', icon: <Megaphone size={18} />, count: counts.banners },
     { id: 'gallery' as TabId, label: 'Field Gallery & Media', icon: <Camera size={18} />, count: counts.gallery },
     { id: 'events' as TabId, label: 'Events & Hackathons', icon: <Calendar size={18} />, count: counts.events },

@@ -62,6 +62,11 @@ publicRouter.get('/public/settings', (_req, res) => {
   res.json({ success: true, data: store.getSettings() });
 });
 
+// Workshop Lab Gear & Hardware (Published only)
+publicRouter.get('/public/gear', (_req, res) => {
+  res.json({ success: true, data: store.getGear(true) });
+});
+
 // Banners (Active only for public site)
 publicRouter.get('/public/banners', (_req, res) => {
   res.json({ success: true, data: store.getBanners(true) });

@@ -7,4 +7,4 @@ export * from './schemas/application';
 export * from './schemas/track';
 export * from './schemas/setting';
 export * from './schemas/gallery';
-
+export * from './schemas/gear';

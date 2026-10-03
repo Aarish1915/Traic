@@ -8,6 +8,7 @@ import {
   SiteSettingSchema,
   BannerSchema,
   GalleryItemSchema,
+  LabGearSchema,
 } from '@traic/shared';
 import { store } from '../public/data';
 import { NotFoundError, ValidationError } from '../../common/errors';
@@ -336,4 +337,52 @@ adminRouter.delete('/admin/gallery/:id', (req, res, next) => {
   }
   logger.info({ galleryId: req.params.id }, 'Admin deleted gallery item');
   res.json({ success: true, message: 'Gallery item removed successfully' });
+});
+
+// LAB GEAR CRUD
+adminRouter.get('/admin/gear', (_req, res) => {
+  res.json({ success: true, data: store.getGear(false) });
+});
+
+adminRouter.post('/admin/gear', (req, res, next) => {
+  const parsed = LabGearSchema.omit({ id: true, createdAt: true, updatedAt: true }).safeParse(req.body);
+  if (!parsed.success) {
+    return next(new ValidationError('Invalid lab gear payload', parsed.error.flatten().fieldErrors));
+  }
+  const created = store.createGear(parsed.data as any);
+  logger.info({ gearId: created.id, name: created.name }, 'Admin created lab gear');
+  res.status(201).json({ success: true, data: created });
+});
+
+const updateGear = (req: any, res: any, next: any) => {
+  const parsed = LabGearSchema.partial().safeParse(req.body);
+  if (!parsed.success) {
+    return next(new ValidationError('Invalid lab gear payload', parsed.error.flatten().fieldErrors));
+  }
+  const updated = store.updateGear(req.params.id, parsed.data as any);
+  if (!updated) {
+    return next(new NotFoundError(`Lab gear ${req.params.id} not found`));
+  }
+  logger.info({ gearId: updated.id }, 'Admin updated lab gear');
+  res.json({ success: true, data: updated });
+};
+adminRouter.put('/admin/gear/:id', updateGear);
+adminRouter.patch('/admin/gear/:id', updateGear);
+
+adminRouter.patch('/admin/gear/:id/toggle', (req, res, next) => {
+  const updated = store.toggleGear(req.params.id);
+  if (!updated) {
+    return next(new NotFoundError(`Lab gear ${req.params.id} not found`));
+  }
+  logger.info({ gearId: updated.id, isPublished: updated.isPublished }, 'Admin toggled lab gear visibility');
+  res.json({ success: true, data: updated });
+});
+
+adminRouter.delete('/admin/gear/:id', (req, res, next) => {
+  const deleted = store.deleteGear(req.params.id);
+  if (!deleted) {
+    return next(new NotFoundError(`Lab gear ${req.params.id} not found`));
+  }
+  logger.info({ gearId: req.params.id }, 'Admin deleted lab gear');
+  res.json({ success: true, message: 'Lab gear deleted successfully' });
 });

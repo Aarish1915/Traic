@@ -7,5 +7,6 @@ export type TabId =
   | 'banners'
   | 'gallery'
   | '3d-models'
+  | 'gear'
   | 'settings'
   | 'applications';
