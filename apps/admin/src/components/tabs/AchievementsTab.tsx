@@ -36,7 +36,7 @@ export function AchievementsTab({ achievements, onEdit, onDelete, onToggleVisibi
                     {a.level}
                   </span>
                 </td>
-                <td style={{ padding: '14px 16px', color: '#FF9F1C', fontWeight: 600 }}>{a.rank}</td>
+                <td style={{ padding: '14px 16px', color: '#00E5FF', fontWeight: 600 }}>{a.rank}</td>
                 <td style={{ padding: '14px 16px', color: '#9AA3B5' }}>{a.date}</td>
                 <td style={{ padding: '14px 16px' }}>
                   <QuickVisibilityToggle

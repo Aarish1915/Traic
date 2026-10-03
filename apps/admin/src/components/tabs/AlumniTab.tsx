@@ -30,7 +30,7 @@ export function AlumniTab({ alumni, onEdit, onDelete, onToggleVisibility }: Alum
             return (
               <tr key={al.id || al.name} style={{ borderBottom: '1px solid rgba(35, 40, 56, 0.5)' }}>
                 <td style={{ padding: '14px 16px', fontWeight: 700 }}>{al.name}</td>
-                <td style={{ padding: '14px 16px', color: '#FF9F1C', fontFamily: 'monospace' }}>Class of {al.batch}</td>
+                <td style={{ padding: '14px 16px', color: '#00E5FF', fontFamily: 'monospace' }}>Class of {al.batch}</td>
                 <td style={{ padding: '14px 16px' }}>{al.currentRole}</td>
                 <td style={{ padding: '14px 16px', color: '#38BDF8' }}>{al.company}</td>
                 <td style={{ padding: '14px 16px', color: '#9AA3B5', fontStyle: 'italic', maxWidth: '260px' }}>&ldquo;{al.quote}&rdquo;</td>

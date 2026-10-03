@@ -15,15 +15,15 @@ export function ThreeDModelsTab({ projects, copiedSlug, onCopyPath, onEditProjec
       <div
         style={{
           backgroundColor: '#141821',
-          border: '1px solid rgba(255, 159, 28, 0.4)',
+          border: '1px solid rgba(0, 229, 255, 0.4)',
           borderRadius: '16px',
           padding: '28px',
           boxShadow: '0 8px 30px rgba(0,0,0,0.4)',
         }}
       >
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '8px' }}>
-          <Box size={22} color="#FF9F1C" />
-          <h2 style={{ margin: 0, fontSize: '20px', fontWeight: 900, color: '#FF9F1C' }}>
+          <Box size={22} color="#00E5FF" />
+          <h2 style={{ margin: 0, fontSize: '20px', fontWeight: 900, color: '#00E5FF' }}>
             Add Your 3D — Real Hardware Showcase Pipeline
           </h2>
         </div>
@@ -51,7 +51,7 @@ export function ThreeDModelsTab({ projects, copiedSlug, onCopyPath, onEditProjec
           </div>
 
           <div style={{ backgroundColor: '#0D0F14', border: '1px solid #232838', borderRadius: '10px', padding: '16px' }}>
-            <div style={{ fontWeight: 800, fontSize: '13px', color: '#FF9F1C', marginBottom: '6px' }}>
+            <div style={{ fontWeight: 800, fontSize: '13px', color: '#00E5FF', marginBottom: '6px' }}>
               3. Place File:
             </div>
             <div style={{ fontSize: '12px', color: '#E8EAF0', lineHeight: '1.5' }}>

@@ -48,7 +48,7 @@ export function Header({ activeTab, onCreateNew }: HeaderProps) {
     >
       <div style={{ flex: 1, minWidth: 0 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px', flexWrap: 'wrap' }}>
-          <span style={{ fontSize: '11px', fontFamily: 'monospace', color: '#FF9F1C', letterSpacing: '1px' }}>
+          <span style={{ fontSize: '11px', fontFamily: 'monospace', color: '#00E5FF', letterSpacing: '1px' }}>
             ADMIN CONTROL //
           </span>
           <span style={{ fontSize: '11px', fontFamily: 'monospace', color: '#34D399' }}>CONNECTED TO API</span>
@@ -65,15 +65,15 @@ export function Header({ activeTab, onCreateNew }: HeaderProps) {
             display: 'flex',
             alignItems: 'center',
             gap: '8px',
-            backgroundColor: '#FF9F1C',
-            color: '#07080B',
+            backgroundColor: '#00E5FF',
+            color: '#030712',
             border: 'none',
             padding: '10px 16px',
             borderRadius: '8px',
             fontWeight: 700,
             fontSize: '13px',
             cursor: 'pointer',
-            boxShadow: '0 4px 14px rgba(255, 159, 28, 0.25)',
+            boxShadow: '0 4px 14px rgba(0, 229, 255, 0.25)',
             whiteSpace: 'nowrap',
             flexShrink: 0,
           }}

@@ -68,8 +68,8 @@ export function LoginGate({ apiBase, onSuccess }: LoginGateProps) {
         position: 'absolute',
         inset: 0,
         backgroundImage: `
-          linear-gradient(to right, rgba(234, 88, 12, 0.04) 1px, transparent 1px),
-          linear-gradient(to bottom, rgba(234, 88, 12, 0.04) 1px, transparent 1px)
+          linear-gradient(to right, rgba(0, 229, 255, 0.04) 1px, transparent 1px),
+          linear-gradient(to bottom, rgba(0, 229, 255, 0.04) 1px, transparent 1px)
         `,
         backgroundSize: '36px 36px',
         pointerEvents: 'none',
@@ -94,13 +94,13 @@ export function LoginGate({ apiBase, onSuccess }: LoginGateProps) {
               width: '38px',
               height: '38px',
               borderRadius: '10px',
-              backgroundColor: 'rgba(234, 88, 12, 0.15)',
-              border: '1px solid rgba(234, 88, 12, 0.4)',
+              backgroundColor: 'rgba(0, 229, 255, 0.12)',
+              border: '1px solid rgba(0, 229, 255, 0.35)',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
             }}>
-              <ShieldAlert size={20} color="#EA580C" />
+              <ShieldAlert size={20} color="#00E5FF" />
             </div>
             <div>
               <div style={{ fontSize: '13px', fontWeight: 800, color: '#F8FAFC', letterSpacing: '0.05em' }}>
@@ -190,7 +190,7 @@ export function LoginGate({ apiBase, onSuccess }: LoginGateProps) {
                   outline: 'none',
                   transition: 'border-color 0.2s',
                 }}
-                onFocus={(e) => (e.target.style.borderColor = '#EA580C')}
+                onFocus={(e) => (e.target.style.borderColor = '#00E5FF')}
                 onBlur={(e) => (e.target.style.borderColor = '#2D3748')}
               />
               <button
@@ -224,8 +224,8 @@ export function LoginGate({ apiBase, onSuccess }: LoginGateProps) {
             style={{
               width: '100%',
               padding: '13px 20px',
-              backgroundColor: '#EA580C',
-              color: '#07080B',
+              backgroundColor: '#00E5FF',
+              color: '#030712',
               border: 'none',
               borderRadius: '8px',
               fontWeight: 800,
@@ -239,8 +239,8 @@ export function LoginGate({ apiBase, onSuccess }: LoginGateProps) {
               transition: 'background-color 0.2s, transform 0.1s',
               opacity: loading ? 0.7 : 1,
             }}
-            onMouseOver={(e) => !loading && ((e.currentTarget.style.backgroundColor = '#F97316'))}
-            onMouseOut={(e) => !loading && ((e.currentTarget.style.backgroundColor = '#EA580C'))}
+            onMouseOver={(e) => !loading && ((e.currentTarget.style.backgroundColor = '#00B4D8'))}
+            onMouseOut={(e) => !loading && ((e.currentTarget.style.backgroundColor = '#00E5FF'))}
           >
             <Lock size={15} />
             <span>{loading ? 'VERIFYING CREDENTIALS...' : 'AUTHENTICATE & UNLOCK'}</span>

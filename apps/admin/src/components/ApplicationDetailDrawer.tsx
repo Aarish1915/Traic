@@ -73,7 +73,7 @@ ${application.statementOfPurpose}`;
       case 'SHORTLISTED':
         return { bg: 'rgba(56, 189, 248, 0.15)', text: '#38BDF8', border: 'rgba(56, 189, 248, 0.4)' };
       case 'REVIEWING':
-        return { bg: 'rgba(255, 159, 28, 0.15)', text: '#FF9F1C', border: 'rgba(255, 159, 28, 0.4)' };
+        return { bg: 'rgba(245, 158, 11, 0.15)', text: '#F59E0B', border: 'rgba(245, 158, 11, 0.4)' };
       case 'REJECTED':
         return { bg: 'rgba(239, 68, 68, 0.15)', text: '#F87171', border: 'rgba(239, 68, 68, 0.4)' };
       default:
@@ -219,7 +219,7 @@ ${application.statementOfPurpose}`;
                 <div style={{ fontSize: '10px', color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
                   TRACK PREFERENCE
                 </div>
-                <div style={{ fontSize: '13px', fontWeight: 700, color: '#FF9F1C', fontFamily: 'monospace', marginTop: '2px' }}>
+                <div style={{ fontSize: '13px', fontWeight: 700, color: '#00E5FF', fontFamily: 'monospace', marginTop: '2px' }}>
                   {application.interest}
                 </div>
               </div>
@@ -338,9 +338,9 @@ ${application.statementOfPurpose}`;
               disabled={updating || currentStatus === 'REVIEWING'}
               onClick={() => handleStatusChange('REVIEWING')}
               style={{
-                backgroundColor: currentStatus === 'REVIEWING' ? '#FF9F1C' : '#151C2C',
-                color: currentStatus === 'REVIEWING' ? '#080A0F' : '#FF9F1C',
-                border: '1px solid #FF9F1C',
+                backgroundColor: currentStatus === 'REVIEWING' ? '#F59E0B' : '#151C2C',
+                color: currentStatus === 'REVIEWING' ? '#080A0F' : '#F59E0B',
+                border: '1px solid #F59E0B',
                 padding: '6px 12px',
                 borderRadius: '6px',
                 fontSize: '11px',

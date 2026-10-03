@@ -29,7 +29,7 @@ export function MembersTab({ members, onEdit, onDelete, onToggleVisibility }: Me
             return (
               <tr key={m.id || m.name} style={{ borderBottom: '1px solid rgba(35, 40, 56, 0.5)' }}>
                 <td style={{ padding: '14px 16px', fontWeight: 700 }}>{m.name}</td>
-                <td style={{ padding: '14px 16px', color: '#FF9F1C', fontFamily: 'monospace' }}>{m.position}</td>
+                <td style={{ padding: '14px 16px', color: '#00E5FF', fontFamily: 'monospace' }}>{m.position}</td>
                 <td style={{ padding: '14px 16px' }}>{m.academicYear}</td>
                 <td style={{ padding: '14px 16px', color: '#9AA3B5', maxWidth: '260px' }}>{m.bio}</td>
                 <td style={{ padding: '14px 16px' }}>

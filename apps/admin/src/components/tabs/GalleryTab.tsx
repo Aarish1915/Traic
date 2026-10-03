@@ -35,8 +35,8 @@ export function GalleryTab({ gallery, onEdit, onDelete, onCreate, onToggleVisibi
         <button
           onClick={onCreate}
           style={{
-            backgroundColor: '#FF9F1C',
-            color: '#07080B',
+            backgroundColor: '#00E5FF',
+            color: '#030712',
             border: 'none',
             padding: '8px 16px',
             borderRadius: '6px',
@@ -68,7 +68,7 @@ export function GalleryTab({ gallery, onEdit, onDelete, onCreate, onToggleVisibi
             {gallery.length === 0 ? (
               <tr>
                 <td colSpan={7} style={{ padding: '32px', textAlign: 'center', color: '#9AA3B5' }}>
-                  No gallery items yet. Click <strong style={{ color: '#FF9F1C' }}>+ Add Field Photo</strong> to get started.
+                  No gallery items yet. Click <strong style={{ color: '#00E5FF' }}>+ Add Field Photo</strong> to get started.
                 </td>
               </tr>
             ) : (
@@ -97,7 +97,7 @@ export function GalleryTab({ gallery, onEdit, onDelete, onCreate, onToggleVisibi
                               : g.category === 'ROBOTICS'
                               ? 'rgba(56, 189, 248, 0.15)'
                               : g.category === 'FABRICATION'
-                              ? 'rgba(255, 159, 28, 0.15)'
+                              ? 'rgba(0, 229, 255, 0.15)'
                               : 'rgba(168, 85, 247, 0.15)',
                           color:
                             g.category === 'COMPETITION'
@@ -105,7 +105,7 @@ export function GalleryTab({ gallery, onEdit, onDelete, onCreate, onToggleVisibi
                               : g.category === 'ROBOTICS'
                               ? '#38BDF8'
                               : g.category === 'FABRICATION'
-                              ? '#FF9F1C'
+                              ? '#00E5FF'
                               : '#C084FC',
                           padding: '3px 8px',
                           borderRadius: '4px',
@@ -124,7 +124,7 @@ export function GalleryTab({ gallery, onEdit, onDelete, onCreate, onToggleVisibi
                     </td>
                     <td style={{ padding: '14px 16px' }}>
                       {g.featured ? (
-                        <span style={{ color: '#FF9F1C', fontSize: '11px', fontWeight: 700, border: '1px solid rgba(255, 159, 28, 0.3)', padding: '2px 6px', borderRadius: '4px', backgroundColor: 'rgba(255, 159, 28, 0.1)', whiteSpace: 'nowrap' }}>
+                        <span style={{ color: '#00E5FF', fontSize: '11px', fontWeight: 700, border: '1px solid rgba(0, 229, 255, 0.3)', padding: '2px 6px', borderRadius: '4px', backgroundColor: 'rgba(0, 229, 255, 0.1)', whiteSpace: 'nowrap' }}>
                           ★ FEATURED
                         </span>
                       ) : (

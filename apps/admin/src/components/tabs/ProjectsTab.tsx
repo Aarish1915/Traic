@@ -37,13 +37,13 @@ export function ProjectsTab({ projects, onEdit, onDelete, onToggleVisibility }: 
                     style={{
                       backgroundColor:
                         p.category === 'HARDWARE'
-                          ? 'rgba(255, 159, 28, 0.15)'
+                          ? 'rgba(0, 229, 255, 0.15)'
                           : p.category === 'HYBRID'
                           ? 'rgba(56, 189, 248, 0.15)'
                           : 'rgba(52, 211, 153, 0.15)',
                       color:
                         p.category === 'HARDWARE'
-                          ? '#FF9F1C'
+                          ? '#00E5FF'
                           : p.category === 'HYBRID'
                           ? '#38BDF8'
                           : '#34D399',

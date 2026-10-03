@@ -546,7 +546,7 @@ export function EditModal({
               {/* Bill of Materials (BOM) Builder */}
               <div style={{ padding: '14px', backgroundColor: '#0D0F14', border: '1px solid #232838', borderRadius: '8px' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
-                  <label style={{ fontSize: '12px', fontWeight: 700, color: '#FF9F1C' }}>
+                  <label style={{ fontSize: '12px', fontWeight: 700, color: '#00E5FF' }}>
                     Bill of Materials (BOM) ({Array.isArray(formData.bom) ? formData.bom.length : 0} Components)
                   </label>
                   <button
@@ -555,7 +555,7 @@ export function EditModal({
                       const cur = Array.isArray(formData.bom) ? [...formData.bom] : [];
                       setFormData({ ...formData, bom: [...cur, { component: '', partNumber: '', function: '' }] });
                     }}
-                    style={{ backgroundColor: '#1A2338', border: '1px solid #28344D', color: '#FF9F1C', padding: '4px 10px', borderRadius: '4px', fontSize: '11px', cursor: 'pointer', fontWeight: 700 }}
+                    style={{ backgroundColor: '#1A2338', border: '1px solid #28344D', color: '#00E5FF', padding: '4px 10px', borderRadius: '4px', fontSize: '11px', cursor: 'pointer', fontWeight: 700 }}
                   >
                     + Add Part
                   </button>
@@ -950,7 +950,7 @@ export function EditModal({
             </button>
             <button
               type="submit"
-              style={{ backgroundColor: '#FF9F1C', color: '#07080B', border: 'none', padding: '10px 24px', borderRadius: '6px', fontWeight: 700, fontSize: '13px', cursor: 'pointer', flex: '2 1 auto', minWidth: '140px' }}
+              style={{ backgroundColor: '#00E5FF', color: '#030712', border: 'none', padding: '10px 24px', borderRadius: '6px', fontWeight: 700, fontSize: '13px', cursor: 'pointer', flex: '2 1 auto', minWidth: '140px' }}
             >
               Save Changes
             </button>

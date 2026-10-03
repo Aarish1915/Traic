@@ -74,7 +74,7 @@ export function ApplicationsTab({ applications, onDelete, onUpdateStatus }: Appl
       case 'SHORTLISTED':
         return { bg: 'rgba(56, 189, 248, 0.15)', text: '#38BDF8', border: 'rgba(56, 189, 248, 0.4)' };
       case 'REVIEWING':
-        return { bg: 'rgba(255, 159, 28, 0.15)', text: '#FF9F1C', border: 'rgba(255, 159, 28, 0.4)' };
+        return { bg: 'rgba(245, 158, 11, 0.15)', text: '#F59E0B', border: 'rgba(245, 158, 11, 0.4)' };
       case 'REJECTED':
         return { bg: 'rgba(239, 68, 68, 0.15)', text: '#F87171', border: 'rgba(239, 68, 68, 0.4)' };
       default:
@@ -155,9 +155,9 @@ export function ApplicationsTab({ applications, onDelete, onUpdateStatus }: Appl
                 type="button"
                 onClick={() => setDateFilter(preset)}
                 style={{
-                  backgroundColor: dateFilter === preset ? '#FF9F1C' : '#151A26',
-                  color: dateFilter === preset ? '#080A0F' : '#94A3B8',
-                  border: `1px solid ${dateFilter === preset ? '#FF9F1C' : '#232C3D'}`,
+                  backgroundColor: dateFilter === preset ? '#00E5FF' : '#151A26',
+                  color: dateFilter === preset ? '#030712' : '#94A3B8',
+                  border: `1px solid ${dateFilter === preset ? '#00E5FF' : '#232C3D'}`,
                   borderRadius: '4px',
                   padding: '3px 8px',
                   fontSize: '11px',
@@ -279,7 +279,7 @@ export function ApplicationsTab({ applications, onDelete, onUpdateStatus }: Appl
 
                       {/* Academic */}
                       <td style={{ padding: '14px 16px' }}>
-                        <div style={{ fontFamily: 'monospace', color: '#FF9F1C', fontWeight: 700 }}>{app.studentId}</div>
+                        <div style={{ fontFamily: 'monospace', color: '#00E5FF', fontWeight: 700 }}>{app.studentId}</div>
                         <div style={{ fontSize: '11px', color: '#9AA3B5' }}>Year {app.yearOfStudy} • {app.branch}</div>
                       </td>
 

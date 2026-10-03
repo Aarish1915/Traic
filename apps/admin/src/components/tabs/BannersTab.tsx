@@ -33,7 +33,7 @@ export function BannersTab({ banners, onToggleBanner, onEdit, onDelete, onCreate
         </div>
         <button
           onClick={onCreate}
-          style={{ backgroundColor: '#FF9F1C', color: '#07080B', border: 'none', padding: '8px 16px', borderRadius: '6px', fontWeight: 700, fontSize: '12px', cursor: 'pointer', flexShrink: 0 }}
+          style={{ backgroundColor: '#00E5FF', color: '#030712', border: 'none', padding: '8px 16px', borderRadius: '6px', fontWeight: 700, fontSize: '12px', cursor: 'pointer', flexShrink: 0 }}
         >
           + Add New Banner
         </button>
@@ -67,7 +67,7 @@ export function BannersTab({ banners, onToggleBanner, onEdit, onDelete, onCreate
                           ? 'rgba(56, 189, 248, 0.15)'
                           : b.type === 'ACHIEVEMENT'
                           ? 'rgba(52, 211, 153, 0.15)'
-                          : 'rgba(255, 159, 28, 0.15)',
+                          : 'rgba(0, 229, 255, 0.15)',
                       color:
                         b.type === 'URGENT'
                           ? '#F87171'
@@ -75,7 +75,7 @@ export function BannersTab({ banners, onToggleBanner, onEdit, onDelete, onCreate
                           ? '#38BDF8'
                           : b.type === 'ACHIEVEMENT'
                           ? '#34D399'
-                          : '#FF9F1C',
+                          : '#00E5FF',
                       padding: '3px 8px',
                       borderRadius: '4px',
                       fontSize: '11px',

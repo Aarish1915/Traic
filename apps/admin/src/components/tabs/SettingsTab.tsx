@@ -106,8 +106,8 @@ export function SettingsTab({ settings, setSettings, onSave }: SettingsTabProps)
         <button
           type="submit"
           style={{
-            backgroundColor: '#FF9F1C',
-            color: '#07080B',
+            backgroundColor: '#00E5FF',
+            color: '#030712',
             border: 'none',
             padding: '12px 24px',
             borderRadius: '8px',

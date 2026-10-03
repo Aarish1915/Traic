@@ -169,17 +169,17 @@ export function Sidebar({ activeTab, setActiveTab, counts, loading, onSync, onLo
             padding: '10px',
             width: '100%',
             borderRadius: '8px',
-            backgroundColor: 'rgba(255, 159, 28, 0.1)',
-            color: '#FF9F1C',
-            border: '1px solid rgba(255, 159, 28, 0.35)',
+            backgroundColor: 'rgba(0, 229, 255, 0.1)',
+            color: '#00E5FF',
+            border: '1px solid rgba(0, 229, 255, 0.35)',
             fontSize: '12px',
             fontWeight: 700,
             textDecoration: 'none',
             boxSizing: 'border-box',
             transition: 'background-color 0.2s',
           }}
-          onMouseOver={(e) => (e.currentTarget.style.backgroundColor = 'rgba(255, 159, 28, 0.2)')}
-          onMouseOut={(e) => (e.currentTarget.style.backgroundColor = 'rgba(255, 159, 28, 0.1)')}
+          onMouseOver={(e) => (e.currentTarget.style.backgroundColor = 'rgba(0, 229, 255, 0.2)')}
+          onMouseOut={(e) => (e.currentTarget.style.backgroundColor = 'rgba(0, 229, 255, 0.1)')}
         >
           <ExternalLink size={14} />
           <span>View Public Website ↗</span>
