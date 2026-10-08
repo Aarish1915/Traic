@@ -244,9 +244,148 @@ const updateSettings = (req: any, res: any, next: any) => {
 adminRouter.put('/admin/settings', updateSettings);
 adminRouter.patch('/admin/settings', updateSettings);
 
-// APPLICATIONS REVIEW
-adminRouter.get('/admin/applications', (_req, res) => {
-  res.json({ success: true, data: store.getApplications() });
+// APPLICATIONS REVIEW (Scalable for 1,000+ candidates)
+adminRouter.get('/admin/applications', (req, res) => {
+  const allApps = store.getApplications();
+
+  // Compute live breakdown stats across the entire repository
+  const stats = {
+    total: allApps.length,
+    pending: allApps.filter((a) => (a as any).status === 'PENDING').length,
+    reviewing: allApps.filter((a) => (a as any).status === 'REVIEWING').length,
+    shortlisted: allApps.filter((a) => (a as any).status === 'SHORTLISTED').length,
+    accepted: allApps.filter((a) => (a as any).status === 'ACCEPTED').length,
+    rejected: allApps.filter((a) => (a as any).status === 'REJECTED').length,
+  };
+
+  const { status, search, domain, page, limit } = req.query as Record<string, string | undefined>;
+
+  let filtered = allApps;
+
+  if (status && status !== 'ALL') {
+    filtered = filtered.filter((a) => (a as any).status === status);
+  }
+
+  if (domain && domain !== 'ALL') {
+    filtered = filtered.filter((a) => a.interest === domain);
+  }
+
+  if (search && search.trim()) {
+    const q = search.trim().toLowerCase();
+    filtered = filtered.filter((a) => {
+      return (
+        a.fullName.toLowerCase().includes(q) ||
+        a.email.toLowerCase().includes(q) ||
+        a.studentId.toLowerCase().includes(q) ||
+        a.branch.toLowerCase().includes(q) ||
+        a.statementOfPurpose.toLowerCase().includes(q) ||
+        (Array.isArray((a as any).skills) && (a as any).skills.some((s: string) => s.toLowerCase().includes(q)))
+      );
+    });
+  }
+
+  // Handle optional server-side pagination
+  if (page || limit) {
+    const pageNum = Math.max(1, parseInt(page || '1', 10));
+    const pageSize = Math.min(200, Math.max(1, parseInt(limit || '50', 10)));
+    const totalCount = filtered.length;
+    const totalPages = Math.ceil(totalCount / pageSize);
+    const startIdx = (pageNum - 1) * pageSize;
+    const paginatedItems = filtered.slice(startIdx, startIdx + pageSize);
+
+    res.json({
+      success: true,
+      data: paginatedItems,
+      pagination: {
+        page: pageNum,
+        limit: pageSize,
+        total: totalCount,
+        totalPages,
+      },
+      stats,
+    });
+    return;
+  }
+
+  // Backwards-compatible default: returns full list with stats attached
+  res.json({
+    success: true,
+    data: filtered,
+    stats,
+  });
+});
+
+adminRouter.patch('/admin/applications/bulk-status', (req, res, next) => {
+  const { ids, status } = req.body;
+  if (!Array.isArray(ids) || typeof status !== 'string') {
+    return next(new ValidationError('Field "ids" must be an array and "status" must be a string'));
+  }
+  const count = store.bulkUpdateApplicationStatus(ids, status);
+  logger.info({ count, status }, 'Admin bulk updated applications');
+  res.json({ success: true, count, message: `Successfully updated ${count} applications to ${status}` });
+});
+
+adminRouter.post('/admin/applications/bulk', (req, res, next) => {
+  const { applications } = req.body;
+  if (!Array.isArray(applications)) {
+    return next(new ValidationError('Field "applications" must be an array'));
+  }
+  const created = store.bulkAddApplications(applications);
+  logger.info({ count: created.length }, 'Admin bulk imported applications');
+  res.status(201).json({ success: true, count: created.length, data: created });
+});
+
+// CSV Export with RFC-4180 and Formula Injection Defense
+adminRouter.get('/admin/applications/export', (_req, res) => {
+  const apps = store.getApplications();
+  const sanitize = (val: any) => {
+    if (val === null || val === undefined) return '""';
+    let str = String(val).replace(/"/g, '""');
+    // Defend against CSV injection (CWE-1236)
+    if (str.startsWith('=') || str.startsWith('+') || str.startsWith('-') || str.startsWith('@')) {
+      str = `'${str}`;
+    }
+    return `"${str}"`;
+  };
+
+  const headers = [
+    'ID',
+    'Full Name',
+    'Email',
+    'Phone',
+    'Student ID',
+    'Year',
+    'Branch',
+    'Track Interest',
+    'Skills',
+    'Portfolio URL',
+    'Status',
+    'Review Notes',
+    'Statement of Purpose',
+    'Submitted At',
+  ];
+
+  const rows = apps.map((app) => [
+    sanitize(app.id),
+    sanitize(app.fullName),
+    sanitize(app.email),
+    sanitize(app.phone),
+    sanitize(app.studentId),
+    sanitize(app.yearOfStudy),
+    sanitize(app.branch),
+    sanitize(app.interest),
+    sanitize((app.skills || []).join('; ')),
+    sanitize(app.githubOrPortfolio || ''),
+    sanitize(app.status || 'PENDING'),
+    sanitize(app.reviewNotes || ''),
+    sanitize(app.statementOfPurpose),
+    sanitize(app.createdAt || ''),
+  ]);
+
+  const csv = '\uFEFF' + [headers.join(','), ...rows.map((r) => r.join(','))].join('\r\n');
+  res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+  res.setHeader('Content-Disposition', `attachment; filename="traic-applications-${new Date().toISOString().split('T')[0]}.csv"`);
+  res.send(csv);
 });
 
 const updateApplication = (req: any, res: any, next: any) => {

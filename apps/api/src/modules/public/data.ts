@@ -132,6 +132,16 @@ const initialEvents: Event[] = [
     bannerAssetUrl: '/images/events/bootcamp.webp',
     photos: [],
     status: 'PUBLISHED',
+    prizePool: '₹25,000 in hardware components & dev-boards',
+    teamSize: '1-3 Builders',
+    capacity: 60,
+    tracks: ['Autonomous Mobile Robots', 'Edge AI Vision', 'Firmware & RTOS'],
+    schedule: [
+      { time: '09:00 AM', title: 'Kit Distribution & Kickoff', description: 'Sensor packages & dev board handover' },
+      { time: '01:00 PM', title: 'Mid-evaluation checkpoint', description: 'Hardware loop test verification' },
+      { time: '06:00 PM', title: 'Grand Finale Showcase', description: 'Live obstacle navigation demonstration' },
+    ],
+    customDetails: { 'Lab Access': '24/7 Soldering Station Access included' },
   },
   {
     id: 'e2222222-2222-2222-2222-222222222222',
@@ -148,6 +158,118 @@ const initialEvents: Event[] = [
     bannerAssetUrl: '/images/events/innohacks.webp',
     photos: [],
     status: 'PUBLISHED',
+    prizePool: '₹1,50,000 Cash + Cloud Credits',
+    teamSize: '2-4 Engineers',
+    capacity: 150,
+    tracks: ['Edge Computing', 'Autonomous Drones', 'IoT Infrastructure', 'Assistive Tech'],
+    schedule: [
+      { time: 'Day 1 - 09:00 AM', title: 'Hackathon Opening & Hardware Store Opens', description: 'Components allocation' },
+      { time: 'Day 2 - 12:00 PM', title: 'Mentorship Sprint', description: 'System architecture review' },
+      { time: 'Day 2 - 09:00 PM', title: 'Final Demos & Prize Ceremony', description: 'Prototype evaluation on test track' },
+    ],
+    customDetails: { 'Hardware Budget': 'Up to ₹5,000 component reimbursement per team' },
+  },
+  {
+    id: 'e3333333-3333-3333-3333-333333333333',
+    slug: 'amr-navigation-workshop-2026',
+    title: 'Autonomous Mobile Robot Navigation with ROS2 & 3D LiDAR',
+    tagline: 'A 2-day intensive sprint: Flash STM32 microcontrollers, wire differential drive motors, and map Block C with 3D point-cloud SLAM.',
+    descriptionMd: 'Complete hardware workshop where each student team builds and navigates a miniature two-wheeled differential robot.',
+    type: 'WORKSHOP',
+    mode: 'OFFLINE',
+    venue: 'DIA Labs, Block C-302, COER University',
+    startsAt: '2026-10-24T10:00:00.000Z',
+    endsAt: '2026-10-25T17:00:00.000Z',
+    registerUrl: '/events/amr-navigation-workshop-2026',
+    bannerAssetUrl: '/images/events/bootcamp.webp',
+    photos: [],
+    status: 'PUBLISHED',
+    prizePool: '₹25,000 in dev boards & sensors',
+    teamSize: '1–3 Builders',
+    capacity: 30,
+    tracks: ['ROS2 Navigation', 'LiDAR SLAM', 'STM32 Hardware HAL'],
+    schedule: [
+      { time: 'Day 1 · 10:00 AM', title: 'STM32 Motor Driver Calibration', description: 'Differential drive PWM timer setup' },
+      { time: 'Day 1 · 02:00 PM', title: 'RPLiDAR A2M12 Point Cloud Ingestion', description: 'Interfacing LiDAR serial node' },
+      { time: 'Day 2 · 11:00 AM', title: 'Nav2 Costmap & Waypoint Navigation', description: 'Autonomous obstacle avoidance' },
+    ],
+    customDetails: { 'Lab Access': 'DIA Labs Soldering & Logic Analyzer access included' },
+  },
+  {
+    id: 'e4444444-4444-4444-4444-444444444444',
+    slug: 'pcb-fabrication-bootcamp-2026',
+    title: '4-Layer High-Speed PCB Layout & SMD Reflow Bootcamp',
+    tagline: 'From blank KiCad 8 schematic to functional circuit board. Hand-solder 0402 passives and reflow QFN packages on hot plates.',
+    descriptionMd: 'Learn schematic capture, trace impedance calculations, solder mask clearances, and SMD hot-air rework.',
+    type: 'BOOTCAMP',
+    mode: 'OFFLINE',
+    venue: 'DIA Labs Soldering Bay, Block C-302',
+    startsAt: '2026-11-07T09:30:00.000Z',
+    endsAt: '2026-11-08T18:00:00.000Z',
+    registerUrl: '/events/pcb-fabrication-bootcamp-2026',
+    bannerAssetUrl: '/images/events/bootcamp.webp',
+    photos: [],
+    status: 'PUBLISHED',
+    prizePool: 'Free custom 4-layer PCB fabrication for top 5 designs',
+    teamSize: 'Solo or Pairs',
+    capacity: 25,
+    tracks: ['High-Speed Layout', 'SMD Reflow', 'Impedance Control'],
+    schedule: [
+      { time: 'Day 1 · 09:30 AM', title: 'KiCad 8 Schematic & Impedance Stackup', description: '50-ohm single-ended and 90-ohm USB pair routing' },
+      { time: 'Day 2 · 10:00 AM', title: 'Stencil Solder Paste & Hot-Air Reflow', description: 'Soldering 0402 passives and QFN-32 microcontrollers' },
+    ],
+    customDetails: { 'Equipment': 'Mantis stereo microscopes and Hakko soldering stations provided' },
+  },
+  {
+    id: 'e5555555-5555-5555-5555-555555555555',
+    slug: 'traic-hardware-hackathon-2026',
+    title: 'TRAIC InnoHacks 2026 — 36-Hour Autonomous Hardware Hackathon',
+    tagline: 'Annual flagship engineering challenge: Build working physical prototypes solving real industrial automation and agriculture problems.',
+    descriptionMd: 'Flagship hackathon with ₹1,50,000 prize pool, component hardware library access, and direct industry mentor review.',
+    type: 'HACKATHON',
+    mode: 'OFFLINE',
+    venue: 'COER University Auditorium & DIA Labs',
+    startsAt: '2026-11-20T10:00:00.000Z',
+    endsAt: '2026-11-22T16:00:00.000Z',
+    registerUrl: '/events/traic-hardware-hackathon-2026',
+    bannerAssetUrl: '/images/events/innohacks.webp',
+    photos: [],
+    status: 'PUBLISHED',
+    prizePool: '₹1,50,000 Cash Prize + Lab Sponsorship',
+    teamSize: '2–4 Engineers',
+    capacity: 150,
+    tracks: ['Industrial Automation', 'AgriTech Robotics', 'Autonomous Drones', 'Edge AI Vision'],
+    schedule: [
+      { time: 'Nov 20 · 10:00 AM', title: 'Hardware Store Opens & Sprint Start', description: 'Component allocation & unboxing' },
+      { time: 'Nov 21 · 02:00 PM', title: 'Midway Prototype Gate Review', description: 'Smoke tests and telemetry demo' },
+      { time: 'Nov 22 · 02:00 PM', title: 'Final Arena Pitches & Awards', description: 'Live physical obstacle demonstration' },
+    ],
+    customDetails: { 'Hardware Budget': 'Up to ₹5,000 component reimbursement per team' },
+  },
+  {
+    id: 'e6666666-6666-6666-6666-666666666666',
+    slug: 'freertos-kernel-architecture-session',
+    title: 'FreeRTOS Kernel Primitives & Deterministic Embedded C',
+    tagline: 'Deep dive into preemptive task scheduling, semaphores, mutexes, message queues, and memory pools on STM32H7.',
+    descriptionMd: 'Advanced software architectural session for embedded firmware developers looking to write production-grade firmware.',
+    type: 'SEMINAR',
+    mode: 'HYBRID',
+    venue: 'Block C Seminar Hall & Live Stream',
+    startsAt: '2026-12-05T14:00:00.000Z',
+    endsAt: '2026-12-05T17:00:00.000Z',
+    registerUrl: '/events/freertos-kernel-architecture-session',
+    bannerAssetUrl: '/images/events/bootcamp.webp',
+    photos: [],
+    status: 'PUBLISHED',
+    prizePool: 'STM32H7 Core Boards to top quiz performers',
+    teamSize: 'Individual',
+    capacity: 100,
+    tracks: ['Preemptive Scheduling', 'Memory Allocation', 'Concurrency'],
+    schedule: [
+      { time: '02:00 PM', title: 'Preemptive Context Switching Assembly', description: 'PendSV interrupt and stack frame analysis' },
+      { time: '04:00 PM', title: 'Deadlock & Priority Inversion Resolution', description: 'Priority inheritance mutexes in practice' },
+    ],
+    customDetails: { 'Prerequisites': 'Basic familiarity with C and microcontroller memory architecture' },
   },
 ];
 
@@ -475,6 +597,8 @@ const initialApplications: JoinApplication[] = [
     interest: 'ROBOTICS_HARDWARE',
     githubOrPortfolio: 'https://github.com/devansh-s',
     statementOfPurpose: 'I have designed a 2-wheel self-balancing inverted pendulum robot using MPU6050 and complementary filter during my 1st year summer break. I want to dive deep into ROS2, SLAM algorithms, and high-frequency CAN-FD buses with the TRAIC autonomous rover team. Looking to contribute heavily to mechanical machining and motor driver circuits.',
+    skills: ['ROS2', 'FreeRTOS', 'C++', 'Altium'],
+    reviewNotes: 'Strong hands-on hardware background from 1st year break. Good candidate for rover track.',
     status: 'REVIEWING',
     createdAt: new Date(Date.now() - 2 * 3600 * 1000).toISOString(),
   },
@@ -489,6 +613,8 @@ const initialApplications: JoinApplication[] = [
     interest: 'AI_MACHINE_LEARNING',
     githubOrPortfolio: 'https://github.com/meera-krishnan',
     statementOfPurpose: 'Passionate about quantized neural inference on low-power silicon. I have trained custom YOLOv8 models for micro-aerial vehicle target tracking and deployed them on Raspberry Pi using ONNX Runtime. I want to build FPGA/NPU accelerated pipelines for the Edge Neural Accelerator project.',
+    skills: ['PyTorch', 'ONNX', 'Python', 'YOLOv8'],
+    reviewNotes: 'Impressive ML quantization experience on edge hardware. Recommended for edge AI project.',
     status: 'SHORTLISTED',
     createdAt: new Date(Date.now() - 26 * 3600 * 1000).toISOString(),
   },
@@ -859,6 +985,20 @@ class DataStore {
     db.upsert('applications', newApp.id, newApp);
     return newApp;
   }
+  bulkAddApplications(apps: (Omit<JoinApplication, 'id' | 'createdAt'> & { createdAt?: string })[]) {
+    const created: JoinApplication[] = [];
+    for (const a of apps) {
+      const item: JoinApplication = {
+        ...a,
+        id: crypto.randomUUID(),
+        createdAt: a.createdAt || new Date().toISOString(),
+      };
+      this.applications.unshift(item);
+      created.push(item);
+      db.upsert('applications', item.id, item);
+    }
+    return created;
+  }
   updateApplication(id: string, data: Partial<JoinApplication>) {
     const idx = this.applications.findIndex((a) => a.id === id);
     if (idx === -1) return null;
@@ -873,6 +1013,18 @@ class DataStore {
     this.applications.splice(idx, 1);
     db.delete('applications', target.id);
     return true;
+  }
+  bulkUpdateApplicationStatus(ids: string[], status: string) {
+    let count = 0;
+    const idSet = new Set(ids);
+    for (const app of this.applications) {
+      if (app.id && idSet.has(app.id)) {
+        (app as any).status = status;
+        count++;
+        db.upsert('applications', app.id, app);
+      }
+    }
+    return count;
   }
 
   // Tracks

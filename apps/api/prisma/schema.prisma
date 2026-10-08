@@ -1,0 +1,188 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model SiteSettings {
+  id                  String   @id @default(uuid())
+  clubName            String   @default("TRAIC")
+  tagline             String   @default("Hardware & Software Community")
+  mottoText           String   @default("Think. Build. Deploy.")
+  labLocation         String   @default("Room 402, Technology Block")
+  contactEmail        String   @default("traic@university.edu")
+  heroHeadline        String?
+  heroSubheadline     String?
+  announcementEnabled Boolean  @default(false)
+  announcementText    String?
+  announcementLink    String?
+  creed               Json?
+  sections            Json?
+  stats               Json?
+  updatedAt           DateTime @updatedAt
+
+  @@map("settings")
+}
+
+model Member {
+  id           String   @id @default(uuid())
+  name         String
+  role         String
+  domain       String
+  academicYear String
+  bio          String   @db.Text
+  skills       String[]
+  avatar       String?
+  github       String?
+  linkedin     String?
+  isLead       Boolean  @default(false)
+  published    Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@map("members")
+}
+
+model Project {
+  id           String   @id @default(uuid())
+  slug         String   @unique
+  title        String
+  tagline      String
+  description  String   @db.Text
+  category     String   // "HARDWARE", "SOFTWARE", "HYBRID"
+  year         Int      @default(2026)
+  techStack    String[]
+  status       String   // "PUBLISHED", "IN_PROGRESS", "ARCHIVED"
+  repoUrl      String?
+  schematicUrl String?
+  liveUrl      String?
+  featured     Boolean  @default(false)
+  published    Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@map("projects")
+}
+
+model Event {
+  id             String   @id @default(uuid())
+  slug           String   @unique
+  title          String
+  tagline        String?
+  descriptionMd  String   @db.Text
+  type           String   // "Workshop", "Hackathon", "Boot Camp", "Tech Talk"
+  mode           String   @default("OFFLINE") // "ONLINE", "OFFLINE", "HYBRID"
+  venue          String
+  startsAt       DateTime
+  endsAt         DateTime?
+  registerUrl    String?
+  bannerAssetUrl String?
+  photos         String[]
+  prizePool      String?
+  teamSize       String?
+  capacity       Int?
+  tracks         String[]
+  schedule       Json?    // Array of { time, title, description }
+  customDetails  Json?
+  isFlagship     Boolean  @default(false)
+  published      Boolean  @default(true)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@map("events")
+}
+
+model Gear {
+  id             String   @id @default(uuid())
+  name           String
+  model          String?
+  category       String   // "TESTING", "SOLDERING", "FABRICATION", "ROBOTICS", "COMPUTE"
+  specifications String
+  status         String   @default("OPERATIONAL") // "OPERATIONAL", "IN_USE", "MAINTENANCE"
+  manualUrl      String?
+  photos         String[]
+  published      Boolean  @default(true)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@map("gear")
+}
+
+model Alumni {
+  id             String   @id @default(uuid())
+  name           String
+  batch          String
+  role           String
+  company        String
+  quote          String?  @db.Text
+  published      Boolean  @default(true)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@map("alumni")
+}
+
+model Achievement {
+  id          String   @id @default(uuid())
+  award       String
+  event       String
+  year        String
+  category    String
+  description String?  @db.Text
+  published   Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("achievements")
+}
+
+model Application {
+  id                 String   @id @default(uuid())
+  fullName           String
+  email              String   @unique
+  phone              String
+  studentId          String
+  yearOfStudy        Int
+  branch             String
+  interest           String   // "ROBOTICS_HARDWARE", "EMBEDDED_IOT", "AI_MACHINE_LEARNING", "FULL_STACK_DEV", "DESIGN_3D"
+  githubOrPortfolio  String?
+  statementOfPurpose String   @db.Text
+  skills             String[]
+  reviewNotes        String?  @default("")
+  status             String   @default("PENDING") // "PENDING", "REVIEWING", "SHORTLISTED", "ACCEPTED", "REJECTED"
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  @@map("applications")
+}
+
+model Banner {
+  id        String   @id @default(uuid())
+  title     String
+  message   String
+  linkUrl   String?
+  linkText  String?
+  active    Boolean  @default(true)
+  priority  Int      @default(1)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("banners")
+}
+
+model GalleryItem {
+  id          String   @id @default(uuid())
+  title       String
+  imageUrl    String
+  category    String   // "LAB", "HACKATHON", "EXPO", "TEAM"
+  caption     String?
+  published   Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("gallery")
+}
