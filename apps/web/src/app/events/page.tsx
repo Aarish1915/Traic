@@ -1,218 +1,278 @@
-'use client';
-
-import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { Calendar, MapPin, ArrowRight, Clock, Sparkles, CheckCircle2 } from 'lucide-react';
+import { ArrowRight, Calendar, MapPin } from 'lucide-react';
 
-const UPCOMING_EVENTS = [
+export const metadata = {
+  title: 'Workshops, Hackathons & Bootcamps — TRAIC Events',
+  description: 'Hands-on hardware hackathons, embedded firmware bootcamps, and robotics design sprints at DIA Labs, COER University.',
+};
+
+export const revalidate = 60; // ISR cache
+
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
+
+interface EventItem {
+  id?: string;
+  slug: string;
+  title: string;
+  tagline?: string;
+  type: string;
+  mode: string;
+  venue: string;
+  startsAt: string;
+  endsAt?: string;
+  descriptionMd?: string;
+  prizePool?: string;
+  teamSize?: string;
+  capacity?: number;
+  tracks?: string[];
+  schedule?: { time: string; title: string; description?: string }[];
+}
+
+const DEFAULT_EVENTS: EventItem[] = [
   {
-    slug: 'traic-annual-hardware-hackathon-2025',
-    title: 'TRAIC InnoHacks: 36-Hour Hardware Sprint',
-    type: 'Hardware Hackathon',
-    startsAt: 'Nov 20, 2025 • 09:00 AM',
-    venue: 'Central Auditorium & TRAIC Maker Space',
+    slug: 'amr-navigation-workshop-2026',
+    title: 'Autonomous Mobile Robot Navigation with ROS2 & 3D LiDAR',
+    tagline: 'A 2-day intensive sprint: Flash STM32 microcontrollers, wire differential drive motors, and map Block C with 3D point-cloud SLAM.',
+    type: 'WORKSHOP',
     mode: 'OFFLINE',
-    tagline: '36-hour physical hackathon where participants build functional embedded and robotic prototypes from components provided on the spot.',
-    tracks: ['Autonomous Mobility', 'Assistive Devices', 'Smart Grid & Renewable Tech'],
-    registrationOpen: true,
+    venue: 'DIA Labs, Block C-302, COER University',
+    startsAt: '2026-10-24T10:00:00Z',
+    endsAt: '2026-10-25T17:00:00Z',
+    descriptionMd: 'Complete hardware workshop where each student team builds and navigates a miniature two-wheeled differential robot.',
+    prizePool: '₹25,000 in dev boards & sensors',
+    teamSize: '1–3 Builders',
+    capacity: 30,
+    tracks: ['ROS2 Navigation', 'LiDAR SLAM', 'STM32 Hardware HAL'],
+    schedule: [
+      { time: 'Day 1 · 10:00 AM', title: 'STM32 Motor Driver Calibration', description: 'Differential drive PWM timer setup' },
+      { time: 'Day 1 · 02:00 PM', title: 'RPLiDAR A2M12 Point Cloud Ingestion', description: 'Interfacing LiDAR serial node' },
+      { time: 'Day 2 · 11:00 AM', title: 'Nav2 Costmap & Waypoint Navigation', description: 'Autonomous obstacle avoidance' },
+    ],
   },
   {
-    slug: 'robotics-and-ros2-bootcamp-2025',
-    title: 'Robotics, ROS2 & Embedded Bootcamp 2025',
-    type: 'Intensive Bootcamp',
-    startsAt: 'Oct 15, 2025 • 10:00 AM',
-    venue: 'TRAIC Innovation Lab, Block 4',
+    slug: 'pcb-fabrication-bootcamp-2026',
+    title: '4-Layer High-Speed PCB Layout & SMD Reflow Bootcamp',
+    tagline: 'From blank KiCad 8 schematic to functional circuit board. Hand-solder 0402 passives and reflow QFN packages on hot plates.',
+    type: 'BOOTCAMP',
     mode: 'OFFLINE',
-    tagline: 'From microcontrollers and C firmware to SLAM and autonomous navigation in 4 hands-on weekend sessions.',
-    tracks: ['STM32 Firmware', 'ROS2 Navigation', 'LiDAR Sensor Fusion'],
-    registrationOpen: true,
+    venue: 'DIA Labs Soldering Bay, Block C-302',
+    startsAt: '2026-11-07T09:30:00Z',
+    endsAt: '2026-11-08T18:00:00Z',
+    descriptionMd: 'Learn schematic capture, trace impedance calculations, solder mask clearances, and SMD hot-air rework.',
+    prizePool: 'Free custom 4-layer PCB fabrication for top 5 designs',
+    teamSize: 'Solo or Pairs',
+    capacity: 25,
+    tracks: ['High-Speed Layout', 'SMD Reflow', 'Impedance Control'],
+  },
+  {
+    slug: 'traic-hardware-hackathon-2026',
+    title: 'TRAIC InnoHacks 2026 — 36-Hour Autonomous Hardware Hackathon',
+    tagline: 'Annual flagship engineering challenge: Build working physical prototypes solving real industrial automation and agriculture problems.',
+    type: 'HACKATHON',
+    mode: 'OFFLINE',
+    venue: 'COER University Auditorium & DIA Labs',
+    startsAt: '2026-11-20T10:00:00Z',
+    endsAt: '2026-11-22T16:00:00Z',
+    descriptionMd: 'Flagship hackathon with ₹1,50,000 prize pool, component hardware library access, and direct industry mentor review.',
+    prizePool: '₹1,50,000 Cash Prize + Lab Sponsorship',
+    teamSize: '2–4 Engineers',
+    capacity: 150,
+    tracks: ['Industrial Automation', 'AgriTech Robotics', 'Autonomous Drones', 'Edge AI Vision'],
+    schedule: [
+      { time: 'Nov 20 · 10:00 AM', title: 'Hardware Store Opens & Sprint Start', description: 'Component allocation & unboxing' },
+      { time: 'Nov 21 · 02:00 PM', title: 'Midway Prototype Gate Review', description: 'Smoke tests and telemetry demo' },
+      { time: 'Nov 22 · 02:00 PM', title: 'Final Arena Pitches & Awards', description: 'Live physical obstacle demonstration' },
+    ],
+  },
+  {
+    slug: 'freertos-kernel-architecture-session',
+    title: 'FreeRTOS Kernel Primitives & Deterministic Embedded C',
+    tagline: 'Deep dive into preemptive task scheduling, semaphores, mutexes, message queues, and memory pools on STM32H7.',
+    type: 'SEMINAR',
+    mode: 'HYBRID',
+    venue: 'Block C Seminar Hall & Live Stream',
+    startsAt: '2026-12-05T14:00:00Z',
+    endsAt: '2026-12-05T17:00:00Z',
+    descriptionMd: 'Advanced software architectural session for embedded firmware developers looking to write production-grade firmware.',
+    prizePool: 'STM32H7 Core Boards to top quiz performers',
+    teamSize: 'Individual',
+    capacity: 100,
+    tracks: ['Preemptive Scheduling', 'Memory Allocation', 'Concurrency'],
   },
 ];
 
-const PAST_EVENTS = [
-  {
-    title: 'PCB Design & SMD Soldering Workshop',
-    date: 'April 2024',
-    venue: 'Lab 402',
-    attendees: '85 participants',
-    outcome: 'Every attendee designed and etched a custom USB-C development board.',
-  },
-  {
-    title: 'Autonomous Drone Flight & ArduPilot Session',
-    date: 'February 2024',
-    venue: 'College Sports Ground',
-    attendees: '120 participants',
-    outcome: 'Live telemetry tuning, GPS waypoint autonomous mission execution.',
-  },
-  {
-    title: 'TRAIC Internal Hackathon 2023',
-    date: 'November 2023',
-    venue: 'Maker Space',
-    attendees: '14 teams',
-    outcome: 'Produced 4 projects that later qualified for the Smart India Hackathon.',
-  },
-];
+export default async function EventsPage() {
+  let events = DEFAULT_EVENTS;
 
-export default function EventsPage() {
-  const [upcomingEvents, setUpcomingEvents] = useState(UPCOMING_EVENTS);
-  const [pastEvents, setPastEvents] = useState(PAST_EVENTS);
+  try {
+    const res = await fetch(`${API_BASE}/public/events`, { next: { revalidate: 60 } });
+    if (res.ok) {
+      const json = await res.json();
+      if (json.data && Array.isArray(json.data) && json.data.length > 0) {
+        events = json.data;
+      }
+    }
+  } catch (err) {
+    // Fall back to default events
+  }
 
-  useEffect(() => {
-    const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
-    fetch(`${API_BASE}/public/events`)
-      .then((res) => res.json())
-      .then((res) => {
-        if (res.data && res.data.length > 0) {
-          const now = new Date();
-          const upcoming = res.data.filter((e: any) => !e.startsAt || new Date(e.startsAt) >= now);
-          const past = res.data.filter((e: any) => e.startsAt && new Date(e.startsAt) < now);
-
-          if (upcoming.length > 0) {
-            setUpcomingEvents(
-              upcoming.map((e: any) => ({
-                slug: e.slug,
-                title: e.title,
-                type: e.type || 'Technical Event',
-                startsAt: e.startsAt ? new Date(e.startsAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'Upcoming',
-                venue: e.venue || 'TRAIC Maker Space',
-                mode: e.mode || 'OFFLINE',
-                tagline: e.tagline || e.descriptionMd,
-                tracks: e.tracks || ['Robotics', 'Embedded', 'AI'],
-                registrationOpen: e.registrationOpen !== false,
-              }))
-            );
-          }
-
-          if (past.length > 0) {
-            setPastEvents(
-              past.map((e: any) => ({
-                title: e.title,
-                date: e.startsAt ? new Date(e.startsAt).toLocaleDateString('en-US', { month: 'short', year: 'numeric' }) : 'Archive',
-                venue: e.venue || 'TRAIC Lab',
-                attendees: e.attendees || 'Club & Community',
-                outcome: e.tagline || e.descriptionMd,
-              }))
-            );
-          }
-        }
-      })
-      .catch(() => {});
-  }, []);
+  const featuredEvent = events[0] || DEFAULT_EVENTS[0];
+  const remainingEvents = events.slice(1);
 
   return (
-    <div className="min-h-screen bg-bg-0 py-16">
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        {/* Header */}
+    <div className="min-h-screen bg-canvas text-ink-primary pt-32 pb-24 px-4">
+      <div className="w-full max-w-apple mx-auto">
+        {/* Section 1: Hero */}
         <div className="max-w-3xl mb-14">
-          <div className="inline-flex items-center gap-2 rounded-full border border-border bg-surface px-3 py-1 text-xs font-mono text-accent">
-            <Calendar className="h-3.5 w-3.5" />
-            <span>ACTIVITIES // GATHERINGS</span>
-          </div>
-          <h1 className="mt-4 text-4xl sm:text-5xl font-black text-text-1">
-            Events & Hackathons
+          <span className="text-[11px] font-mono uppercase tracking-widest text-apple-blue font-semibold">
+            COMMUNITY EVENTS &amp; HACKATHONS
+          </span>
+          <h1 className="text-[36px] sm:text-[52px] font-display font-bold tracking-tight text-ink-primary mt-2 leading-[1.08]">
+            Workshops, sprints, and hardware hackathons.
           </h1>
-          <p className="mt-3 text-base text-text-2 leading-relaxed">
-            Hands-on bootcamps, 36-hour hardware hackathons, and industrial masterclasses. Learn from seniors, build under pressure, and ship real systems.
+          <p className="mt-4 text-[16px] text-ink-secondary leading-relaxed">
+            Hands-on technical gatherings where students build real circuits, debug firmware, and pitch working physical prototypes.
           </p>
         </div>
 
-        {/* Upcoming Section */}
-        <div className="mb-16">
-          <div className="flex items-center gap-2 text-sm font-mono text-accent font-semibold tracking-wider uppercase mb-6">
-            <Sparkles className="h-4 w-4" />
-            <span>UPCOMING CALENDAR</span>
+        {/* Section 2: Featured Upcoming Event Card */}
+        {featuredEvent && (
+          <div className="mb-20 p-8 sm:p-12 rounded-3xl bg-canvas-surface border border-subtle hover:border-apple-blue/40 transition-colors">
+            <div className="flex flex-wrap items-center gap-3 mb-4">
+              <span className="px-3 py-1 rounded-pill bg-apple-blue/15 text-apple-blue border border-apple-blue/30 text-[11px] font-mono font-bold uppercase">
+                {featuredEvent.type}
+              </span>
+              <span className="px-3 py-1 rounded-pill bg-canvas border border-subtle text-ink-secondary text-[11px] font-mono">
+                {featuredEvent.mode}
+              </span>
+              {featuredEvent.prizePool && (
+                <span className="px-3 py-1 rounded-pill bg-[var(--status-emerald)]/15 text-[var(--status-emerald)] border border-[var(--status-emerald)]/30 text-[11px] font-mono font-bold">
+                  {featuredEvent.prizePool}
+                </span>
+              )}
+              {featuredEvent.teamSize && (
+                <span className="px-3 py-1 rounded-pill bg-canvas border border-subtle text-ink-secondary text-[11px] font-mono">
+                  Team: {featuredEvent.teamSize}
+                </span>
+              )}
+              <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-pill bg-canvas border border-subtle text-[11px] font-mono text-[var(--status-emerald)]">
+                <span className="w-1.5 h-1.5 rounded-full bg-[var(--status-emerald)] animate-pulse" />
+                <span>REGISTRATIONS OPEN</span>
+              </div>
+            </div>
+
+            <h2 className="text-[26px] sm:text-[34px] font-display font-bold text-ink-primary mt-2 leading-snug">
+              {featuredEvent.title}
+            </h2>
+
+            <p className="mt-4 text-[15.5px] text-ink-secondary max-w-[780px] leading-relaxed">
+              {featuredEvent.tagline || featuredEvent.descriptionMd}
+            </p>
+
+            {featuredEvent.tracks && featuredEvent.tracks.length > 0 && (
+              <div className="mt-4 flex flex-wrap gap-2">
+                {featuredEvent.tracks.map((trk) => (
+                  <span key={trk} className="px-2.5 py-0.5 rounded-full bg-canvas border border-subtle text-[11.5px] font-mono text-apple-blue font-medium">
+                    {trk}
+                  </span>
+                ))}
+              </div>
+            )}
+
+            <div className="mt-6 flex flex-wrap items-center gap-6 text-[13px] font-mono text-ink-tertiary">
+              <span className="inline-flex items-center gap-2">
+                <Calendar className="h-4 w-4 text-apple-blue" />
+                {new Date(featuredEvent.startsAt).toLocaleDateString('en-US', {
+                  weekday: 'short',
+                  month: 'short',
+                  day: 'numeric',
+                  year: 'numeric',
+                })}
+              </span>
+              <span className="inline-flex items-center gap-2">
+                <MapPin className="h-4 w-4 text-apple-blue" />
+                {featuredEvent.venue}
+              </span>
+            </div>
+
+            <div className="mt-8 pt-6 border-t border-subtle flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+              <span className="text-[13px] text-ink-secondary">
+                {featuredEvent.capacity ? `Seats strictly capped to ${featuredEvent.capacity} participants for bench safety.` : 'Seats strictly capped for laboratory bench safety.'}
+              </span>
+              <Link
+                href={`/events/${featuredEvent.slug}`}
+                className="inline-flex items-center justify-center min-h-[44px] px-8 rounded-pill bg-[#0071E3] hover:bg-[#0077ED] text-white font-medium text-[14px] transition-colors shadow-sm"
+              >
+                Register Seat Now →
+              </Link>
+            </div>
+          </div>
+        )}
+
+        {/* Section 3: All Events Editorial List */}
+        <div className="mb-20">
+          <div className="mb-8">
+            <span className="text-[11px] font-mono uppercase tracking-widest text-apple-blue font-semibold">
+              SCHEDULE &amp; CALENDAR
+            </span>
+            <h2 className="text-[26px] font-display font-bold text-ink-primary mt-1">
+              Upcoming &amp; Scheduled Sessions
+            </h2>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            {upcomingEvents.map((event) => (
+          <div className="space-y-4">
+            {remainingEvents.map((evt) => (
               <div
-                key={event.slug}
-                className="flex flex-col justify-between rounded-2xl border border-accent/40 bg-surface/80 p-8 relative overflow-hidden shadow-lg transition-all hover:border-accent"
+                key={evt.slug}
+                className="p-6 rounded-2xl bg-canvas-surface border border-subtle flex flex-col md:flex-row md:items-center justify-between gap-6 hover:border-apple-blue/30 transition-colors"
               >
-                <div>
-                  <div className="flex flex-wrap items-center justify-between gap-2 mb-4">
-                    <span className="rounded-md bg-accent/20 px-2.5 py-1 text-xs font-mono font-bold text-accent border border-accent/40">
-                      {event.type}
+                <div className="flex flex-col md:flex-row md:items-center gap-4 md:gap-8">
+                  <div className="w-24 shrink-0 text-left md:text-center font-mono border-b md:border-b-0 md:border-r border-subtle pb-2 md:pb-0 md:pr-6">
+                    <span className="text-[11px] text-ink-tertiary block uppercase">
+                      {new Date(evt.startsAt).toLocaleDateString('en-US', { month: 'short' })}
                     </span>
-                    <span className="rounded-full bg-success/20 px-3 py-0.5 text-xs font-mono text-success border border-success/30 flex items-center gap-1.5">
-                      <span className="h-1.5 w-1.5 rounded-full bg-success animate-pulse" />
-                      Registration Open
+                    <span className="text-[24px] font-bold text-apple-blue leading-none">
+                      {new Date(evt.startsAt).toLocaleDateString('en-US', { day: 'numeric' })}
                     </span>
-                  </div>
-
-                  <Link
-                    href={`/events/${event.slug}`}
-                    className="text-2xl font-black text-text-1 mb-3 hover:text-accent-2 transition-colors block"
-                  >
-                    {event.title}
-                  </Link>
-                  <p className="text-sm text-text-2 leading-relaxed mb-6">
-                    {event.tagline}
-                  </p>
-
-                  <div className="space-y-2.5 text-xs text-text-1 font-mono border-y border-border/80 py-4 mb-6">
-                    <div className="flex items-center gap-2 text-accent-2">
-                      <Clock className="h-4 w-4 text-accent-2" />
-                      <span>{event.startsAt}</span>
-                    </div>
-                    <div className="flex items-center gap-2 text-text-2">
-                      <MapPin className="h-4 w-4 text-text-2" />
-                      <span>{event.venue} ({event.mode})</span>
-                    </div>
                   </div>
 
                   <div>
-                    <span className="text-xs font-mono text-text-2 uppercase tracking-wider block mb-2">Focus Areas:</span>
-                    <div className="flex flex-wrap gap-1.5">
-                      {event.tracks.map((t) => (
-                        <span key={t} className="rounded bg-bg-1 px-2 py-0.5 text-xs font-mono text-text-2 border border-border">
-                          {t}
+                    <div className="flex flex-wrap items-center gap-2 mb-1.5">
+                      <span className="px-2 py-0.5 rounded-md bg-canvas border border-subtle text-[10px] font-mono text-apple-blue uppercase font-bold">
+                        {evt.type}
+                      </span>
+                      <span className="text-[11px] font-mono text-ink-tertiary">
+                        {evt.mode}
+                      </span>
+                      {evt.prizePool && (
+                        <span className="px-2 py-0.5 rounded-md bg-[var(--status-emerald)]/10 text-[var(--status-emerald)] border border-[var(--status-emerald)]/20 text-[10px] font-mono font-medium">
+                          {evt.prizePool}
                         </span>
-                      ))}
+                      )}
                     </div>
+                    <h3 className="text-[18px] font-display font-semibold text-ink-primary">
+                      {evt.title}
+                    </h3>
+                    {evt.tracks && evt.tracks.length > 0 && (
+                      <p className="mt-1 text-[12px] font-mono text-apple-blue">
+                        Tracks: {evt.tracks.join(' · ')}
+                      </p>
+                    )}
+                    <p className="mt-1 text-[13px] text-ink-secondary flex items-center gap-1.5">
+                      <MapPin className="h-3 w-3 text-apple-blue shrink-0" />
+                      <span>{evt.venue}</span>
+                    </p>
                   </div>
                 </div>
 
-                <div className="mt-8 pt-4 border-t border-border/80 flex items-center justify-between gap-3">
+                <div className="shrink-0 flex items-center">
                   <Link
-                    href={`/events/${event.slug}`}
-                    className="text-xs font-mono font-semibold text-accent-2 hover:underline"
+                    href={`/events/${evt.slug}`}
+                    className="inline-flex items-center justify-center min-h-[44px] px-6 rounded-pill bg-canvas hover:bg-canvas-elevated text-apple-blue border border-subtle text-[13px] font-medium transition-colors"
                   >
-                    <span>Full Schedule & Lab Specs →</span>
+                    <span>Details &amp; RSVP</span>
+                    <ArrowRight className="ml-1.5 h-3.5 w-3.5" />
                   </Link>
-                  <Link
-                    href="/join"
-                    className="flex items-center gap-1.5 rounded-lg bg-accent px-4 py-2 text-xs font-semibold text-bg-0 hover:bg-accent-hover transition-colors shadow-sm"
-                  >
-                    <span>Register</span>
-                    <ArrowRight className="h-3.5 w-3.5" />
-                  </Link>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Past Archive */}
-        <div>
-          <h2 className="text-2xl font-bold text-text-1 mb-6">
-            Past Events Archive
-          </h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {pastEvents.map((item) => (
-              <div
-                key={item.title}
-                className="rounded-xl border border-border bg-surface/50 p-6"
-              >
-                <div className="flex items-center justify-between text-xs font-mono text-text-2 mb-2">
-                  <span className="text-accent-2">{item.date}</span>
-                  <span>{item.attendees}</span>
-                </div>
-                <h3 className="text-lg font-bold text-text-1 mb-2">{item.title}</h3>
-                <p className="text-xs text-text-2 leading-relaxed mb-4">{item.outcome}</p>
-                <div className="text-[11px] font-mono text-text-2 flex items-center gap-1.5">
-                  <CheckCircle2 className="h-3.5 w-3.5 text-success" />
-                  <span>Successfully Concluded</span>
                 </div>
               </div>
             ))}

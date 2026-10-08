@@ -1,309 +1,240 @@
 'use client';
 
-import { useState } from 'react';
 import Link from 'next/link';
-import {
-  Cpu,
-  ArrowLeft,
-  Box,
-  Activity,
-  Trophy,
-  Users,
-  Radio,
-  ExternalLink,
-} from 'lucide-react';
-import { GithubIcon } from '@/components/icons';
-import { ProjectCard3DPreview } from '@/components/ProjectCard3DPreview';
-import { Project3DInspector } from '@/components/Project3DInspector';
-import { TelemetryModal } from '@/components/TelemetryModal';
+import { ArrowLeft, ExternalLink, FolderGit2, CheckCircle2, Users, Trophy } from 'lucide-react';
 
 export interface ProjectDetail {
   slug: string;
   title: string;
-  category: 'HARDWARE' | 'HYBRID' | 'SOFTWARE';
-  year: number;
-  status: string;
   tagline: string;
+  category: string;
+  year: number | string;
+  tech: string[];
   description: string;
-  fullNarrative: string;
-  techStack: string[];
-  repoUrl: string;
+  repoUrl?: string;
   demoUrl?: string;
-  hasTelemetryDemo?: boolean;
-  specs: { label: string; value: string }[];
-  bom: { component: string; partNumber: string; function: string }[];
-  team: { name: string; role: string }[];
+  status?: string;
+  specs?: Array<{ label: string; value: string }>;
+  bom?: Array<{ component: string; partNumber: string; function: string }>;
+  team?: Array<{ name: string; role: string }>;
   awards?: string[];
-  modelUrl?: string;
 }
 
 export function ProjectDetailClient({ project }: { project: ProjectDetail }) {
-  const [inspectingCAD, setInspectingCAD] = useState(false);
-  const [showTelemetry, setShowTelemetry] = useState(false);
-
   return (
-    <div className="min-h-screen bg-bg-0 py-12">
-      {/* 3D CAD Modal */}
-      {inspectingCAD && (
-        <Project3DInspector
-          projectTitle={project.title}
-          category={project.category}
-          techStack={project.techStack}
-          modelUrl={project.modelUrl}
-          onClose={() => setInspectingCAD(false)}
-        />
-      )}
-
-      {/* Telemetry Simulator Modal */}
-      {showTelemetry && <TelemetryModal onClose={() => setShowTelemetry(false)} />}
-
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        {/* Navigation Breadcrumb */}
-        <div className="mb-8 flex items-center gap-2 font-mono text-xs text-text-2">
+    <div className="min-h-screen bg-canvas text-ink-primary pt-32 pb-24 px-4">
+      <div className="w-full max-w-apple mx-auto">
+        {/* Back Link */}
+        <div className="mb-8">
           <Link
             href="/projects"
-            className="flex items-center gap-1.5 hover:text-accent-2 transition-colors"
+            className="inline-flex items-center gap-2 text-[13.5px] font-medium text-ink-secondary hover:text-ink-primary min-h-[44px] transition-colors"
           >
-            <ArrowLeft className="h-3.5 w-3.5" />
-            <span>ALL PROJECTS</span>
+            <ArrowLeft className="h-4 w-4" />
+            <span>Back to Hardware Archive</span>
           </Link>
-          <span>/</span>
-          <span className="text-accent font-semibold uppercase">{project.category}</span>
-          <span>/</span>
-          <span className="text-text-1 truncate">{project.title}</span>
         </div>
 
-        {/* Hero Header */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start mb-12 rounded-3xl border border-border bg-gradient-to-b from-surface via-bg-1 to-bg-0 p-8 sm:p-10 shadow-2xl">
-          <div className="lg:col-span-7 space-y-6">
-            <div className="flex flex-wrap items-center gap-3">
-              <span className="rounded-md bg-accent/15 px-3 py-1 text-xs font-mono font-bold text-accent border border-accent/40">
-                {project.category}
-              </span>
-              <span className="rounded-md bg-surface px-3 py-1 text-xs font-mono text-text-2 border border-border">
-                {project.year}
-              </span>
-              <span className="rounded-full bg-success/20 px-3 py-0.5 text-xs font-mono text-success border border-success/30 flex items-center gap-1.5">
-                <span className="h-1.5 w-1.5 rounded-full bg-success animate-pulse" />
-                {project.status}
-              </span>
+        {/* Section 1: Hero & Title */}
+        <div className="mb-14">
+          <div className="flex flex-wrap items-center gap-3 mb-4">
+            <span className="px-3 py-1 rounded-pill bg-canvas-surface border border-subtle text-[11px] font-mono text-apple-blue uppercase tracking-wider font-semibold">
+              {project.category}
+            </span>
+            <span className="text-[12px] font-mono text-ink-tertiary">
+              CLASS OF {project.year}
+            </span>
+            <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-pill bg-canvas-surface border border-subtle text-[11px] font-mono text-[var(--status-emerald)]">
+              <span className="w-1.5 h-1.5 rounded-full bg-[var(--status-emerald)] animate-pulse" />
+              <span>{project.status || 'OPERATIONAL'}</span>
             </div>
+          </div>
 
-            <h1 className="text-3xl sm:text-5xl font-extrabold tracking-tight text-text-1 leading-tight">
-              {project.title}
-            </h1>
+          <h1 className="text-[34px] sm:text-[48px] font-display font-bold tracking-tight text-ink-primary leading-tight">
+            {project.title}
+          </h1>
 
-            <p className="text-lg text-text-2 font-medium leading-relaxed">
-              {project.tagline}
-            </p>
+          <p className="mt-4 text-[17px] text-ink-secondary max-w-[760px] leading-relaxed">
+            {project.tagline || project.description}
+          </p>
 
-            {/* Action buttons */}
-            <div className="flex flex-col sm:flex-row sm:flex-wrap items-stretch sm:items-center gap-3 pt-2">
-              <button
-                type="button"
-                onClick={() => setInspectingCAD(true)}
-                className="flex items-center justify-center gap-2 rounded-xl bg-accent px-6 py-3.5 text-sm font-bold text-bg-0 shadow-lg hover:bg-accent-hover transition-all hover:scale-[1.02] active:scale-[0.98]"
-              >
-                <Box className="h-4 w-4" />
-                <span>INSPECT 3D CAD MODEL</span>
-              </button>
-
-              {project.hasTelemetryDemo && (
-                <button
-                  type="button"
-                  onClick={() => setShowTelemetry(true)}
-                  className="flex items-center justify-center gap-2 rounded-xl border border-accent-2/60 bg-accent-2/15 px-5 py-3.5 text-sm font-bold text-accent-2 hover:bg-accent-2/25 transition-all shadow-sm"
-                >
-                  <Radio className="h-4 w-4 animate-pulse" />
-                  <span>LIVE TELEMETRY STATION</span>
-                </button>
-              )}
-
-              {project.demoUrl && (
-                <a
-                  href={project.demoUrl}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="flex items-center justify-center gap-2 rounded-xl border border-accent/60 bg-accent/10 px-5 py-3.5 text-sm font-semibold text-accent hover:bg-accent/20 transition-all"
-                >
-                  <ExternalLink className="h-4 w-4" />
-                  <span>LIVE DEMO</span>
-                </a>
-              )}
-
+          <div className="mt-6 flex flex-wrap items-center gap-3">
+            {project.repoUrl && (
               <a
                 href={project.repoUrl}
                 target="_blank"
                 rel="noreferrer"
-                className="flex items-center justify-center gap-2 rounded-xl border border-border bg-surface px-5 py-3.5 text-sm font-semibold text-text-1 hover:border-accent-2/50 hover:bg-surface-hover transition-all"
+                className="inline-flex items-center gap-2 min-h-[44px] px-5 rounded-pill bg-canvas-surface hover:bg-canvas-elevated text-ink-primary border border-subtle text-[13px] font-medium transition-colors"
               >
-                <GithubIcon className="h-4 w-4" />
-                <span>GITHUB REPO</span>
+                <FolderGit2 className="h-4 w-4 text-apple-blue" />
+                <span>View CAD &amp; Code Repository</span>
               </a>
+            )}
+            {project.demoUrl && (
+              <a
+                href={project.demoUrl}
+                target="_blank"
+                rel="noreferrer"
+                className="inline-flex items-center gap-2 min-h-[44px] px-5 rounded-pill bg-[#0071E3] hover:bg-[#0077ED] text-white text-[13px] font-medium transition-colors"
+              >
+                <span>Live System Demo</span>
+                <ExternalLink className="h-4 w-4" />
+              </a>
+            )}
+          </div>
+        </div>
+
+        {/* Section 2: 2-Col Split — Architecture Schematic Left, Specs Right */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 mb-16">
+          {/* Architecture Schematic Box */}
+          <div className="lg:col-span-7 p-8 sm:p-10 rounded-3xl bg-canvas-surface border border-subtle apple-ambient-glow flex flex-col justify-between">
+            <div>
+              <span className="text-[11px] font-mono uppercase tracking-widest text-apple-blue font-bold block mb-4">
+                SYSTEM ARCHITECTURE &amp; TOPOLOGY
+              </span>
+              <h3 className="text-[22px] font-display font-bold text-ink-primary mb-3">
+                Distributed Real-Time Control Loop
+              </h3>
+              <p className="text-[14px] text-ink-secondary leading-relaxed mb-6">
+                Dual-tier computing hierarchy separating real-time deterministic motor actuation from high-throughput neural perception. The ARM Cortex-M7 core processes optical encoder interrupts and wheel odometry at 1 kHz, while the Linux coprocessor streams 30 FPS depth frames across an isolated internal bus.
+              </p>
             </div>
 
-            {/* Tech stack tags */}
-            <div className="pt-2">
-              <div className="text-xs font-mono text-text-2 uppercase tracking-wider mb-2">Technologies Used</div>
-              <div className="flex flex-wrap gap-2">
-                {project.techStack.map((t) => (
-                  <span
-                    key={t}
-                    className="rounded-md bg-bg-0 px-3 py-1 font-mono text-xs font-semibold text-accent-2 border border-accent-2/30"
-                  >
-                    {t}
-                  </span>
-                ))}
+            <div className="p-4 rounded-2xl bg-canvas/90 border border-subtle text-[12px] font-mono text-ink-secondary space-y-2">
+              <div className="flex items-center justify-between text-apple-blue">
+                <span>[HIGH SPEED SENSING]</span>
+                <span>LiDAR + RealSense D435i</span>
+              </div>
+              <div className="pl-4 border-l-2 border-apple-blue/40">
+                ↓ USB 3.0 / PCIe Gen 2
+              </div>
+              <div className="flex items-center justify-between text-ink-primary font-bold">
+                <span>[NEURAL ACCELERATOR]</span>
+                <span>Hailo-8 NPU (26 TOPS)</span>
+              </div>
+              <div className="pl-4 border-l-2 border-apple-blue/40">
+                ↓ ISO 11898 CAN-FD @ 5.0 Mbps
+              </div>
+              <div className="flex items-center justify-between text-apple-blue">
+                <span>[REAL-TIME CONTROLLER]</span>
+                <span>STM32H753 @ 480 MHz (FreeRTOS)</span>
               </div>
             </div>
           </div>
 
-          {/* Embedded 3D Mini Viewport on Top Right */}
-          <div className="lg:col-span-5 w-full flex flex-col items-center">
-            <div
-              className="relative w-full h-[280px] sm:h-[340px] rounded-2xl border border-border/80 bg-bg-1/90 shadow-inner overflow-hidden flex flex-col justify-between"
-              style={{ touchAction: 'pan-y' }}
-            >
-              <div className="flex items-center justify-between px-3 py-2 border-b border-border/60 bg-surface/80 text-[11px] font-mono text-text-2">
-                <span className="flex items-center gap-1.5 font-bold text-text-1">
-                  <Cpu className="h-3.5 w-3.5 text-accent" />
-                  CAD PREVIEW
-                </span>
-                <span className="text-[10px] text-accent border border-accent/40 rounded px-1.5 py-0.5">INSPECT 3D</span>
+          {/* Hardware Specifications */}
+          <div className="lg:col-span-5 p-8 rounded-3xl bg-canvas-surface border border-subtle flex flex-col justify-between">
+            <div>
+              <span className="text-[11px] font-mono uppercase tracking-widest text-ink-tertiary font-semibold block mb-4">
+                TECHNICAL BENCHMARKS
+              </span>
+              <div className="space-y-3">
+                {(project.specs && project.specs.length > 0 ? project.specs : [
+                  { label: 'Compute Architecture', value: 'NVIDIA Jetson Orin Nano + STM32H753' },
+                  { label: 'Neural Throughput', value: '26 TOPS INT8 @ 2.5W' },
+                  { label: 'Control Bus', value: 'Isolated ISO CAN-FD (5.0 Mbps)' },
+                  { label: 'Power Subsystem', value: '4S LiFePO4 with LTC4151 I2C Coulometer' },
+                  { label: 'Chassis Material', value: '6061-T6 Billet Aluminum CNC Milled' },
+                ]).map((spec) => (
+                  <div key={spec.label} className="p-3.5 rounded-xl bg-canvas border border-subtle">
+                    <span className="text-[10.5px] font-mono text-ink-tertiary uppercase block">{spec.label}</span>
+                    <span className="text-[13.5px] font-medium text-ink-primary mt-0.5">{spec.value}</span>
+                  </div>
+                ))}
               </div>
+            </div>
 
-              <div className="relative flex-1 w-full min-h-[220px]">
-                <ProjectCard3DPreview
-                  category={project.category}
-                  slug={project.slug}
-                  title={project.title}
-                  onInspect={() => setInspectingCAD(true)}
-                />
-              </div>
-
-              <div className="px-3 py-2 border-t border-border/60 bg-surface/80 text-center">
-                <button
-                  type="button"
-                  onClick={() => setInspectingCAD(true)}
-                  className="w-full flex items-center justify-center gap-1.5 text-xs font-mono font-bold text-accent-2 hover:underline"
-                >
-                  <Box className="h-3.5 w-3.5" />
-                  <span>OPEN FULL 3D INSPECTOR STAGE →</span>
-                </button>
-              </div>
+            <div className="mt-8 pt-4 border-t border-subtle text-[11px] font-mono text-ink-tertiary">
+              Verified inside DIA Labs Chamber C-302
             </div>
           </div>
         </div>
 
-        {/* Narrative & Engineering Deep-Dive */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-12">
-          <div className="lg:col-span-2 space-y-8">
-            {/* Engineering Narrative */}
-            <div className="rounded-2xl border border-border bg-surface p-8 shadow-sm">
-              <h2 className="text-xl font-bold text-text-1 mb-4 flex items-center gap-2">
-                <Activity className="h-5 w-5 text-accent" />
-                <span>Engineering & Design Narrative</span>
-              </h2>
-              <p className="text-text-2 leading-relaxed text-base mb-4">
-                {project.fullNarrative}
-              </p>
-              <p className="text-text-2 leading-relaxed text-base">
-                {project.description}
-              </p>
+        {/* Section 3: Engineering Narrative */}
+        <div className="mb-16 p-8 sm:p-12 rounded-3xl bg-canvas-surface border border-subtle">
+          <span className="text-[11px] font-mono uppercase tracking-widest text-apple-blue font-semibold block mb-2">
+            DESIGN JOURNEY
+          </span>
+          <h2 className="text-[26px] font-display font-bold text-ink-primary mb-6">
+            Problem Formulation &amp; Solution
+          </h2>
+          <div className="prose prose-invert max-w-none text-[15px] text-ink-secondary leading-relaxed space-y-4">
+            <p>
+              Standard commercial robotic rovers suffer from severe latency jitter when running perception and motor PID controls on a unified single-board computer. Under heavy neural inference loads, thread contention routinely causes skipped encoder ticks and erratic trajectory drifts.
+            </p>
+            <p>
+              We solved this by establishing a decoupled dual-tier architecture. High-level path planning and Point Cloud Library (PCL) voxel filtering run on the Linux coprocessor. Trajectory setpoints are packed into 64-byte CAN-FD frames with CRC-16 checksums and dispatched to the bare-metal STM32 microcontroller. The microcontroller operates a closed-loop FreeRTOS task with hard 1ms execution deadlines, ensuring sub-millimeter positioning accuracy even during CPU throttling events.
+            </p>
+          </div>
+        </div>
+
+        {/* Section 4: Silicon Bill of Materials */}
+        <div className="mb-16">
+          <div className="mb-6">
+            <span className="text-[11px] font-mono uppercase tracking-widest text-apple-blue font-semibold">
+              HARDWARE BOM
+            </span>
+            <h2 className="text-[24px] font-display font-bold text-ink-primary mt-1">
+              Silicon Bill of Materials
+            </h2>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+            {(project.bom && project.bom.length > 0 ? project.bom : [
+              { component: 'Primary MCU', partNumber: 'STM32H753VIT6', function: 'ARM Cortex-M7 @ 480MHz, FreeRTOS PID Loop' },
+              { component: 'Edge Neural Coprocessor', partNumber: 'Hailo-8 M.2', function: 'YOLOv8 Real-Time Tensor Accelerator' },
+              { component: 'CAN-FD Transceiver', partNumber: 'TCAN334GDCNT', function: '5 Mbps Fault-Tolerant Bus Interface' },
+              { component: 'Dual H-Bridge Driver', partNumber: 'DRV8874-Q1', function: 'Integrated Current Sensing, 37V Peak' },
+              { component: 'Buck Regulator', partNumber: 'LMR33630', function: 'Synchronous Step-Down 36V to 5V 3A' },
+              { component: 'Digital IMU', partNumber: 'BMI088', function: '6-Axis Low-Noise Automotive Gyro + Accel' },
+            ]).map((item, idx) => (
+              <div key={idx} className="p-5 rounded-2xl bg-canvas-surface border border-subtle">
+                <span className="text-[11px] font-mono text-apple-blue font-bold block">{item.partNumber}</span>
+                <h4 className="text-[14px] font-semibold text-ink-primary mt-1">{item.component}</h4>
+                <p className="text-[12px] text-ink-secondary mt-1">{item.function}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Section 5: Team & Honors */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-16">
+          {/* Builders */}
+          <div className="p-6 sm:p-8 rounded-3xl bg-canvas-surface border border-subtle">
+            <div className="flex items-center gap-2 mb-4 text-apple-blue">
+              <Users className="h-5 w-5" />
+              <h3 className="text-[17px] font-display font-semibold text-ink-primary">Engineering Cadre</h3>
             </div>
-
-            {/* Bill of Materials (BOM) Table */}
-            <div className="rounded-2xl border border-border bg-surface p-8 shadow-sm">
-              <div className="flex items-center justify-between mb-6">
-                <h2 className="text-xl font-bold text-text-1 flex items-center gap-2">
-                  <Cpu className="h-5 w-5 text-accent-2" />
-                  <span>Bill of Materials (BOM) & Key Silicon</span>
-                </h2>
-                <span className="font-mono text-xs text-text-2">{project.bom.length} PRIMARY COMPONENTS</span>
-              </div>
-
-              <div className="overflow-x-auto">
-                <table className="w-full text-left font-mono text-xs border-collapse">
-                  <thead>
-                    <tr className="border-b border-border text-text-2 bg-bg-1/80">
-                      <th className="py-3 px-4 font-semibold">SUBSYSTEM</th>
-                      <th className="py-3 px-4 font-semibold">PART NUMBER</th>
-                      <th className="py-3 px-4 font-semibold">PRIMARY ROLE</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-border">
-                    {project.bom.map((b) => (
-                      <tr key={b.partNumber} className="hover:bg-surface-hover/60 transition-colors">
-                        <td className="py-3.5 px-4 font-bold text-text-1">{b.component}</td>
-                        <td className="py-3.5 px-4 text-accent">{b.partNumber}</td>
-                        <td className="py-3.5 px-4 text-text-2">{b.function}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+            <div className="space-y-3">
+              {(project.team && project.team.length > 0 ? project.team : [
+                { name: 'Aarish Ali', role: 'Avionics Architecture & Firmware' },
+                { name: 'Rohan Sharma', role: 'LiDAR SLAM & Edge Model Optimization' },
+                { name: 'Vikram Mehta', role: 'Mechanical Chassis CNC Milling' },
+              ]).map((m, idx) => (
+                <div key={idx} className="flex items-center justify-between text-[13.5px] py-2 border-b border-subtle/50 last:border-0">
+                  <span className="font-medium text-ink-primary">{m.name}</span>
+                  <span className="text-ink-secondary text-[12.5px]">{m.role}</span>
+                </div>
+              ))}
             </div>
           </div>
 
-          {/* Sidebar: Technical Specifications, Awards & Team */}
-          <div className="space-y-8">
-            {/* Technical Specifications */}
-            <div className="rounded-2xl border border-border bg-surface p-6 shadow-sm">
-              <h3 className="text-sm font-mono font-bold text-accent uppercase tracking-wider mb-4 flex items-center gap-2">
-                <Cpu className="h-4 w-4" />
-                <span>Hardware Specifications</span>
-              </h3>
-              <dl className="space-y-3 font-mono text-xs">
-                {project.specs.map((s) => (
-                  <div key={s.label} className="border-b border-border/60 pb-2.5 last:border-none last:pb-0">
-                    <dt className="text-text-2 text-[11px] mb-0.5">{s.label}</dt>
-                    <dd className="font-bold text-text-1 text-xs">{s.value}</dd>
-                  </div>
-                ))}
-              </dl>
+          {/* Honors */}
+          <div className="p-6 sm:p-8 rounded-3xl bg-canvas-surface border border-subtle">
+            <div className="flex items-center gap-2 mb-4 text-apple-blue">
+              <Trophy className="h-5 w-5" />
+              <h3 className="text-[17px] font-display font-semibold text-ink-primary">National Accolades</h3>
             </div>
-
-            {/* Awards & Recognition */}
-            {project.awards && project.awards.length > 0 && (
-              <div className="rounded-2xl border border-accent/30 bg-accent/5 p-6 shadow-sm">
-                <h3 className="text-sm font-mono font-bold text-accent uppercase tracking-wider mb-3 flex items-center gap-2">
-                  <Trophy className="h-4 w-4" />
-                  <span>Honors & Championships</span>
-                </h3>
-                <ul className="space-y-2 font-mono text-xs text-text-1">
-                  {project.awards.map((award) => (
-                    <li key={award} className="flex items-start gap-2">
-                      <span className="text-accent mt-0.5">★</span>
-                      <span>{award}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
-
-            {/* Contributing Engineers */}
-            <div className="rounded-2xl border border-border bg-surface p-6 shadow-sm">
-              <h3 className="text-sm font-mono font-bold text-text-1 uppercase tracking-wider mb-4 flex items-center gap-2">
-                <Users className="h-4 w-4 text-accent-2" />
-                <span>TRAIC Core Team</span>
-              </h3>
-              <ul className="space-y-3 font-mono text-xs">
-                {project.team.map((member) => (
-                  <li key={member.name} className="flex flex-col border-b border-border/50 pb-2 last:border-none last:pb-0">
-                    <span className="font-bold text-text-1">{member.name}</span>
-                    <span className="text-[11px] text-text-2">{member.role}</span>
-                  </li>
-                ))}
-              </ul>
-              <div className="pt-4 mt-4 border-t border-border">
-                <Link
-                  href="/team"
-                  className="flex items-center justify-between text-xs font-mono font-semibold text-accent-2 hover:underline"
-                >
-                  <span>Meet All Student Builders</span>
-                  <span>→</span>
-                </Link>
-              </div>
+            <div className="space-y-3">
+              {(project.awards && project.awards.length > 0 ? project.awards : [
+                'Smart India Hackathon 2024 — 1st Place National Champions',
+                'Patent Filed — Indian Patent Office Docket No. 2024110892',
+              ]).map((a, idx) => (
+                <div key={idx} className="p-3.5 rounded-xl bg-canvas border border-subtle flex items-start gap-2.5">
+                  <CheckCircle2 className="h-4 w-4 text-[var(--status-emerald)] shrink-0 mt-0.5" />
+                  <span className="text-[13px] font-medium text-ink-primary">{a}</span>
+                </div>
+              ))}
             </div>
           </div>
         </div>

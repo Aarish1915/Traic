@@ -1,152 +1,266 @@
-'use client';
+import Link from 'next/link';
+import { ArrowRight, Trophy, Medal } from 'lucide-react';
 
-import { useState, useEffect } from 'react';
-import { Trophy, Award, Medal, Calendar } from 'lucide-react';
+export const metadata = {
+  title: 'National Track Record & IP Honors — TRAIC',
+  description: 'Smart India Hackathon 1st Prize, DD Robocon AIR 4, Indian Patent Office filings, and competitive engineering laurels.',
+};
 
-const ACHIEVEMENTS = [
+export const revalidate = 60; // ISR cache
+
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
+
+interface AchievementRecord {
+  id?: string;
+  title: string;
+  eventName: string;
+  level: string;
+  rank?: string;
+  date?: string;
+  year?: string | number;
+  description: string;
+  certificateAssetUrl?: string;
+}
+
+const DEFAULT_ACHIEVEMENTS: AchievementRecord[] = [
   {
-    title: 'National Champions — Hardware Edition',
-    eventName: 'Smart India Hackathon (SIH 2024)',
+    title: 'Smart India Hackathon 2024 — 1st Prize Champions',
+    eventName: 'Smart India Hackathon (Hardware Edition)',
     level: 'NATIONAL',
-    rank: '1st Prize / Grand Winners',
-    date: 'December 2024',
-    summary: 'Built an autonomous inspection crawler robot designed for hazardous industrial pipelines. Evaluated on hardware ruggedness, live telemetry, and real-time defect classification.',
-    highlights: ['₹1,00,000 Cash Prize', 'Selected by Ministry of Power', 'Live demo with 0 communication dropouts'],
+    rank: 'Winner (1st of 2,400+ Teams)',
+    year: '2024',
+    description: 'Awarded 1st prize by Ministry of Education & AICTE for building an autonomous amphibious pipeline inspection robot featuring real-time acoustic crack detection.',
   },
   {
-    title: 'AIR 4 & Best Engineering Design Trophy',
-    eventName: 'DD Robocon India National Finals',
+    title: 'DD Robocon 2024 — All-India Rank 4',
+    eventName: 'Doordarshan National Robocon',
     level: 'NATIONAL',
-    rank: 'All India Rank 4',
-    date: 'June 2024',
-    summary: 'Designed two co-operating holonomic robots with pneumatic ball launchers and sub-millimeter optical positioning system under stringent weight and dimension constraints.',
-    highlights: ['Best Engineering Design Trophy', 'Top 4 out of 110+ college teams', 'Fastest autonomous task completion time'],
+    rank: 'AIR 4 & Best Mechanical Design',
+    year: '2024',
+    description: 'Constructed custom dual-flywheel ball-launching mobile robot achieving sub-0.1mm repeatability during the national championship tournament.',
   },
   {
-    title: '1st Runners-Up: Autonomous Robotics Track',
-    eventName: 'IIT Bombay Techfest Autonomous Challenge',
-    level: 'NATIONAL',
-    rank: '2nd Prize',
-    date: 'December 2023',
-    summary: 'Autonomous obstacle traversal and real-time optical target classification on an NVIDIA Jetson platform with custom stereo-vision depth extraction.',
-    highlights: ['Silver Medalist', 'Top score in obstacle navigation precision'],
+    title: 'Patent Filed — Indian Patent Office Docket No. 2024110892',
+    eventName: 'Intellectual Property Office, Govt. of India',
+    level: 'PATENT',
+    rank: 'Patent Application Published',
+    year: '2024',
+    description: 'Official patent titled "Distributed Fault-Tolerant CAN-FD Communication Bus for Multi-Rotor UAV Safety Interlocks".',
   },
   {
-    title: 'Winners: Edge AI & Embedded Systems Track',
-    eventName: 'IEEE Hardware Sprint',
+    title: 'IIT Bombay Techfest Autonomous Challenge — 2nd Prize',
+    eventName: 'IIT Bombay Techfest',
     level: 'EXTERNAL',
-    rank: '1st Place',
-    date: 'October 2023',
-    summary: 'Quantized neural accelerator on STM32 microcontroller executing human-presence detection at under 15mW power envelope.',
-    highlights: ['Best Low-Power Design Award', 'Selected for IEEE Student Paper publication'],
+    rank: '2nd Place',
+    year: '2023',
+    description: 'Autonomous indoor obstacle navigation utilizing custom LiDAR SLAM and real-time path replanning algorithms.',
   },
   {
-    title: 'Best Hardware Prototype Award',
-    eventName: 'National Innovation Fair (NIF)',
-    level: 'NATIONAL',
-    rank: 'Special Innovation Award',
-    date: 'March 2023',
-    summary: 'Multi-parameter industrial IoT telemetry node with failover mesh radio network for remote agricultural sensor clusters.',
-    highlights: ['Exhibited at National Science Center', 'Prototype adoption grant awarded'],
+    title: 'Uttarakhand State Innovation Conclave — Gold Medal',
+    eventName: 'UCOST State Science & Technology Congress',
+    level: 'REGIONAL',
+    rank: '1st Prize / Gold',
+    year: '2023',
+    description: 'Recognized for indigenous low-cost agricultural sensor nodes with LoRaWAN mesh communication.',
+  },
+  {
+    title: 'COER University Annual Technical Excellence Award',
+    eventName: 'COER Foundation Day',
+    level: 'INTERNAL',
+    rank: 'Best Student Innovation Unit',
+    year: '2024',
+    description: 'Highest university distinction honoring exceptional research publication output and national competition representation.',
   },
 ];
 
-export default function AchievementsPage() {
-  const [achievementsList, setAchievementsList] = useState(ACHIEVEMENTS);
+export default async function AchievementsPage() {
+  let achievements = DEFAULT_ACHIEVEMENTS;
 
-  useEffect(() => {
-    const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
-    fetch(`${API_BASE}/public/achievements`)
-      .then((res) => res.json())
-      .then((res) => {
-        if (res.data && res.data.length > 0) {
-          setAchievementsList(
-            res.data.map((a: any) => ({
-              title: a.awardTitle || a.title || 'National Award',
-              eventName: a.eventName || 'Engineering Competition',
-              level: a.level || 'NATIONAL',
-              rank: a.rank || a.awardTitle || 'Prize Winner',
-              date: a.year ? `Year ${a.year}` : a.date || 'Recent',
-              summary: a.descriptionMd || a.summary || '',
-              highlights: a.highlights || ['Verified in Competition'],
-            }))
-          );
-        }
-      })
-      .catch(() => {});
-  }, []);
+  try {
+    const res = await fetch(`${API_BASE}/public/achievements`, { next: { revalidate: 60 } });
+    if (res.ok) {
+      const json = await res.json();
+      if (json.data && Array.isArray(json.data) && json.data.length > 0) {
+        achievements = json.data.map((a: any) => ({
+          title: a.title || a.awardTitle,
+          eventName: a.eventName || a.event,
+          level: a.level || 'NATIONAL',
+          rank: a.rank,
+          year: a.year ? String(a.year) : '2024',
+          description: a.descriptionMd || a.description,
+          certificateAssetUrl: a.certificateAssetUrl,
+        }));
+      }
+    }
+  } catch (err) {
+    // Fall back to default
+  }
+
+  const companies = ['Texas Instruments', 'Qualcomm', 'Bosch Engineering', 'ISRO', 'NVIDIA'];
 
   return (
-    <div className="min-h-screen bg-bg-0 py-16">
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        {/* Header */}
-        <div className="max-w-3xl mb-14">
-          <div className="inline-flex items-center gap-2 rounded-full border border-border bg-surface px-3 py-1 text-xs font-mono text-accent">
-            <Trophy className="h-3.5 w-3.5" />
-            <span>HONORS // COMPETITIVE RECORD</span>
-          </div>
-          <h1 className="mt-4 text-4xl sm:text-5xl font-black text-text-1">
-            Achievements & Awards
+    <div className="min-h-screen bg-canvas text-ink-primary pt-32 pb-24 px-4">
+      <div className="w-full max-w-apple mx-auto">
+        {/* Section 1: Hero */}
+        <div className="text-center max-w-[820px] mx-auto mb-20">
+          <span className="text-[11px] font-mono uppercase tracking-widest text-apple-blue font-semibold">
+            NATIONAL TRACK RECORD &amp; IP
+          </span>
+          <h1 className="text-[36px] sm:text-[52px] font-display font-bold tracking-tight text-ink-primary mt-2 leading-[1.08]">
+            We compete. We win. We file patents.
           </h1>
-          <p className="mt-3 text-base text-text-2 leading-relaxed">
-            Every year, TRAIC teams enter competitive arenas against premier engineering institutions across India. Here is the physical proof of our engineering rigor.
+          <p className="mt-4 text-[16px] sm:text-[18px] text-ink-secondary leading-relaxed">
+            Our teams represent COER University at India's highest collegiate engineering stages. We do not participate for participation certificates — we build to set the national benchmark.
           </p>
         </div>
 
-        {/* Timeline of Achievements */}
-        <div className="space-y-6">
-          {achievementsList.map((item, idx) => (
-            <div
-              key={item.title}
-              className="rounded-xl border border-border bg-surface/70 p-6 md:p-8 transition-all hover:border-accent/40 shadow-sm"
-            >
-              <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-border/80 pb-4 mb-5">
-                <div className="flex items-center gap-3">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-lg border border-accent/40 bg-accent/10 text-accent">
-                    {idx === 0 ? <Trophy className="h-5 w-5" /> : <Award className="h-5 w-5" />}
-                  </div>
-                  <div>
-                    <span className="text-xs font-mono font-bold text-accent tracking-wider uppercase">
-                      {item.rank}
-                    </span>
-                    <h2 className="text-xl sm:text-2xl font-bold text-text-1">
-                      {item.title}
-                    </h2>
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-3 text-xs font-mono text-text-2">
-                  <span className="rounded bg-bg-1 px-2.5 py-1 border border-border font-semibold text-accent-2">
-                    {item.level}
+        {/* Section 2: Top 3 Awards Asymmetric Bento */}
+        <div className="mb-24">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            {/* Big Award Card: SIH 2024 (7 Cols) */}
+            <div className="lg:col-span-7 p-8 sm:p-12 rounded-3xl bg-canvas-surface border border-subtle flex flex-col justify-between hover:border-apple-blue/40 transition-colors">
+              <div>
+                <div className="flex items-center justify-between gap-2 mb-6">
+                  <span className="px-3 py-1 rounded-pill bg-apple-blue/15 text-apple-blue border border-apple-blue/30 text-[11px] font-mono font-bold uppercase">
+                    1ST PLACE NATIONAL CHAMPIONS
                   </span>
-                  <span className="flex items-center gap-1">
-                    <Calendar className="h-3.5 w-3.5" />
-                    <span>{item.date}</span>
-                  </span>
+                  <span className="text-[12px] font-mono text-ink-tertiary">2024</span>
                 </div>
+                <h2 className="text-[28px] sm:text-[34px] font-display font-bold text-ink-primary leading-tight">
+                  Smart India Hackathon 2024
+                </h2>
+                <p className="text-[13px] font-mono text-apple-blue mt-1">
+                  Ministry of Education &amp; AICTE Hardware Edition
+                </p>
+                <p className="mt-6 text-[15px] text-ink-secondary leading-relaxed">
+                  Competed against 2,400+ national universities in the Hardware Grand Finale. Fabricated an autonomous pipeline inspection crawler inside the 36-hour live sprint with operational ultrasonic sensor thickness scanning and CAN-FD telemetry.
+                </p>
               </div>
 
-              <p className="text-sm font-semibold text-text-1 mb-2">
-                Event: <span className="text-accent-2">{item.eventName}</span>
-              </p>
-              <p className="text-sm text-text-2 leading-relaxed max-w-4xl">
-                {item.summary}
-              </p>
-
-              {/* Highlights */}
-              <div className="mt-5 flex flex-wrap gap-2">
-                {item.highlights.map((h) => (
-                  <span
-                    key={h}
-                    className="inline-flex items-center gap-1.5 rounded-md bg-bg-0 px-3 py-1 text-xs font-mono text-text-1 border border-border"
-                  >
-                    <Medal className="h-3 w-3 text-accent" />
-                    <span>{h}</span>
-                  </span>
-                ))}
+              <div className="mt-8 pt-6 border-t border-subtle flex flex-wrap items-center justify-between gap-4 text-[13px]">
+                <div className="flex items-center gap-2 text-ink-primary font-mono font-medium">
+                  <Trophy className="h-4 w-4 text-apple-blue" />
+                  <span>Prize: ₹1,00,000 + Prototype Incubation Grant</span>
+                </div>
+                <span className="text-ink-tertiary font-mono">Status: Verified</span>
               </div>
             </div>
-          ))}
+
+            {/* Right Column: 2 Cards (5 Cols) */}
+            <div className="lg:col-span-5 flex flex-col gap-6">
+              {/* Robocon Card */}
+              <div className="p-8 rounded-3xl bg-canvas-surface border border-subtle flex flex-col justify-between hover:border-apple-blue/30 transition-colors">
+                <div>
+                  <div className="flex items-center justify-between mb-4">
+                    <span className="px-2.5 py-0.5 rounded-pill bg-canvas border border-subtle text-[10.5px] font-mono text-apple-blue font-bold uppercase">
+                      ALL-INDIA RANK 4
+                    </span>
+                    <span className="text-[11px] font-mono text-ink-tertiary">2024</span>
+                  </div>
+                  <h3 className="text-[20px] font-display font-bold text-ink-primary">
+                    DD Robocon India National Finals
+                  </h3>
+                  <p className="text-[12px] font-mono text-ink-tertiary mt-0.5">Doordarshan &amp; IIT Delhi</p>
+                  <p className="mt-3 text-[13.5px] text-ink-secondary leading-relaxed">
+                    Designed high-power brushless flywheel shooting system with closed-loop PID control and sub-0.1mm launch trajectory repeatability.
+                  </p>
+                </div>
+                <div className="mt-6 pt-4 border-t border-subtle text-[11px] font-mono text-apple-blue">
+                  Awarded Best Mechanical System Architecture
+                </div>
+              </div>
+
+              {/* Patent Card */}
+              <div className="p-8 rounded-3xl bg-canvas-surface border border-subtle flex flex-col justify-between hover:border-apple-blue/30 transition-colors">
+                <div>
+                  <div className="flex items-center justify-between mb-4">
+                    <span className="px-2.5 py-0.5 rounded-pill bg-canvas border border-subtle text-[10.5px] font-mono text-apple-blue font-bold uppercase">
+                      PATENT FILED
+                    </span>
+                    <span className="text-[11px] font-mono text-ink-tertiary">2024</span>
+                  </div>
+                  <h3 className="text-[20px] font-display font-bold text-ink-primary">
+                    IPO Docket No. 2024110892
+                  </h3>
+                  <p className="text-[12px] font-mono text-ink-tertiary mt-0.5">Indian Patent Office, New Delhi</p>
+                  <p className="mt-3 text-[13.5px] text-ink-secondary leading-relaxed">
+                    &ldquo;Distributed Fault-Tolerant CAN-FD Communication Bus for Multi-Rotor UAV Safety Interlocks&rdquo;.
+                  </p>
+                </div>
+                <div className="mt-6 pt-4 border-t border-subtle text-[11px] font-mono text-[var(--status-emerald)] flex items-center gap-1.5">
+                  <span className="w-1.5 h-1.5 rounded-full bg-[var(--status-emerald)]" />
+                  <span>Official Application Published</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Section 3: All Achievements Grid */}
+        <div className="mb-24">
+          <div className="mb-8">
+            <span className="text-[11px] font-mono uppercase tracking-widest text-apple-blue font-semibold">
+              HONORS DIRECTORY
+            </span>
+            <h2 className="text-[26px] font-display font-bold text-ink-primary mt-1">
+              All Laurels &amp; Recognitions
+            </h2>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {achievements.map((item, idx) => (
+              <div
+                key={item.title + idx}
+                className="p-6 rounded-3xl bg-canvas-surface border border-subtle flex flex-col justify-between hover:border-apple-blue/30 transition-colors"
+              >
+                <div>
+                  <div className="flex items-center justify-between mb-3">
+                    <span className="text-[10.5px] font-mono text-apple-blue uppercase font-bold tracking-wider">
+                      {item.level}
+                    </span>
+                    <span className="text-[11px] font-mono text-ink-tertiary">{item.year}</span>
+                  </div>
+
+                  <h3 className="text-[18px] font-display font-bold text-ink-primary leading-snug">
+                    {item.title}
+                  </h3>
+
+                  <p className="text-[12.5px] font-medium text-ink-secondary mt-1">
+                    {item.eventName}
+                  </p>
+
+                  <p className="mt-3 text-[13.5px] text-ink-secondary leading-relaxed">
+                    {item.description}
+                  </p>
+                </div>
+
+                {item.rank && (
+                  <div className="mt-6 pt-4 border-t border-subtle flex items-center gap-2 text-[12px] font-mono text-apple-blue">
+                    <Medal className="h-3.5 w-3.5" />
+                    <span>{item.rank}</span>
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Section 4: Alumni Placement Strip */}
+        <div className="mb-20 p-8 rounded-3xl bg-canvas-surface border border-subtle text-center">
+          <span className="text-[11px] font-mono uppercase tracking-wider text-ink-tertiary block mb-4">
+            WHERE OUR CHAMPIONSHIP BUILDERS WORK TODAY
+          </span>
+          <div className="flex flex-wrap items-center justify-center gap-6 sm:gap-12 font-display font-bold text-[16px] sm:text-[18px] text-ink-primary">
+            {companies.map((c) => (
+              <span key={c} className="hover:text-apple-blue transition-colors">{c}</span>
+            ))}
+          </div>
+          <div className="mt-6">
+            <Link href="/alumni" className="text-[13px] font-medium text-apple-blue hover:underline inline-flex items-center gap-1 min-h-[44px]">
+              <span>View full Alumni Network</span>
+              <ArrowRight className="h-3.5 w-3.5" />
+            </Link>
+          </div>
         </div>
       </div>
     </div>

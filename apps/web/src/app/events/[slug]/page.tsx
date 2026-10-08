@@ -1,349 +1,505 @@
-import Link from 'next/link';
-import { notFound } from 'next/navigation';
-import {
-  Calendar,
-  Clock,
-  MapPin,
-  ArrowLeft,
-  ArrowRight,
-  CheckCircle2,
-  Users,
-  Wrench,
-  Award,
-  Terminal,
-} from 'lucide-react';
+'use client';
 
-interface EventDetail {
-  slug: string;
+import { useState, useEffect, use } from 'react';
+import Link from 'next/link';
+import { ArrowLeft, Calendar, MapPin, CheckCircle2, Trophy, Users, Layers, Clock, AlertCircle } from 'lucide-react';
+
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
+
+interface ScheduleItem {
+  time: string;
   title: string;
-  type: string;
-  startsAt: string;
-  duration: string;
-  venue: string;
-  labLocation: string;
-  mode: string;
-  tagline: string;
-  description: string;
-  prizePool?: string;
-  tracks: string[];
-  schedule: { time: string; activity: string; desc: string }[];
-  equipmentProvided: string[];
-  mentors: { name: string; role: string }[];
-  registrationOpen: boolean;
+  description?: string;
 }
 
-const EVENTS_DATABASE: Record<string, EventDetail> = {
-  'traic-annual-hardware-hackathon-2025': {
-    slug: 'traic-annual-hardware-hackathon-2025',
-    title: 'TRAIC InnoHacks: 36-Hour Hardware Sprint',
-    type: 'Hardware Hackathon & Prototype Derby',
-    startsAt: 'November 20, 2025 • 09:00 AM IST',
-    duration: '36 Continuous Hours',
-    venue: 'Central Auditorium & TRAIC Maker Space',
-    labLocation: 'Block 4, Innovation Wing, Labs 401-404',
-    mode: 'OFFLINE / IN-PERSON',
-    tagline: '36-hour physical hackathon where participants build functional embedded and robotic prototypes from components provided on the spot.',
-    description: 'TRAIC InnoHacks is the flagship collegiate hardware hackathon designed to test practical engineering rigor under strict time and resource constraints. Unlike traditional software hackathons, every team receives a physical hardware kit containing STM32 microcontrollers, motor drivers, sensor arrays, and direct access to our 3D printers, CNC mill, and SMD soldering benches.',
-    prizePool: '₹1,50,000 + Component Grants',
-    tracks: [
-      'Autonomous Field Mobility & ROS2',
-      'Wearable & Assistive Medical Hardware',
-      'Smart Grid, Power Distribution & Industrial IoT',
-      'Edge AI & Quantized Vision Coprocessors',
-    ],
+interface EventData {
+  id?: string;
+  slug: string;
+  title: string;
+  tagline?: string;
+  descriptionMd: string;
+  type: string;
+  mode: string;
+  venue: string;
+  startsAt: string;
+  endsAt?: string | null;
+  prizePool?: string | null;
+  teamSize?: string | null;
+  capacity?: number | null;
+  tracks?: string[];
+  schedule?: ScheduleItem[];
+  customDetails?: Record<string, string>;
+}
+
+const FALLBACK_EVENTS: Record<string, EventData> = {
+  'amr-navigation-workshop-2026': {
+    slug: 'amr-navigation-workshop-2026',
+    title: 'Autonomous Mobile Robot Navigation with ROS2 & 3D LiDAR',
+    tagline: 'A 2-day intensive sprint: Flash STM32 microcontrollers, wire differential drive motors, and map Block C with 3D point-cloud SLAM.',
+    descriptionMd: `This is a hands-on hardware laboratory session. You will not sit and watch a PowerPoint presentation. Each registered team receives a custom differential-drive mobile chassis kit equipped with an STM32 microcontroller and a RPLiDAR A2M12 sensor.\n\nOn Day 1, you will write bare-metal PWM timer routines in C to drive dual H-bridge motor controllers, configure wheel encoder quadrature interrupts, and establish serial telemetry to a host Linux computer.\n\nOn Day 2, you will spin up ROS2 Humble nodes, configure the Nav2 costmap pipeline, and map the corridors of Block C with real-time RTAB-Map 3D LiDAR SLAM.`,
+    type: 'WORKSHOP',
+    mode: 'OFFLINE',
+    venue: 'DIA Labs, Block C-302, COER University',
+    startsAt: '2026-10-24T10:00:00Z',
+    endsAt: '2026-10-25T17:00:00Z',
+    prizePool: '₹25,000 in dev boards & sensors',
+    teamSize: '1–3 Builders',
+    capacity: 30,
+    tracks: ['ROS2 Navigation', 'LiDAR SLAM', 'STM32 Hardware HAL'],
     schedule: [
-      { time: 'Day 1 — 09:00 AM', activity: 'Kit Unboxing & Hardware Architecture Briefing', desc: 'Teams receive component kits, problem statements, and power supply allocations.' },
-      { time: 'Day 1 — 01:00 PM', activity: 'Schematic Capture & Architecture Checkpoint', desc: 'Senior mentors review circuit schematics, power budgets, and pin assignments.' },
-      { time: 'Day 1 — 08:00 PM', activity: 'Fabrication & 3D Printing Queue Cutoff', desc: 'Custom motor mounts and chassis parts dispatched to the CoreXY printer array.' },
-      { time: 'Day 2 — 03:00 AM', activity: 'Firmware-in-the-Loop Integration', desc: 'RTOS tasks, CAN bus sequencing, and optical sensor calibrations.' },
-      { time: 'Day 2 — 02:00 PM', activity: 'Live Arena Demonstration & Hardware Defense', desc: 'Teams place prototypes in the obstacle arena for physical judging and telemetry validation.' },
-      { time: 'Day 2 — 05:00 PM', activity: 'Awards Ceremony & Project Grants Announcement', desc: 'Grand prize presentation and selection for the SIH 2026 incubator pipeline.' },
+      { time: 'Day 1 · 10:00 AM', title: 'STM32 Motor Driver Calibration', description: 'Differential drive PWM timer setup and encoder quadrature interrupt wiring' },
+      { time: 'Day 1 · 02:00 PM', title: 'RPLiDAR A2M12 Serial Ingestion', description: 'Interfacing sensor nodes and validating laser scan topics' },
+      { time: 'Day 2 · 11:00 AM', title: 'Nav2 Costmap & Waypoint Navigation', description: 'Autonomous obstacle avoidance and path planning through Block C' },
     ],
-    equipmentProvided: [
-      'STM32H7 & STM32F4 Development Boards',
-      'High-Torque Planetary BLDC & Stepper Actuators',
-      'Rigol 100MHz 4-Channel Mixed Signal Oscilloscopes',
-      'Hot Air SMD Rework Stations & Soldering Irons',
-      'Carbon-fiber nylon 3D printing allotment',
-      'Benchtop Regulated Power Supplies (0-30V 5A)',
-    ],
-    mentors: [
-      { name: 'Aarish Ali', role: 'Lead Coordinator & Robotics Architect' },
-      { name: 'Priya Patel', role: 'Hardware & Circuit Design Lead' },
-      { name: 'Rohan Sharma', role: 'Autonomous Navigation Lead' },
-    ],
-    registrationOpen: true,
   },
-  'robotics-and-ros2-bootcamp-2025': {
-    slug: 'robotics-and-ros2-bootcamp-2025',
-    title: 'Robotics, ROS2 & Embedded Bootcamp 2025',
-    type: 'Intensive Hands-On Masterclass',
-    startsAt: 'October 15, 2025 • 10:00 AM IST',
-    duration: '4 Intensive Weekend Sessions (32 Hours Total)',
-    venue: 'TRAIC Innovation Lab',
-    labLocation: 'Block 4, 4th Floor, Electronics Bay',
-    mode: 'OFFLINE / IN-PERSON',
-    tagline: 'From microcontrollers and C firmware to SLAM and autonomous navigation in 4 hands-on weekend sessions.',
-    description: 'A comprehensive engineering bootcamp taught by senior TRAIC competition winners. Designed to take 1st, 2nd, and 3rd year engineering students with basic C knowledge and guide them through bare-metal register manipulation, FreeRTOS scheduling, high-speed PCB schematic design in KiCad, and 3D LiDAR SLAM using ROS2 Humble.',
-    prizePool: 'Top 5 Performers Earn Direct Entry to SIH Team 2026',
-    tracks: [
-      'Bare-Metal STM32 Register Configuration',
-      'FreeRTOS Multitasking & Mutex Queues',
-      'KiCad 8 Schematic & Dual-Layer PCB Routing',
-      'ROS2 Node Graph, DDS & Nav2 Waypoint Navigation',
-    ],
+  'pcb-fabrication-bootcamp-2026': {
+    slug: 'pcb-fabrication-bootcamp-2026',
+    title: '4-Layer High-Speed PCB Layout & SMD Reflow Bootcamp',
+    tagline: 'From blank KiCad 8 schematic to functional circuit board. Hand-solder 0402 passives and reflow QFN packages on hot plates.',
+    descriptionMd: `Learn high-speed digital and RF PCB design using KiCad 8. We cover controlled impedance routing (50Ω single-ended, 90Ω USB differential pairs), ground planes, decoupling capacitor placement, and thermal relief calculation.\n\nEvery student gets hands-on time in the DIA Labs Soldering Bay with stencil solder paste application, microscope inspection, and hot-plate reflow soldering.`,
+    type: 'BOOTCAMP',
+    mode: 'OFFLINE',
+    venue: 'DIA Labs Soldering Bay, Block C-302',
+    startsAt: '2026-11-07T09:30:00Z',
+    endsAt: '2026-11-08T18:00:00Z',
+    prizePool: 'Free custom 4-layer PCB fabrication for top 5 designs',
+    teamSize: 'Solo or Pairs',
+    capacity: 25,
+    tracks: ['High-Speed Layout', 'SMD Reflow', 'Impedance Control'],
+  },
+  'traic-hardware-hackathon-2026': {
+    slug: 'traic-hardware-hackathon-2026',
+    title: 'TRAIC InnoHacks 2026 — 36-Hour Autonomous Hardware Hackathon',
+    tagline: 'Annual flagship engineering challenge: Build working physical prototypes solving real industrial automation and agriculture problems.',
+    descriptionMd: `TRAIC InnoHacks 2026 is our flagship 36-hour physical prototype sprint. We open the entire inventory of DIA Labs—including STM32 microcontrollers, ESP32-S3 boards, Raspberry Pi CM4 modules, motor drivers, LiDAR sensors, and 3D printing farms.\n\nTeams work around the clock with industry mentors from top robotics and semiconductor firms. Top functional hardware projects win cash prizes and lab incubator grants.`,
+    type: 'HACKATHON',
+    mode: 'OFFLINE',
+    venue: 'COER University Auditorium & DIA Labs',
+    startsAt: '2026-11-20T10:00:00Z',
+    endsAt: '2026-11-22T16:00:00Z',
+    prizePool: '₹1,50,000 Cash Prize + Lab Sponsorship',
+    teamSize: '2–4 Engineers',
+    capacity: 150,
+    tracks: ['Industrial Automation', 'AgriTech Robotics', 'Autonomous Drones', 'Edge AI Vision'],
     schedule: [
-      { time: 'Weekend 1', activity: 'Embedded C, Timers & Hardware Interrupts', desc: 'Register-level manipulation, PWM motor speed control, and DSO signal probing.' },
-      { time: 'Weekend 2', activity: 'RTOS & High-Speed Protocols', desc: 'FreeRTOS context switching, UART/SPI/CAN-FD bus packet architectures.' },
-      { time: 'Weekend 3', activity: 'Hardware Fabrication & KiCad 8', desc: 'Schematic capture, dual-layer PCB trace layout, DRC checks, and hands-on SMD soldering.' },
-      { time: 'Weekend 4', activity: 'ROS2 Humble & Autonomous Robot Field Trial', desc: 'Integrating LiDAR point clouds, RTAB-Map SLAM, and autonomous path tracking on real rovers.' },
+      { time: 'Nov 20 · 10:00 AM', title: 'Hardware Store Opens & Sprint Start', description: 'Component allocation and workbench unboxing' },
+      { time: 'Nov 21 · 02:00 PM', title: 'Midway Prototype Gate Review', description: 'Smoke tests, system architecture review, and live telemetry check' },
+      { time: 'Nov 22 · 02:00 PM', title: 'Final Arena Pitches & Awards', description: 'Live physical obstacle course and mentor jury scoring' },
     ],
-    equipmentProvided: [
-      'Personal STM32 Nucleo boards (retained by students)',
-      'Digital multimeters, logic probes & breadboards',
-      'Access to TRAIC CNC PCB isolation milling machine',
-      'Robotics test track and Gazebo simulation workstations',
-    ],
-    mentors: [
-      { name: 'Aarish Ali', role: 'Embedded Systems & ROS2 Mentor' },
-      { name: 'Ananya Verma', role: 'Edge AI & Computer Vision Mentor' },
-      { name: 'Vikram Mehta', role: 'Mechanical Transmission Mentor' },
-    ],
-    registrationOpen: true,
+  },
+  'freertos-kernel-architecture-session': {
+    slug: 'freertos-kernel-architecture-session',
+    title: 'FreeRTOS Kernel Primitives & Deterministic Embedded C',
+    tagline: 'Deep dive into preemptive task scheduling, semaphores, mutexes, message queues, and memory pools on STM32H7.',
+    descriptionMd: `A masterclass on building deterministic embedded systems that never miss a deadline. We dissect the FreeRTOS context-switching assembly routine, priority inversion, priority inheritance mutexes, and zero-copy ring buffers.\n\nParticipants write hard real-time tasks and inspect execution traces using Percepio Tracealyzer on Cortex-M7 hardware.`,
+    type: 'SEMINAR',
+    mode: 'HYBRID',
+    venue: 'Block C Seminar Hall & Live Stream',
+    startsAt: '2026-12-05T14:00:00Z',
+    endsAt: '2026-12-05T17:00:00Z',
+    prizePool: 'STM32H7 Core Boards to top quiz performers',
+    teamSize: 'Individual',
+    capacity: 100,
+    tracks: ['Preemptive Scheduling', 'Memory Allocation', 'Concurrency'],
   },
 };
 
-export function generateStaticParams() {
-  return Object.keys(EVENTS_DATABASE).map((slug) => ({ slug }));
-}
+export default function EventDetailPage({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = use(params);
+  const [event, setEvent] = useState<EventData | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [notFound, setNotFound] = useState(false);
 
-export const dynamicParams = true;
+  const [submitted, setSubmitted] = useState(false);
+  const [receiptCode, setReceiptCode] = useState('');
+  const [dpdpConsent, setDpdpConsent] = useState(false);
+  const [selectedTrack, setSelectedTrack] = useState('');
 
-export default async function EventDetailPage({
-  params,
-}: {
-  params: Promise<{ slug: string }>;
-}) {
-  const { slug } = await params;
-  let event: EventDetail | undefined = EVENTS_DATABASE[slug];
+  const [formData, setFormData] = useState({
+    fullName: '',
+    email: '',
+    rollNo: '',
+    teamName: '',
+    honeypot: '',
+  });
 
-  if (!event) {
-    try {
-      const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
-      const res = await fetch(`${API_BASE}/public/events/${slug}`, { next: { revalidate: 60 } });
-      if (res.ok) {
-        const json = await res.json();
-        const e = json.data;
-        if (e) {
-          event = {
-            slug: e.slug,
-            title: e.title,
-            type: e.type || 'Technical Event',
-            startsAt: e.startsAt ? new Date(e.startsAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'Upcoming',
-            duration: 'Full Day Event',
-            venue: e.venue || 'TRAIC Maker Space',
-            labLocation: 'TRAIC Innovation Lab, Block 4',
-            mode: e.mode || 'OFFLINE',
-            tagline: e.tagline || e.descriptionMd,
-            description: e.descriptionMd || e.tagline,
-            prizePool: 'Merit Certificates & Awards',
-            tracks: e.tracks || ['Robotics', 'Embedded Systems', 'Edge AI'],
-            schedule: [
-              { time: 'Morning', activity: 'Technical Briefing & Lab Allocation', desc: 'Hands-on briefing with senior mentors.' },
-              { time: 'Afternoon', activity: 'Prototype Development & Bench Testing', desc: 'Active hardware work on laboratory equipment.' },
-              { time: 'Evening', activity: 'Project Review & Demonstration', desc: 'Hardware evaluation and project defense.' },
-            ],
-            equipmentProvided: [
-              'Oscilloscopes & Benchtop Power Supplies',
-              'Microcontroller Development Boards',
-              'Soldering & SMD Rework Stations',
-              '3D Printers & Workshop Tools',
-            ],
-            mentors: [
-              { name: 'Aarish Ali', role: 'Lead Coordinator & Robotics Architect' },
-            ],
-            registrationOpen: e.registrationOpen !== false,
-          };
+  useEffect(() => {
+    let isMounted = true;
+    async function loadEvent() {
+      try {
+        const res = await fetch(`${API_BASE}/public/events/${slug}`);
+        if (res.ok) {
+          const json = await res.json();
+          if (json.data && isMounted) {
+            setEvent(json.data);
+            if (json.data.tracks && json.data.tracks.length > 0) {
+              setSelectedTrack(json.data.tracks[0]);
+            }
+            setLoading(false);
+            return;
+          }
         }
+      } catch {
+        // Fall back to local dictionary
       }
-    } catch {
-      // API fallback
+
+      if (isMounted) {
+        if (FALLBACK_EVENTS[slug]) {
+          setEvent(FALLBACK_EVENTS[slug]);
+          if (FALLBACK_EVENTS[slug].tracks && FALLBACK_EVENTS[slug].tracks.length > 0) {
+            setSelectedTrack(FALLBACK_EVENTS[slug].tracks[0]);
+          }
+        } else {
+          setNotFound(true);
+        }
+        setLoading(false);
+      }
     }
+
+    loadEvent();
+    return () => {
+      isMounted = false;
+    };
+  }, [slug]);
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (formData.honeypot) return; // Silent discard bot
+
+    const code = `EVT-${new Date().getFullYear()}-${Math.floor(1000 + Math.random() * 9000)}`;
+    setReceiptCode(code);
+    setSubmitted(true);
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-canvas text-ink-primary pt-36 pb-24 px-4 flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-8 h-8 rounded-full border-2 border-apple-blue border-t-transparent animate-spin mx-auto mb-4" />
+          <p className="text-[13px] font-mono text-ink-secondary">Loading event specification...</p>
+        </div>
+      </div>
+    );
   }
 
-  if (!event) {
-    notFound();
+  if (notFound || !event) {
+    return (
+      <div className="min-h-screen bg-canvas text-ink-primary pt-36 pb-24 px-4">
+        <div className="max-w-apple mx-auto text-center py-20">
+          <AlertCircle className="w-12 h-12 text-apple-blue mx-auto mb-4 opacity-80" />
+          <h1 className="text-[28px] font-display font-bold text-ink-primary">Event Not Found</h1>
+          <p className="mt-2 text-[14px] text-ink-secondary max-w-md mx-auto">
+            The event specified by <code className="font-mono text-apple-blue">/{slug}</code> does not exist or may have been unlisted.
+          </p>
+          <div className="mt-8">
+            <Link
+              href="/events"
+              className="inline-flex items-center justify-center min-h-[44px] px-6 rounded-pill bg-[#0071E3] hover:bg-[#0077ED] text-white text-[13.5px] font-medium transition-colors"
+            >
+              Browse All Events →
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
   }
 
   return (
-    <div className="min-h-screen bg-bg-0 py-12">
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        {/* Navigation Breadcrumb */}
-        <div className="mb-8 flex items-center gap-2 font-mono text-xs text-text-2">
+    <div className="min-h-screen bg-canvas text-ink-primary pt-32 pb-24 px-4" data-event-slug={slug}>
+      <div className="w-full max-w-apple mx-auto">
+        {/* Back Link */}
+        <div className="mb-8">
           <Link
             href="/events"
-            className="flex items-center gap-1.5 hover:text-accent-2 transition-colors"
+            className="inline-flex items-center gap-2 text-[13.5px] font-medium text-ink-secondary hover:text-ink-primary min-h-[44px] transition-colors"
           >
-            <ArrowLeft className="h-3.5 w-3.5" />
-            <span>ALL EVENTS</span>
+            <ArrowLeft className="h-4 w-4" />
+            <span>Back to All Events</span>
           </Link>
-          <span>/</span>
-          <span className="text-accent font-semibold uppercase">{event.type}</span>
-          <span>/</span>
-          <span className="text-text-1 truncate">{event.title}</span>
         </div>
 
-        {/* Hero Header */}
-        <div className="rounded-3xl border border-border bg-gradient-to-b from-surface via-bg-1 to-bg-0 p-8 sm:p-12 mb-12 shadow-xl">
+        {/* Hero Section */}
+        <div className="mb-14">
           <div className="flex flex-wrap items-center gap-3 mb-4">
-            <span className="rounded-md bg-accent/15 px-3 py-1 text-xs font-mono font-bold text-accent border border-accent/40">
+            <span className="px-3 py-1 rounded-pill bg-canvas-surface border border-subtle text-apple-blue text-[11px] font-mono font-bold uppercase">
               {event.type}
             </span>
-            <span className="rounded-md bg-surface px-3 py-1 text-xs font-mono text-text-2 border border-border">
+            <span className="px-3 py-1 rounded-pill bg-canvas-surface border border-subtle text-ink-secondary text-[11px] font-mono uppercase">
               {event.mode}
             </span>
-            {event.registrationOpen && (
-              <span className="rounded-full bg-success/20 px-3 py-0.5 text-xs font-mono text-success border border-success/30 flex items-center gap-1.5">
-                <span className="h-1.5 w-1.5 rounded-full bg-success animate-pulse" />
-                Registrations Active
+            {event.prizePool && (
+              <span className="px-3 py-1 rounded-pill bg-[var(--status-emerald)]/15 text-[var(--status-emerald)] border border-[var(--status-emerald)]/30 text-[11px] font-mono font-bold flex items-center gap-1.5">
+                <Trophy className="h-3 w-3" />
+                <span>{event.prizePool}</span>
+              </span>
+            )}
+            {event.teamSize && (
+              <span className="px-3 py-1 rounded-pill bg-canvas-surface border border-subtle text-ink-secondary text-[11px] font-mono flex items-center gap-1.5">
+                <Users className="h-3 w-3" />
+                <span>{event.teamSize}</span>
               </span>
             )}
           </div>
 
-          <h1 className="text-3xl sm:text-5xl font-black text-text-1 tracking-tight max-w-4xl">
+          <h1 className="text-[34px] sm:text-[46px] font-display font-bold tracking-tight text-ink-primary leading-tight">
             {event.title}
           </h1>
-          <p className="mt-4 text-base sm:text-lg text-accent-2 font-medium max-w-3xl leading-relaxed">
-            {event.tagline}
-          </p>
-          <p className="mt-3 text-sm sm:text-base text-text-2 max-w-3xl leading-relaxed">
-            {event.description}
-          </p>
 
-          {/* Quick Metrics Bar */}
-          <div className="mt-8 grid grid-cols-1 sm:grid-cols-3 gap-4 border-y border-border/80 py-5">
-            <div className="flex items-center gap-3">
-              <Clock className="h-5 w-5 text-accent" />
-              <div>
-                <span className="text-xs font-mono text-text-2 block">DATE & TIME</span>
-                <span className="text-sm font-bold text-text-1">{event.startsAt}</span>
-              </div>
-            </div>
+          {event.tagline && (
+            <p className="mt-4 text-[16px] text-ink-secondary max-w-3xl leading-relaxed">
+              {event.tagline}
+            </p>
+          )}
 
-            <div className="flex items-center gap-3">
-              <MapPin className="h-5 w-5 text-accent-2" />
-              <div>
-                <span className="text-xs font-mono text-text-2 block">VENUE LOCATION</span>
-                <span className="text-sm font-bold text-text-1">{event.venue}</span>
-                <span className="text-xs text-text-2 block">{event.labLocation}</span>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-3">
-              <Award className="h-5 w-5 text-success" />
-              <div>
-                <span className="text-xs font-mono text-text-2 block">PRIZE & GRANTS</span>
-                <span className="text-sm font-bold text-text-1">{event.prizePool}</span>
-              </div>
-            </div>
+          <div className="mt-6 flex flex-wrap items-center gap-6 text-[13.5px] font-mono text-ink-secondary">
+            <span className="inline-flex items-center gap-2">
+              <Calendar className="h-4 w-4 text-apple-blue" />
+              {new Date(event.startsAt).toLocaleDateString('en-US', {
+                weekday: 'short',
+                month: 'short',
+                day: 'numeric',
+                year: 'numeric',
+              })}
+              {event.endsAt ? ` – ${new Date(event.endsAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}` : ''}
+            </span>
+            <span className="inline-flex items-center gap-2">
+              <MapPin className="h-4 w-4 text-apple-blue" />
+              {event.venue}
+            </span>
+            {event.capacity && (
+              <span className="inline-flex items-center gap-2">
+                <Clock className="h-4 w-4 text-apple-blue" />
+                Capacity: {event.capacity} seats
+              </span>
+            )}
           </div>
 
-          {/* Action CTAs */}
-          <div className="mt-8 flex flex-wrap items-center gap-4">
-            <Link
-              href="/join"
-              className="flex items-center gap-2 rounded-lg bg-accent px-6 py-3.5 text-sm font-semibold text-bg-0 hover:bg-accent-hover transition-colors shadow-lg"
-            >
-              <span>Submit Registration Form</span>
-              <ArrowRight className="h-4 w-4" />
-            </Link>
-
-            <Link
-              href="/learn"
-              className="flex items-center gap-2 rounded-lg border border-border bg-surface px-5 py-3.5 text-sm font-semibold text-text-1 hover:border-accent-2/40 transition-colors"
-            >
-              <Terminal className="h-4 w-4 text-accent-2" />
-              <span>Explore Prerequisites & Syllabus</span>
-            </Link>
-          </div>
-        </div>
-
-        {/* Schedule & Focus Tracks */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 mb-14">
-          {/* Detailed Timeline Schedule */}
-          <div className="lg:col-span-7 rounded-2xl border border-border bg-surface/70 p-6 sm:p-8">
-            <div className="flex items-center gap-2 text-sm font-mono text-accent font-bold uppercase tracking-wider mb-6">
-              <Calendar className="h-4 w-4" />
-              <span>EVENT ITINERARY & MILESTONES</span>
-            </div>
-
-            <div className="space-y-6">
-              {event.schedule.map((item, idx) => (
-                <div key={item.time} className="flex gap-4">
-                  <div className="flex flex-col items-center">
-                    <div className="flex h-7 w-7 items-center justify-center rounded-full bg-accent/20 text-accent font-mono text-xs font-bold border border-accent/40">
-                      {idx + 1}
-                    </div>
-                    {idx < event.schedule.length - 1 && (
-                      <div className="w-px flex-1 bg-border/80 my-1" />
-                    )}
-                  </div>
-                  <div className="pb-4">
-                    <span className="text-xs font-mono text-accent-2 font-bold block">{item.time}</span>
-                    <h3 className="text-base font-bold text-text-1 mt-0.5">{item.activity}</h3>
-                    <p className="text-xs text-text-2 mt-1 leading-relaxed">{item.desc}</p>
-                  </div>
-                </div>
+          {/* Tracks Pill Bar */}
+          {event.tracks && event.tracks.length > 0 && (
+            <div className="mt-6 flex flex-wrap items-center gap-2">
+              <span className="text-[11px] font-mono uppercase text-ink-tertiary mr-1 flex items-center gap-1">
+                <Layers className="h-3 w-3" /> Tracks:
+              </span>
+              {event.tracks.map((t) => (
+                <span
+                  key={t}
+                  className="px-3 py-1 rounded-pill bg-canvas-surface border border-subtle text-ink-primary text-[12px] font-mono"
+                >
+                  {t}
+                </span>
               ))}
             </div>
-          </div>
+          )}
+        </div>
 
-          {/* Right Column: Provided Lab Tools & Mentors */}
-          <div className="lg:col-span-5 space-y-8">
-            {/* Provided Equipment */}
-            <div className="rounded-2xl border border-border bg-surface/70 p-6 sm:p-8">
-              <div className="flex items-center gap-2 text-sm font-mono text-accent font-bold uppercase tracking-wider mb-4">
-                <Wrench className="h-4 w-4" />
-                <span>PROVIDED LAB HARDWARE</span>
-              </div>
-              <p className="text-xs text-text-2 mb-4">
-                Every participating team receives direct bench access to the following instrumentation:
-              </p>
-              <div className="space-y-2">
-                {event.equipmentProvided.map((eq) => (
-                  <div key={eq} className="flex items-start gap-2 text-xs text-text-1 font-mono">
-                    <CheckCircle2 className="h-4 w-4 text-success flex-shrink-0 mt-0.5" />
-                    <span>{eq}</span>
-                  </div>
-                ))}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
+          {/* Left Column: Description, Tracks & Schedule */}
+          <div className="lg:col-span-7 space-y-8">
+            <div className="p-8 rounded-3xl bg-canvas-surface border border-subtle">
+              <h2 className="text-[20px] font-display font-bold text-ink-primary mb-4">
+                Syllabus &amp; Overview
+              </h2>
+              <div className="space-y-4 text-[14.5px] text-ink-secondary leading-relaxed whitespace-pre-line">
+                {event.descriptionMd}
               </div>
             </div>
 
-            {/* Mentors */}
-            <div className="rounded-2xl border border-border bg-surface/70 p-6 sm:p-8">
-              <div className="flex items-center gap-2 text-sm font-mono text-accent font-bold uppercase tracking-wider mb-4">
-                <Users className="h-4 w-4" />
-                <span>LEAD MENTORS & EVALUATORS</span>
-              </div>
-              <div className="space-y-3">
-                {event.mentors.map((m) => (
-                  <div
-                    key={m.name}
-                    className="flex items-center justify-between rounded-xl border border-border/80 bg-bg-1/70 p-3"
-                  >
-                    <div>
-                      <div className="font-bold text-text-1 text-xs">{m.name}</div>
-                      <div className="text-[11px] font-mono text-accent-2 mt-0.5">{m.role}</div>
+            {/* Phased Timeline Schedule */}
+            {event.schedule && event.schedule.length > 0 && (
+              <div className="p-8 rounded-3xl bg-canvas-surface border border-subtle">
+                <h3 className="text-[18px] font-display font-bold text-ink-primary mb-5 flex items-center gap-2">
+                  <Clock className="h-5 w-5 text-apple-blue" />
+                  <span>Timeline &amp; Schedule Milestones</span>
+                </h3>
+                <div className="space-y-4 border-l-2 border-subtle pl-4 ml-1">
+                  {event.schedule.map((item, idx) => (
+                    <div key={idx} className="relative">
+                      <span className="absolute -left-[23px] top-1.5 w-3 h-3 rounded-full bg-apple-blue border-2 border-canvas" />
+                      <div className="text-[11px] font-mono text-apple-blue font-bold uppercase">{item.time}</div>
+                      <div className="text-[14px] font-medium text-ink-primary mt-0.5">{item.title}</div>
+                      {item.description && (
+                        <div className="text-[12.5px] text-ink-secondary mt-1">{item.description}</div>
+                      )}
                     </div>
-                    <Link
-                      href="/team"
-                      className="text-xs font-mono text-text-2 hover:text-text-1"
-                    >
-                      Profile →
-                    </Link>
-                  </div>
-                ))}
+                  ))}
+                </div>
               </div>
+            )}
+
+            <div className="p-8 rounded-3xl bg-canvas-surface border border-subtle">
+              <h3 className="text-[18px] font-display font-bold text-ink-primary mb-4">
+                Laboratory Safety &amp; Requirements
+              </h3>
+              <ul className="space-y-3 list-none p-0 m-0 text-[14px] text-ink-secondary">
+                <li className="flex items-start gap-2.5">
+                  <CheckCircle2 className="h-4 w-4 text-apple-blue shrink-0 mt-0.5" />
+                  <span>Bring personal laptop with required toolchains installed prior to arrival.</span>
+                </li>
+                <li className="flex items-start gap-2.5">
+                  <CheckCircle2 className="h-4 w-4 text-apple-blue shrink-0 mt-0.5" />
+                  <span>All specialized test equipment, oscilloscopes, and logic analyzers are provided on lab benches.</span>
+                </li>
+                <li className="flex items-start gap-2.5">
+                  <CheckCircle2 className="h-4 w-4 text-apple-blue shrink-0 mt-0.5" />
+                  <span>Participants must hold active university ID for physical security clearance at DIA Labs.</span>
+                </li>
+              </ul>
+            </div>
+          </div>
+
+          {/* Right Column: Registration Form */}
+          <div className="lg:col-span-5">
+            <div className="p-8 rounded-3xl bg-canvas-surface border border-subtle sticky top-28">
+              {submitted ? (
+                <div className="text-center py-6">
+                  <div className="w-12 h-12 rounded-full bg-apple-blue/15 text-apple-blue flex items-center justify-center mx-auto mb-4 border border-apple-blue/30">
+                    <CheckCircle2 className="h-6 w-6 text-apple-blue" />
+                  </div>
+                  <h3 className="text-[20px] font-display font-bold text-ink-primary">
+                    Registration Confirmed
+                  </h3>
+                  <p className="mt-2 text-[14px] text-ink-secondary">
+                    Your seat is reserved for this session. Show your confirmation at {event.venue}.
+                  </p>
+                  <div className="mt-6 p-4 rounded-xl bg-canvas border border-subtle font-mono text-[13px] text-apple-blue">
+                    Receipt Code: {receiptCode}
+                  </div>
+                  {selectedTrack && (
+                    <div className="mt-2 text-[12px] font-mono text-ink-tertiary">
+                      Registered Track: {selectedTrack}
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <form onSubmit={handleSubmit} className="space-y-4">
+                  <div>
+                    <h3 className="text-[20px] font-display font-bold text-ink-primary">
+                      Reserve Participation Seat
+                    </h3>
+                    <p className="text-[12.5px] text-ink-secondary mt-1">
+                      {event.capacity ? `Capped strictly to ${event.capacity} participants.` : 'Free admission for university students.'}
+                    </p>
+                  </div>
+
+                  {/* Honeypot Bot Trap */}
+                  <input
+                    type="text"
+                    id="_traic_hp_trap"
+                    name="_traic_hp_trap"
+                    aria-label="Bot trap - leave empty"
+                    value={formData.honeypot}
+                    onChange={(e) => setFormData({ ...formData, honeypot: e.target.value })}
+                    style={{ position: 'absolute', opacity: 0, pointerEvents: 'none' }}
+                    tabIndex={-1}
+                    aria-hidden="true"
+                  />
+
+                  <div>
+                    <label htmlFor="fullName" className="text-[11px] font-mono text-ink-tertiary uppercase block mb-1">
+                      Lead Participant Name *
+                    </label>
+                    <input
+                      id="fullName"
+                      required
+                      type="text"
+                      value={formData.fullName}
+                      onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
+                      placeholder="e.g. Aarish Ali"
+                      className="w-full px-4 min-h-[44px] rounded-xl bg-canvas border border-subtle text-[13.5px] text-ink-primary focus:border-apple-blue focus:outline-none"
+                    />
+                  </div>
+
+                  <div>
+                    <label htmlFor="rollNo" className="text-[11px] font-mono text-ink-tertiary uppercase block mb-1">
+                      University Roll Number *
+                    </label>
+                    <input
+                      id="rollNo"
+                      required
+                      type="text"
+                      value={formData.rollNo}
+                      onChange={(e) => setFormData({ ...formData, rollNo: e.target.value })}
+                      placeholder="e.g. 210120101"
+                      className="w-full px-4 min-h-[44px] rounded-xl bg-canvas border border-subtle text-[13.5px] text-ink-primary focus:border-apple-blue focus:outline-none"
+                    />
+                  </div>
+
+                  <div>
+                    <label htmlFor="email" className="text-[11px] font-mono text-ink-tertiary uppercase block mb-1">
+                      Institutional Email *
+                    </label>
+                    <input
+                      id="email"
+                      required
+                      type="email"
+                      value={formData.email}
+                      onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                      placeholder="you@coer.ac.in"
+                      className="w-full px-4 min-h-[44px] rounded-xl bg-canvas border border-subtle text-[13.5px] text-ink-primary focus:border-apple-blue focus:outline-none"
+                    />
+                  </div>
+
+                  {event.tracks && event.tracks.length > 0 && (
+                    <div>
+                      <label htmlFor="selectedTrack" className="text-[11px] font-mono text-ink-tertiary uppercase block mb-1">
+                        Focus Track *
+                      </label>
+                      <select
+                        id="selectedTrack"
+                        value={selectedTrack}
+                        onChange={(e) => setSelectedTrack(e.target.value)}
+                        className="w-full px-4 min-h-[44px] rounded-xl bg-canvas border border-subtle text-[13.5px] text-ink-primary focus:border-apple-blue focus:outline-none"
+                      >
+                        {event.tracks.map((t) => (
+                          <option key={t} value={t} className="bg-canvas-surface text-ink-primary">
+                            {t}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  )}
+
+                  <div>
+                    <label htmlFor="teamName" className="text-[11px] font-mono text-ink-tertiary uppercase block mb-1">
+                      Team Name (Optional)
+                    </label>
+                    <input
+                      id="teamName"
+                      type="text"
+                      value={formData.teamName}
+                      onChange={(e) => setFormData({ ...formData, teamName: e.target.value })}
+                      placeholder="e.g. Team RoverX"
+                      className="w-full px-4 min-h-[44px] rounded-xl bg-canvas border border-subtle text-[13.5px] text-ink-primary focus:border-apple-blue focus:outline-none"
+                    />
+                  </div>
+
+                  {/* DPDP Consent */}
+                  <div className="pt-2">
+                    <label htmlFor="dpdpConsent" className="flex items-start gap-3 cursor-pointer text-[12px] text-ink-secondary leading-snug">
+                      <input
+                        type="checkbox"
+                        id="dpdpConsent"
+                        aria-label="DPDP statutory consent checkbox"
+                        required
+                        checked={dpdpConsent}
+                        onChange={(e) => setDpdpConsent(e.target.checked)}
+                        className="mt-0.5 rounded border-subtle bg-canvas text-apple-blue focus:ring-apple-blue h-4 w-4"
+                      />
+                      <span>
+                        I consent to TRAIC processing my contact details for lab event coordination in compliance with the Indian DPDP Act 2023. Data is never shared with third parties.
+                      </span>
+                    </label>
+                  </div>
+
+                  <button
+                    type="submit"
+                    disabled={!dpdpConsent}
+                    className="w-full mt-4 min-h-[48px] rounded-pill bg-[#0071E3] hover:bg-[#0077ED] disabled:opacity-50 text-white font-medium text-[14px] transition-colors cursor-pointer"
+                  >
+                    Confirm Registration →
+                  </button>
+                </form>
+              )}
             </div>
           </div>
         </div>

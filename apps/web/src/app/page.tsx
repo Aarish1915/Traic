@@ -1,765 +1,108 @@
-'use client';
+import { ClientHome, ProjectItem, GearItem, EventItem } from './ClientHome';
 
-import { useState, useEffect } from 'react';
-import Link from 'next/link';
-import {
-  ArrowRight,
-  Cpu,
-  Trophy,
-  Calendar,
-  Layers,
-  ChevronRight,
-  Wrench,
-  GraduationCap,
-  Box,
-  Camera,
-} from 'lucide-react';
-import { AnimeGlowHero } from '@/components/AnimeGlowHero';
-import { HeroHardwareViewport } from '@/components/HeroHardwareViewport';
-import { Project3DInspector } from '@/components/Project3DInspector';
-import { ProjectCard3DPreview } from '@/components/ProjectCard3DPreview';
+export const revalidate = 60; // ISR cache
 
-const STATS = [
-  { value: '5+', label: 'Years of Engineering' },
-  { value: '42+', label: 'Hardware & AI Projects' },
-  { value: '28+', label: 'National Awards Won' },
-  { value: '95+', label: 'Active Student Builders' },
-];
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
 
-const FEATURED_PROJECTS = [
-  {
-    title: 'Autonomous Field Rover (UGV-X)',
-    category: 'HYBRID',
-    tagline: 'All-terrain autonomous rover equipped with LiDAR, stereo depth cameras, and ROS2 navigation.',
-    tech: ['ROS2', 'C++', 'RTAB-Map', 'LiDAR', 'CAN Bus', 'Jetson Orin'],
-    slug: 'autonomous-ugv-rover',
-    status: 'Operational',
-  },
-  {
-    title: 'Edge Neural Accelerator Board',
-    category: 'HARDWARE',
-    tagline: 'Custom 4-layer PCB running quantized edge vision models on STM32H7 and Hailo-8 NPU.',
-    tech: ['KiCad', 'STM32', 'C', 'FreeRTOS', 'Hailo-8'],
-    slug: 'edge-neural-pcb',
-    status: 'Fabricated v2.1',
-  },
-  {
-    title: 'Distributed Telemetry Ground Station',
-    category: 'SOFTWARE',
-    tagline: 'Sub-millisecond WebSockets and WebRTC ground station platform for live robotic fleet telemetry.',
-    tech: ['Rust', 'Go', 'Next.js', 'WebSockets', 'LoRa'],
-    slug: 'telemetry-ground-station',
-    status: 'Live Deployment',
-  },
-];
+async function fetchAPI(endpoint: string) {
+  try {
+    const res = await fetch(`${API_BASE}${endpoint}`, {
+      next: { revalidate: 60 },
+    });
+    if (!res.ok) return null;
+    const json = await res.json();
+    return json.data;
+  } catch (err) {
+    return null;
+  }
+}
 
-const HIGHLIGHT_ACHIEVEMENTS = [
-  {
-    award: '1st Prize / Winners',
-    event: 'Smart India Hackathon (Hardware Edition)',
-    year: '2024',
-    category: 'National Level',
-    description: 'Developed an autonomous robotic pipeline for pipeline inspection and defect localization under severe environmental constraints.',
-  },
-  {
-    award: 'AIR 4 & Best Engineering Design',
-    event: 'DD Robocon India National Stage',
-    year: '2024',
-    category: 'National Level',
-    description: 'Engineered two co-operating holonomic robots with sub-millimeter positioning precision and pneumatics.',
-  },
-  {
-    award: '2nd Place Finalist',
-    event: 'IIT Bombay Techfest Autonomous Challenge',
-    year: '2023',
-    category: 'Inter-College Invitational',
-    description: 'High-speed autonomous obstacle traversal and optical target detection using onboard neural inference.',
-  },
-];
+export default async function HomePage() {
+  const [settingsRaw, projectsRaw, gearRaw, _achievementsRaw, eventsRaw] = await Promise.all([
+    fetchAPI('/public/settings'),
+    fetchAPI('/public/projects'),
+    fetchAPI('/public/gear'),
+    fetchAPI('/public/achievements'),
+    fetchAPI('/public/events'),
+  ]);
 
-const PROCESS_STEPS = [
-  { step: '01', title: 'Learn', desc: 'Core masterclasses in schematic capture, C/C++ firmware, RTOS, and modern ROS2.' },
-  { step: '02', title: 'Build', desc: 'Hands-on access to 3D printers, oscilloscopes, SMD soldering stations, and CNC milling.' },
-  { step: '03', title: 'Test', desc: 'Hardware-in-the-loop validation, signal integrity probing, and simulation in Gazebo.' },
-  { step: '04', title: 'Compete', desc: 'Fielding high-caliber engineering teams into SIH, Robocon, and elite collegiate hackathons.' },
-];
+  let heroHeadline = 'We build the machines that think in the real world.';
+  let heroSubheadline =
+    'A collegiate engineering community mastering custom circuit boards, autonomous robotics, and self-hosted Linux infrastructure — from the ground up.';
 
-const LAB_EQUIPMENT = [
-  { name: 'Mixed Signal Oscilloscopes', spec: '100MHz 4-Channel DSO with Protocol Decoders' },
-  { name: 'SMD Rework & Soldering', spec: 'Hot air rework stations, micro-soldering irons, microscope' },
-  { name: 'CoreXY 3D Printers', spec: 'High-temp direct drive for carbon-fiber nylon & PETG' },
-  { name: 'PCB Prototyping Mill', spec: 'CNC isolation routing for dual-sided rapid PCB etching' },
-  { name: 'Edge Compute Cluster', spec: 'NVIDIA Jetson Orin Nanos + Hailo-8 M.2 NPU evaluation kits' },
-  { name: 'RF & Logic Analyzers', spec: '16-channel 500MS/s logic probes + LoRa/CAN analyzers' },
-];
+  let stats = [
+    { value: '5+', label: 'Years of Engineering' },
+    { value: '42+', label: 'Hardware & AI Projects' },
+    { value: '28+', label: 'National Awards Won' },
+    { value: '95+', label: 'Active Student Builders' },
+  ];
 
-const FEATURED_ALUMNI = [
-  {
-    name: 'Devansh K.',
-    batch: 'Class of 2023',
-    role: 'Robotics Software Engineer',
-    company: 'Leading Autonomous Vehicle Startup',
-    quote: 'TRAIC gave me the experience of debugging real motor jitter and hardware faults that no lecture hall could teach.',
-  },
-  {
-    name: 'Tanvi M.',
-    batch: 'Class of 2022',
-    role: 'Silicon Validation Engineer',
-    company: 'Global Semiconductor Corp',
-    quote: 'Designing real PCBs and probing them with oscilloscopes in TRAIC directly landed me my core hardware role.',
-  },
-];
+  if (settingsRaw) {
+    if (settingsRaw.heroHeadline) heroHeadline = settingsRaw.heroHeadline;
+    if (settingsRaw.heroSubheadline) heroSubheadline = settingsRaw.heroSubheadline;
+    if (settingsRaw.stats) {
+      stats = [
+        {
+          value: `${settingsRaw.stats.yearsActive ?? '5'}+`,
+          label: settingsRaw.stats.yearsActiveLabel || 'Years of Engineering',
+        },
+        {
+          value: `${settingsRaw.stats.projectsBuilt ?? settingsRaw.stats.projectsCount ?? '42'}+`,
+          label: settingsRaw.stats.projectsBuiltLabel || 'Hardware & AI Projects',
+        },
+        {
+          value: `${settingsRaw.stats.awardsWon ?? settingsRaw.stats.awardsCount ?? '28'}+`,
+          label: settingsRaw.stats.awardsWonLabel || 'National Honors Won',
+        },
+        {
+          value: `${settingsRaw.stats.activeMembers ?? settingsRaw.stats.buildersCount ?? '95'}+`,
+          label: settingsRaw.stats.activeMembersLabel || 'Active Student Builders',
+        },
+      ];
+    }
+  }
 
-const INITIAL_GALLERY_PREVIEW = [
-  {
-    title: 'Smart India Hackathon Grand Finale Winners',
-    caption: 'TRAIC Autonomous Pipeline Crawler team receiving the 1st prize trophy at the national grand finale.',
-    imageUrl: 'https://images.unsplash.com/photo-1531482615713-2afd69097998?auto=format&fit=crop&w=800&q=80',
-    category: 'COMPETITION',
-    date: 'Dec 2024',
-    location: 'Grand Finale Stage',
-  },
-  {
-    title: 'High-Speed CNC Aluminum Chassis Milling',
-    caption: 'Machining custom 6061-T6 aluminum differential wheel hubs and motor mounts for the UGV-X terrain rover.',
-    imageUrl: 'https://images.unsplash.com/photo-1581092160607-ee22621dd758?auto=format&fit=crop&w=800&q=80',
-    category: 'FABRICATION',
-    date: 'Oct 2024',
-    location: 'CNC Milling Bay',
-  },
-  {
-    title: 'Outdoor Autonomous Rover Field Trials',
-    caption: 'Field testing RTAB-Map 3D LiDAR SLAM in GPS-denied rough outdoor terrain with live telemetry uplink.',
-    imageUrl: 'https://images.unsplash.com/photo-1485827404703-89b55fcc595e?auto=format&fit=crop&w=800&q=80',
-    category: 'ROBOTICS',
-    date: 'Sep 2024',
-    location: 'Dirt Test Track',
-  },
-];
+  const projects: ProjectItem[] = (projectsRaw || []).map((p: any) => ({
+    id: p.id,
+    title: p.title,
+    slug: p.slug,
+    tagline: p.tagline,
+    category: p.category,
+    tech: p.techStack || p.tech || [],
+    status: p.status,
+    description: p.descriptionMd || p.description,
+    specs: p.specs,
+    bom: p.bom,
+  }));
 
-export default function HomePage() {
-  const [stats, setStats] = useState(STATS);
-  const [featuredProjects, setFeaturedProjects] = useState(FEATURED_PROJECTS);
-  const [achievements, setAchievements] = useState(HIGHLIGHT_ACHIEVEMENTS);
-  const [alumni, setAlumni] = useState(FEATURED_ALUMNI);
-  const [galleryPreview, setGalleryPreview] = useState(INITIAL_GALLERY_PREVIEW);
-  const [settings, setSettings] = useState<any>(null);
-  const [gear, setGear] = useState<any[]>(LAB_EQUIPMENT);
-  const [inspectingProject, setInspectingProject] = useState<{
-    title: string;
-    category: string;
-    tech: string[];
-    modelUrl?: string;
-  } | null>(null);
+  const gear: GearItem[] = (gearRaw || []).map((g: any) => ({
+    id: g.id,
+    name: g.name,
+    model: g.model,
+    category: g.category,
+    status: g.status,
+    specifications: g.specifications,
+  }));
 
-  const [heroHeadline, setHeroHeadline] = useState('Where Physical Hardware Meets Intelligent Code');
-  const [heroSubheadline, setHeroSubheadline] = useState('We are TRAIC — an engineering collective building autonomous robotics, custom 4-layer PCBs, and edge AI systems that solve real-world problems and win national championships like SIH and Robocon.');
-
-  useEffect(() => {
-    const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
-
-    fetch(`${API_BASE}/public/settings`)
-      .then((res) => res.json())
-      .then((res) => {
-        if (res.data) {
-          setSettings(res.data);
-          if (res.data.heroHeadline) setHeroHeadline(res.data.heroHeadline);
-          if (res.data.heroSubheadline) setHeroSubheadline(res.data.heroSubheadline);
-          if (res.data.stats) {
-            setStats([
-              { value: `${res.data.stats.yearsActive ?? '5'}+`, label: res.data.stats.yearsActiveLabel || 'Years of Engineering' },
-              { value: `${res.data.stats.projectsBuilt ?? res.data.stats.projectsCount ?? '42'}+`, label: res.data.stats.projectsBuiltLabel || 'Hardware & AI Projects' },
-              { value: `${res.data.stats.awardsWon ?? res.data.stats.awardsCount ?? '28'}+`, label: res.data.stats.awardsWonLabel || 'National Awards Won' },
-              { value: `${res.data.stats.activeMembers ?? res.data.stats.buildersCount ?? '95'}+`, label: res.data.stats.activeMembersLabel || 'Active Student Builders' },
-            ]);
-          }
-        }
-      })
-      .catch(() => {});
-
-    fetch(`${API_BASE}/public/gear`)
-      .then((res) => res.json())
-      .then((res) => {
-        if (res.data && res.data.length > 0) {
-          setGear(res.data);
-        }
-      })
-      .catch(() => {});
-
-    fetch(`${API_BASE}/public/projects`)
-      .then((res) => res.json())
-      .then((res) => {
-        if (res.data && res.data.length > 0) {
-          const featured = res.data.filter((p: any) => p.featured);
-          const list = featured.length > 0 ? featured.slice(0, 3) : res.data.slice(0, 3);
-          setFeaturedProjects(
-            list.map((p: any) => ({
-              title: p.title,
-              category: p.category,
-              tagline: p.tagline,
-              tech: p.techStack || p.tech || [],
-              slug: p.slug,
-              status: p.status === 'PUBLISHED' ? 'Operational' : p.status,
-              modelUrl: p.model3dAssetUrl || '',
-            }))
-          );
-        }
-      })
-      .catch(() => {});
-
-    fetch(`${API_BASE}/public/achievements`)
-      .then((res) => res.json())
-      .then((res) => {
-        if (res.data && res.data.length > 0) {
-          setAchievements(
-            res.data.slice(0, 3).map((a: any) => ({
-              award: a.awardTitle || a.award,
-              event: a.eventName || a.event,
-              year: String(a.year),
-              category: a.category || 'National Level',
-              description: a.descriptionMd || a.description,
-            }))
-          );
-        }
-      })
-      .catch(() => {});
-
-    fetch(`${API_BASE}/public/alumni`)
-      .then((res) => res.json())
-      .then((res) => {
-        if (res.data && res.data.length > 0) {
-          setAlumni(
-            res.data.slice(0, 2).map((al: any) => ({
-              name: al.name,
-              batch: al.graduationYear ? `Class of ${al.graduationYear}` : al.batch,
-              role: al.currentRole || al.role,
-              company: al.currentCompany || al.company,
-              quote: al.quote,
-            }))
-          );
-        }
-      })
-      .catch(() => {});
-
-    fetch(`${API_BASE}/public/gallery`)
-      .then((res) => res.json())
-      .then((res) => {
-        if (res.data && res.data.length > 0) {
-          setGalleryPreview(res.data.slice(0, 3));
-        }
-      })
-      .catch(() => {});
-  }, []);
+  const events: EventItem[] = (eventsRaw || []).map((e: any) => ({
+    id: e.id,
+    title: e.title,
+    slug: e.slug,
+    tagline: e.tagline,
+    type: e.type,
+    mode: e.mode,
+    venue: e.venue,
+    startsAt: e.startsAt,
+  }));
 
   return (
-    <div className="flex flex-col min-h-screen">
-      {/* 3D PROJECT INSPECTOR MODAL */}
-      {inspectingProject && (
-        <Project3DInspector
-          projectTitle={inspectingProject.title}
-          category={inspectingProject.category}
-          techStack={inspectingProject.tech}
-          modelUrl={inspectingProject.modelUrl}
-          onClose={() => setInspectingProject(null)}
-        />
-      )}
-
-      {/* HERO SECTION WITH DEDICATED 3D STAGE & ZERO TEXT OVERLAP */}
-      <section className="relative overflow-hidden pt-6 pb-12 sm:pt-8 sm:pb-16 md:pt-10 md:pb-20 circuit-pattern">
-        {/* Subtle Ambient Glows */}
-        <div className="absolute top-1/4 left-1/4 w-[500px] h-[300px] bg-accent/8 blur-[140px] pointer-events-none rounded-full" />
-        <div className="absolute top-1/2 right-1/4 w-[400px] h-[250px] bg-accent-2/8 blur-[140px] pointer-events-none rounded-full" />
-
-        <div className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-8 items-center">
-            {/* Left Column: Typography, Badges, CTAs, Live Hardware Terminal */}
-            <div className="lg:col-span-7 flex flex-col justify-center">
-              <AnimeGlowHero>
-                {/* System Telemetry Status Indicator (Zero Creed Duplication) */}
-                <div className="anime-reveal inline-flex items-center gap-2 rounded-full border border-accent/40 bg-surface/80 px-3.5 py-1 text-xs font-mono text-accent backdrop-blur-md mb-4 w-fit shadow-sm">
-                  <span className="h-2 w-2 rounded-full bg-accent animate-pulse" />
-                  <span className="font-semibold tracking-wider">HARDWARE LAB ACTIVE // COHORT 2025 ADMISSIONS OPEN</span>
-                </div>
-
-                {/* Main Title */}
-                <h1 className="anime-reveal text-3xl sm:text-5xl lg:text-6xl font-black tracking-tight text-text-1 leading-[1.1]">
-                  {heroHeadline}
-                </h1>
-
-                {/* Subtitle */}
-                <p className="anime-reveal mt-5 text-base sm:text-lg text-text-2 leading-relaxed max-w-2xl">
-                  {heroSubheadline}
-                </p>
-
-                {/* Action CTAs */}
-                <div className="anime-reveal mt-8 flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4">
-                  <Link
-                    href={settings?.heroPrimaryCtaUrl || '/projects'}
-                    className="flex items-center justify-center gap-2 rounded-lg bg-accent px-6 py-3.5 text-sm font-semibold text-bg-0 shadow-lg transition-all hover:bg-accent-hover hover:glow-accent"
-                  >
-                    <span>{settings?.heroPrimaryCtaText || 'Explore Projects'}</span>
-                    <ArrowRight className="h-4 w-4" />
-                  </Link>
-                  <Link
-                    href={settings?.heroSecondaryCtaUrl || '/join'}
-                    className="flex items-center justify-center gap-2 rounded-lg border border-border bg-surface px-6 py-3.5 text-sm font-semibold text-text-1 transition-all hover:border-accent-2/50 hover:bg-surface-hover"
-                  >
-                    <span>{settings?.heroSecondaryCtaText || 'Join the 2025 Cohort'}</span>
-                    <ChevronRight className="h-4 w-4 text-text-2" />
-                  </Link>
-                </div>
-
-              </AnimeGlowHero>
-            </div>
-
-            {/* Right Column: Hero Hardware Viewport (2D Lite by default / 3D on demand) */}
-            <div className="lg:col-span-5 relative mt-6 lg:mt-0">
-              <HeroHardwareViewport />
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* STAT STRIP WITH ANIME.JS SCROLL COUNTERS */}
-      {settings?.sectionToggles?.showStats !== false && (
-        <section className="border-y border-border bg-bg-1 py-10">
-          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            <div className="grid grid-cols-2 gap-8 md:grid-cols-4" data-anime-scroll="stagger">
-              {stats.map((stat) => (
-                <div key={stat.label} className="text-center">
-                  <p
-                    className="text-3xl sm:text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-accent to-accent-2"
-                    data-anime-scroll="counter"
-                    data-counter-target={String(stat.value).replace(/\D/g, '') || '0'}
-                    data-counter-suffix="+"
-                  >
-                    {stat.value}
-                  </p>
-                  <p className="mt-1 text-sm font-medium text-text-2">{stat.label}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-      )}
-
-      {/* FEATURED PROJECTS WITH 3D INSPECTION */}
-      {settings?.sectionToggles?.showProjects !== false && (
-        <section className="py-20 bg-bg-0">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-col md:flex-row md:items-end justify-between mb-12">
-            <div>
-              <div className="inline-flex items-center gap-1.5 text-xs font-mono text-accent uppercase tracking-wider mb-2">
-                <Cpu className="h-4 w-4" />
-                <span>Proof of Work</span>
-              </div>
-              <h2 className="text-3xl sm:text-4xl font-black tracking-tight text-text-1">
-                Featured Engineering Systems
-              </h2>
-            </div>
-            <Link
-              href="/projects"
-              className="mt-4 md:mt-0 inline-flex items-center gap-1.5 text-sm font-semibold text-accent-2 hover:underline"
-            >
-              <span>View all projects</span>
-              <ArrowRight className="h-4 w-4" />
-            </Link>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6" data-anime-scroll="stagger">
-            {featuredProjects.map((project) => (
-              <div
-                key={project.slug}
-                className="group flex flex-col justify-between rounded-xl border border-border bg-surface/60 p-6 transition-all hover:border-accent-2/50 hover:bg-surface hover:-translate-y-1"
-              >
-                <div>
-                  <div className="flex items-center justify-between mb-4">
-                    <span className={`rounded-md px-2.5 py-1 text-[11px] font-mono font-semibold tracking-wider ${
-                      project.category === 'HARDWARE'
-                        ? 'bg-accent/15 text-accent border border-accent/30'
-                        : project.category === 'HYBRID'
-                        ? 'bg-accent-2/15 text-accent-2 border border-accent-2/30'
-                        : 'bg-success/15 text-success border border-success/30'
-                    }`}>
-                      {project.category}
-                    </span>
-                    <span className="text-xs text-text-2 font-mono">{project.status}</span>
-                  </div>
-
-                  {/* Interactive 3D Model Preview */}
-                  <ProjectCard3DPreview
-                    category={project.category}
-                    slug={project.slug}
-                    title={project.title}
-                    onInspect={() =>
-                      setInspectingProject({
-                        title: project.title,
-                        category: project.category,
-                        tech: project.tech,
-                        modelUrl: (project as any).modelUrl,
-                      })
-                    }
-                  />
-
-                  <Link
-                    href={`/projects/${project.slug}`}
-                    className="text-xl font-bold text-text-1 group-hover:text-accent-2 transition-colors block"
-                  >
-                    {project.title}
-                  </Link>
-                  <p className="mt-2.5 text-sm leading-relaxed text-text-2">
-                    {project.tagline}
-                  </p>
-                </div>
-
-                <div className="mt-6 pt-4 border-t border-border/60">
-                  <div className="flex flex-wrap gap-1.5 mb-4">
-                    {project.tech.map((t) => (
-                      <span
-                        key={t}
-                        className="rounded bg-bg-1 px-2 py-0.5 text-[11px] font-mono text-text-2 border border-border"
-                      >
-                        {t}
-                      </span>
-                    ))}
-                  </div>
-
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 pt-1">
-                    <Link
-                      href={`/projects/${project.slug}`}
-                      className="inline-flex items-center gap-1 text-xs font-semibold text-text-1 hover:text-accent py-1"
-                    >
-                      <span>Read Specs</span>
-                      <ArrowRight className="h-3 w-3" />
-                    </Link>
-
-                    <button
-                      type="button"
-                      onClick={(e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        setInspectingProject({
-                          title: project.title,
-                          category: project.category,
-                          tech: project.tech,
-                          modelUrl: (project as any).modelUrl,
-                        });
-                      }}
-                      className="w-full sm:w-auto inline-flex items-center justify-center gap-1.5 rounded-lg border border-accent-2/40 bg-accent-2/10 px-3 py-1.5 text-xs font-mono font-semibold text-accent-2 hover:bg-accent-2 hover:text-bg-0 transition-colors cursor-pointer"
-                    >
-                      <Box className="h-3.5 w-3.5" />
-                      <span>Inspect 3D</span>
-                    </button>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-      )}
-
-      {/* MAKERSPACE LAB & EQUIPMENT INVENTORY */}
-      {settings?.sectionToggles?.showGear !== false && (
-        <section className="py-20 bg-bg-1 border-t border-border">
-          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            <div className="text-center max-w-2xl mx-auto mb-14">
-              <div className="inline-flex items-center gap-1.5 text-xs font-mono text-accent uppercase tracking-wider mb-2">
-                <Wrench className="h-4 w-4" />
-                <span>Lab Infrastructure</span>
-              </div>
-              <h2 className="text-3xl sm:text-4xl font-black tracking-tight text-text-1">
-                Workshop & Fabrication Gear
-              </h2>
-              <p className="mt-3 text-sm text-text-2 leading-relaxed">
-                Our campus lab is fully equipped with industrial-grade test benches, prototyping tools, and compute clusters accessible to every community member.
-              </p>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6" data-anime-scroll="stagger">
-              {gear.map((item) => {
-                const isOper = !item.status || item.status === 'OPERATIONAL';
-                const isInUse = item.status === 'IN_USE';
-                return (
-                  <div
-                    key={item.id || item.name}
-                    className="rounded-xl border border-border bg-surface/70 p-6 flex flex-col justify-between shadow-sm transition-all hover:border-accent/40 hover:bg-surface hover:-translate-y-1"
-                  >
-                    <div>
-                      <div className="flex items-center justify-between gap-2 mb-2">
-                        <span className="rounded bg-accent/10 border border-accent/30 px-2 py-0.5 text-[10px] font-mono font-bold text-accent uppercase">
-                          {item.category || 'HARDWARE'}
-                        </span>
-                        {item.model && (
-                          <span className="text-[10px] font-mono text-text-2 truncate max-w-[140px]">
-                            {item.model}
-                          </span>
-                        )}
-                      </div>
-                      <h3 className="text-base sm:text-lg font-bold text-text-1 mb-1.5">{item.name}</h3>
-                      <p className="text-xs text-text-2 leading-relaxed">
-                        {item.specifications || item.spec}
-                      </p>
-                    </div>
-                    <div className="mt-5 pt-3.5 border-t border-border/60 flex items-center justify-between text-[11px] font-mono">
-                      <div className="flex items-center gap-2">
-                        <span
-                          className={`h-2 w-2 rounded-full ${
-                            isOper ? 'bg-emerald-400 animate-pulse' : isInUse ? 'bg-amber-400' : 'bg-rose-400'
-                          }`}
-                        />
-                        <span className={isOper ? 'text-emerald-400 font-semibold' : isInUse ? 'text-amber-400' : 'text-rose-400'}>
-                          {isOper ? 'OPERATIONAL // READY' : isInUse ? 'IN USE // RESERVED' : 'MAINTENANCE'}
-                        </span>
-                      </div>
-                      <span className="text-[10px] text-text-2">MAKERSPACE BAY</span>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        </section>
-      )}
-
-      {/* ACHIEVEMENTS / SOCIAL PROOF */}
-      {settings?.sectionToggles?.showAchievements !== false && (
-        <section className="py-20 bg-bg-0 border-t border-border">
-          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            <div className="text-center max-w-2xl mx-auto mb-14">
-              <div className="inline-flex items-center gap-1.5 text-xs font-mono text-accent uppercase tracking-wider mb-2">
-                <Trophy className="h-4 w-4" />
-                <span>Track Record</span>
-              </div>
-              <h2 className="text-3xl sm:text-4xl font-black tracking-tight text-text-1">
-                Tested on National Arenas
-              </h2>
-              <p className="mt-3 text-sm text-text-2">
-                We don&apos;t just build laboratory prototypes — our robots and systems go head-to-head with the best teams across India.
-              </p>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6" data-anime-scroll="stagger">
-              {achievements.map((ach) => (
-                <div
-                  key={ach.event}
-                  className="relative rounded-xl border border-border bg-surface p-6 shadow-md"
-                >
-                  <div className="flex items-center justify-between text-xs font-mono text-text-2 mb-3">
-                    <span className="text-accent font-semibold">{ach.year}</span>
-                    <span className="rounded bg-bg-0 px-2 py-0.5 border border-border">{ach.category}</span>
-                  </div>
-                  <h3 className="text-lg font-bold text-text-1">{ach.award}</h3>
-                  <p className="text-sm font-semibold text-accent-2 mt-1">{ach.event}</p>
-                  <p className="mt-3 text-xs leading-relaxed text-text-2">{ach.description}</p>
-                </div>
-              ))}
-            </div>
-
-            <div className="mt-10 text-center">
-              <Link
-                href="/achievements"
-                className="inline-flex items-center gap-1.5 text-sm font-semibold text-accent hover:underline"
-              >
-                <span>Explore our complete hall of achievements</span>
-                <ArrowRight className="h-4 w-4" />
-              </Link>
-            </div>
-          </div>
-        </section>
-      )}
-
-      {/* FIELD DISPATCHES & PHOTO GALLERY PREVIEW */}
-      {settings?.sectionToggles?.showGallery !== false && (
-        <section className="py-20 bg-bg-1 border-t border-border">
-          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            <div className="flex flex-col md:flex-row md:items-end justify-between mb-12">
-              <div>
-                <div className="inline-flex items-center gap-1.5 text-xs font-mono text-accent uppercase tracking-wider mb-2">
-                  <Camera className="h-4 w-4" />
-                  <span>Field Logs</span>
-                </div>
-                <h2 className="text-3xl sm:text-4xl font-black tracking-tight text-text-1">
-                  Field Dispatches & Lab Life
-                </h2>
-                <p className="mt-2 text-sm text-text-2">
-                  Real visual documentation from late-night debugging, national arenas, and CNC milling bays.
-                </p>
-              </div>
-              <Link
-                href="/gallery"
-                className="mt-4 md:mt-0 inline-flex items-center gap-1.5 text-sm font-semibold text-accent-2 hover:underline"
-              >
-                <span>Explore all field photography</span>
-                <ArrowRight className="h-4 w-4" />
-              </Link>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6" data-anime-scroll="stagger">
-              {galleryPreview.map((item) => (
-                <Link
-                  key={item.title}
-                  href="/gallery"
-                  className="group rounded-xl border border-border bg-surface/70 overflow-hidden shadow-sm transition-all hover:border-accent-2/50 hover:bg-surface hover:-translate-y-1 flex flex-col justify-between"
-                >
-                  <div className="relative aspect-video w-full overflow-hidden bg-bg-0">
-                    <img
-                      src={item.imageUrl}
-                      alt={item.title}
-                      className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
-                      loading="lazy"
-                    />
-                    <div className="absolute top-2.5 left-2.5">
-                      <span className="rounded bg-bg-0/80 px-2 py-0.5 text-[10px] font-mono font-bold text-accent-2 backdrop-blur-md border border-border/60">
-                        {item.category}
-                      </span>
-                    </div>
-                  </div>
-                  <div className="p-4">
-                    <div className="flex items-center justify-between text-[11px] font-mono text-text-2 mb-1.5">
-                      <span>{item.date}</span>
-                      <span className="truncate max-w-[130px]">{item.location}</span>
-                    </div>
-                    <h3 className="text-sm font-bold text-text-1 group-hover:text-accent-2 transition-colors line-clamp-1">
-                      {item.title}
-                    </h3>
-                    <p className="mt-1 text-xs text-text-2 line-clamp-2 leading-relaxed">
-                      {item.caption}
-                    </p>
-                  </div>
-                </Link>
-              ))}
-            </div>
-          </div>
-        </section>
-      )}
-
-      {/* METHODOLOGY: HOW TRAIC WORKS */}
-      <section className="py-20 bg-bg-1 border-t border-border">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="text-center max-w-2xl mx-auto mb-14">
-            <div className="inline-flex items-center gap-1.5 text-xs font-mono text-accent-2 uppercase tracking-wider mb-2">
-              <Layers className="h-4 w-4" />
-              <span>The Pipeline</span>
-            </div>
-            <h2 className="text-3xl sm:text-4xl font-black tracking-tight text-text-1">
-              How We Turn Beginners Into Elite Builders
-            </h2>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6" data-anime-scroll="stagger">
-            {PROCESS_STEPS.map((item) => (
-              <div
-                key={item.step}
-                className="rounded-xl border border-border bg-surface/50 p-6 relative overflow-hidden"
-              >
-                <span className="text-4xl font-black font-mono text-border/60 absolute top-4 right-4">
-                  {item.step}
-                </span>
-                <h3 className="text-xl font-bold text-text-1 mb-2">{item.title}</h3>
-                <p className="text-xs text-text-2 leading-relaxed">{item.desc}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ALUMNI HALL OF FAME PREVIEW */}
-      <section className="py-20 bg-bg-0 border-t border-border">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-col md:flex-row md:items-end justify-between mb-12">
-            <div>
-              <div className="inline-flex items-center gap-1.5 text-xs font-mono text-accent uppercase tracking-wider mb-2">
-                <GraduationCap className="h-4 w-4" />
-                <span>Long-Term Impact</span>
-              </div>
-              <h2 className="text-3xl sm:text-4xl font-black tracking-tight text-text-1">
-                Where TRAIC Alumni Build Today
-              </h2>
-            </div>
-            <Link
-              href="/team"
-              className="mt-4 md:mt-0 inline-flex items-center gap-1.5 text-sm font-semibold text-accent-2 hover:underline"
-            >
-              <span>Meet all leads and alumni</span>
-              <ArrowRight className="h-4 w-4" />
-            </Link>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6" data-anime-scroll="stagger">
-            {alumni.map((alum) => (
-              <div
-                key={alum.name}
-                className="rounded-xl border border-border bg-surface/60 p-6"
-              >
-                <div className="flex items-center justify-between text-xs font-mono text-text-2 mb-2">
-                  <span className="font-bold text-text-1">{alum.name}</span>
-                  <span className="text-accent">{alum.batch}</span>
-                </div>
-                <p className="text-xs font-semibold text-accent-2 mb-3">
-                  {alum.role} • {alum.company}
-                </p>
-                <blockquote className="text-xs italic text-text-2 border-l-2 border-border pl-3">
-                  &ldquo;{alum.quote}&rdquo;
-                </blockquote>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* UPCOMING EVENT BANNER */}
-      <section className="py-16 bg-gradient-to-r from-bg-1 via-surface to-bg-1 border-t border-border">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div
-            className="flex flex-col lg:flex-row items-center justify-between gap-8 rounded-2xl border border-accent/30 bg-bg-0/60 p-8 sm:p-10 shadow-xl backdrop-blur-md"
-            data-anime-scroll="scale"
-          >
-            <div className="max-w-2xl">
-              <div className="inline-flex items-center gap-2 rounded-full bg-accent/15 px-3 py-1 text-xs font-semibold text-accent mb-3 border border-accent/30">
-                <Calendar className="h-3.5 w-3.5" />
-                <span>UPCOMING FLAGSHIP EVENT</span>
-              </div>
-              <h2 className="text-2xl sm:text-3xl font-black text-text-1">
-                TRAIC InnoHacks: 36-Hour Physical Hardware Hackathon
-              </h2>
-              <p className="mt-2 text-sm text-text-2">
-                Build functional embedded & robotic prototypes with live hardware kits, 3D printers, and industry mentorship on spot.
-              </p>
-            </div>
-            <div className="flex flex-col sm:flex-row gap-3 w-full lg:w-auto">
-              <Link
-                href="/events"
-                className="flex items-center justify-center gap-2 rounded-lg bg-accent px-6 py-3 text-sm font-semibold text-bg-0 hover:bg-accent-hover transition-colors"
-              >
-                <span>Event Details</span>
-                <ArrowRight className="h-4 w-4" />
-              </Link>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* FINAL CALL TO ACTION */}
-      <section className="py-24 bg-bg-0 border-t border-border text-center relative overflow-hidden">
-        <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
-          <h2 className="text-3xl sm:text-5xl font-black tracking-tight text-text-1">
-            Ready to Build What Others Only Theorize?
-          </h2>
-          <p className="mt-4 text-base sm:text-lg text-text-2 max-w-2xl mx-auto">
-            Whether your passion is routing high-speed PCB traces, writing real-time control loops, or training edge vision networks — TRAIC provides the lab, the gear, and the team.
-          </p>
-          <div className="mt-8 flex justify-center gap-4">
-            <Link
-              href="/join"
-              className="flex items-center gap-2 rounded-lg bg-accent px-8 py-3.5 text-base font-semibold text-bg-0 shadow-lg hover:bg-accent-hover hover:glow-accent transition-all"
-            >
-              <span>Apply for Membership</span>
-              <ArrowRight className="h-5 w-5" />
-            </Link>
-          </div>
-        </div>
-      </section>
-    </div>
+    <ClientHome
+      heroHeadline={heroHeadline}
+      heroSubheadline={heroSubheadline}
+      stats={stats}
+      projects={projects}
+      gear={gear}
+      events={events}
+    />
   );
 }

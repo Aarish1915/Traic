@@ -1,104 +1,142 @@
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
-import { Sun, Moon } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { IconSun, IconMoon, IconMonitor } from './SFSymbols';
 
-export function ThemeToggle() {
-  const [theme, setTheme] = useState<'dark' | 'light'>('dark');
+export type ThemeMode = 'system' | 'light' | 'dark';
 
-  const applyTheme = useCallback((targetTheme: 'dark' | 'light', notify = true) => {
-    setTheme(targetTheme);
-    try {
-      localStorage.setItem('traic_theme', targetTheme);
-    } catch (_) {}
-
-    const root = document.documentElement;
-    root.classList.remove('dark', 'light');
-    root.classList.add(targetTheme);
-    root.setAttribute('data-theme', targetTheme);
-
-    if (document.body) {
-      document.body.classList.remove('dark', 'light');
-      document.body.classList.add(targetTheme);
-    }
-
-    if (notify) {
-      window.dispatchEvent(
-        new CustomEvent('traic-theme-change', { detail: { theme: targetTheme } })
-      );
-    }
-  }, []);
+export function ThemeToggle({ compact = false }: { compact?: boolean }) {
+  const [mode, setMode] = useState<ThemeMode>('dark');
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    let currentTheme: 'dark' | 'light' = 'dark';
-    try {
-      const stored = localStorage.getItem('traic_theme') as 'dark' | 'light' | null;
-      if (stored === 'light' || stored === 'dark') {
-        currentTheme = stored;
-      } else if (window.matchMedia('(prefers-color-scheme: light)').matches) {
-        currentTheme = 'light';
-      }
-    } catch (_) {}
+    setMounted(true);
+    const saved = localStorage.getItem('traic-theme') as ThemeMode | null;
+    if (saved === 'light' || saved === 'dark' || saved === 'system') {
+      setMode(saved);
+      applyTheme(saved);
+    } else {
+      // Default to dark mode for TRAIC hardware theme
+      setMode('dark');
+      applyTheme('dark');
+    }
 
-    applyTheme(currentTheme, false);
-
-    // Cross-instance and cross-tab synchronization listener
-    const onThemeChange = (e: Event) => {
-      const customEvent = e as CustomEvent<{ theme: 'dark' | 'light' }>;
-      if (customEvent.detail?.theme) {
-        setTheme(customEvent.detail.theme);
-      }
-    };
-
-    const onStorage = (e: StorageEvent) => {
-      if (e.key === 'traic_theme' && (e.newValue === 'light' || e.newValue === 'dark')) {
-        applyTheme(e.newValue, false);
+    const media = window.matchMedia('(prefers-color-scheme: dark)');
+    const handleChange = () => {
+      const current = localStorage.getItem('traic-theme') as ThemeMode | null;
+      if (current === 'system') {
+        applyTheme('system');
       }
     };
+    media.addEventListener('change', handleChange);
+    return () => media.removeEventListener('change', handleChange);
+  }, []);
 
-    window.addEventListener('traic-theme-change', onThemeChange);
-    window.addEventListener('storage', onStorage);
+  const applyTheme = (targetMode: ThemeMode) => {
+    const isDark =
+      targetMode === 'dark'
+        ? true
+        : targetMode === 'light'
+        ? false
+        : window.matchMedia('(prefers-color-scheme: dark)').matches;
 
-    return () => {
-      window.removeEventListener('traic-theme-change', onThemeChange);
-      window.removeEventListener('storage', onStorage);
-    };
-  }, [applyTheme]);
+    if (isDark) {
+      document.documentElement.classList.remove('light');
+      document.documentElement.classList.add('dark');
+      document.documentElement.setAttribute('data-theme', 'dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+      document.documentElement.classList.add('light');
+      document.documentElement.setAttribute('data-theme', 'light');
+    }
+  };
+
+  const handleSelect = (nextMode: ThemeMode) => {
+    setMode(nextMode);
+    localStorage.setItem('traic-theme', nextMode);
+    applyTheme(nextMode);
+  };
+
+  if (!mounted) {
+    return (
+      <div
+        className="h-9 w-24 rounded-pill bg-canvas-surface/60 border border-subtle animate-pulse"
+        aria-hidden="true"
+      />
+    );
+  }
+
+  if (compact) {
+    const nextMode: ThemeMode = mode === 'dark' ? 'light' : mode === 'light' ? 'system' : 'dark';
+    return (
+      <button
+        type="button"
+        onClick={() => handleSelect(nextMode)}
+        className="w-10 h-10 rounded-pill bg-canvas-surface border border-subtle flex items-center justify-center text-ink-secondary hover:text-ink-primary hover:border-apple-blue/50 transition-colors focus-visible:outline-apple-blue cursor-pointer"
+        aria-label={`Current appearance: ${mode}. Click to cycle appearance.`}
+        title={`Appearance: ${mode.toUpperCase()} (Click to toggle)`}
+      >
+        {mode === 'light' ? (
+          <IconSun size={17} className="text-[#FF9500]" />
+        ) : mode === 'dark' ? (
+          <IconMoon size={17} className="text-apple-blue" />
+        ) : (
+          <IconMonitor size={17} className="text-ink-secondary" />
+        )}
+      </button>
+    );
+  }
 
   return (
     <div
-      className="flex items-center rounded-full border border-border/90 bg-surface p-0.5 sm:p-1 shadow-md font-mono text-[11px] backdrop-blur-md"
       role="group"
-      aria-label="Theme switcher"
+      aria-label="Theme mode switcher"
+      className="inline-flex items-center p-0.5 rounded-pill bg-canvas-surface border border-subtle text-ink-secondary shadow-sm"
     >
       <button
         type="button"
-        onClick={() => applyTheme('dark')}
-        className={`flex items-center gap-1 sm:gap-1.5 rounded-full px-2 sm:px-3 py-1 font-semibold transition-all ${
-          theme === 'dark'
-            ? 'bg-bg-1 text-accent-2 border border-accent-2/50 shadow-sm'
-            : 'text-text-2 hover:text-text-1'
+        onClick={() => handleSelect('light')}
+        aria-pressed={mode === 'light'}
+        className={`inline-flex items-center justify-center w-7 h-7 rounded-pill transition-all duration-200 cursor-pointer ${
+          mode === 'light'
+            ? 'bg-[#0071E3] text-white shadow-sm font-semibold'
+            : 'hover:text-ink-primary text-ink-secondary'
         }`}
-        title="Activate Dark Obsidian Theme"
+        aria-label="Light mode"
+        title="Light mode"
       >
-        <Moon className="h-3.5 w-3.5" />
-        <span className="hidden sm:inline">DARK</span>
+        <IconSun size={14} />
       </button>
 
       <button
         type="button"
-        onClick={() => applyTheme('light')}
-        className={`flex items-center gap-1 sm:gap-1.5 rounded-full px-2 sm:px-3 py-1 font-semibold transition-all ${
-          theme === 'light'
-            ? 'bg-accent text-bg-0 border border-accent font-bold shadow-sm'
-            : 'text-text-2 hover:text-text-1'
+        onClick={() => handleSelect('system')}
+        aria-pressed={mode === 'system'}
+        className={`inline-flex items-center justify-center w-7 h-7 rounded-pill transition-all duration-200 cursor-pointer ${
+          mode === 'system'
+            ? 'bg-[#0071E3] text-white shadow-sm font-semibold'
+            : 'hover:text-ink-primary text-ink-secondary'
         }`}
-        title="Activate Light Stone Theme"
+        aria-label="System default mode"
+        title="System default mode"
       >
-        <Sun className="h-3.5 w-3.5" />
-        <span className="hidden sm:inline">LIGHT</span>
+        <IconMonitor size={14} />
+      </button>
+
+      <button
+        type="button"
+        onClick={() => handleSelect('dark')}
+        aria-pressed={mode === 'dark'}
+        className={`inline-flex items-center justify-center w-7 h-7 rounded-pill transition-all duration-200 cursor-pointer ${
+          mode === 'dark'
+            ? 'bg-[#0071E3] text-white shadow-sm font-semibold'
+            : 'hover:text-ink-primary text-ink-secondary'
+        }`}
+        aria-label="Dark mode"
+        title="Dark mode"
+      >
+        <IconMoon size={14} />
       </button>
     </div>
   );
 }
-
