@@ -3,38 +3,47 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>TRAIC Admin Portal</title>
+    <title>TRAIC Admin Console</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" />
     <style>
       *, *::before, *::after { box-sizing: border-box; }
-      body { margin: 0; background-color: #07080B; color: #E8EAF0; font-family: 'Inter', system-ui, -apple-system, sans-serif; }
-      input, textarea, select, button { font-family: inherit; }
-      code, pre, .font-mono { font-family: 'JetBrains Mono', monospace; }
-      .tabular-nums { font-variant-numeric: tabular-nums; }
+      body { margin: 0; background-color: #000000; color: #F5F5F7; font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Icons", "Inter", -apple-system, system-ui, sans-serif; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; text-rendering: optimizeLegibility; }
       
-      /* Desktop: sidebar visible, no top bar, normal padding */
-      @media (min-width: 768px) {
+      /* Desktop: sidebar visible, full comfortable padding */
+      @media (min-width: 1024px) {
         .admin-main { padding: 32px 40px !important; padding-top: 32px !important; }
       }
-      /* Mobile: hide desktop sidebar, add top bar spacing */
-      @media (max-width: 767px) {
-        .admin-main { padding: 16px 12px !important; padding-top: 68px !important; }
-        .admin-table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+      /* Tablet & Mobile: slide-out drawer, top bar spacing, full viewport table */
+      @media (max-width: 1023px) {
+        .admin-main {
+          padding: 20px 20px !important;
+          padding-top: 68px !important;
+          min-width: 0 !important;
+          width: 100% !important;
+          max-width: 100vw !important;
+          overflow-x: hidden !important;
+          box-sizing: border-box !important;
+        }
+        .admin-table-wrap {
+          width: 100% !important;
+          max-width: 100% !important;
+          overflow-x: auto !important;
+          -webkit-overflow-scrolling: touch !important;
+          border-radius: 14px !important;
+        }
         .admin-info-bar { flex-wrap: wrap !important; gap: 10px !important; }
         .admin-info-bar > button, .admin-info-bar > a { width: 100% !important; }
         .admin-grid-2 { grid-template-columns: 1fr !important; }
       }
+      @media (max-width: 640px) {
+        .admin-main {
+          padding: 14px 12px !important;
+          padding-top: 68px !important;
+        }
+      }
       
-      /* Scrollbar */
-      ::-webkit-scrollbar { width: 6px; height: 6px; }
-      ::-webkit-scrollbar-track { background: #0D0F14; }
-      ::-webkit-scrollbar-thumb { background: #232838; border-radius: 3px; }
-      
-      /* spin animation */
-      @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-
       /* Modal fullscreen on mobile */
       @media (max-width: 640px) {
         .edit-modal-box {
@@ -48,6 +57,7 @@
     </style>
   </head>
   <body>
+    <a href="#admin-main-content" class="admin-skip-link">Skip to administration content</a>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>

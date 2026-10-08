@@ -1,3 +1,5 @@
+@import url('https://fonts.cdnfonts.com/css/sf-pro-display');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -5,19 +7,57 @@
 :root,
 html.dark,
 [data-theme="dark"] {
-  --bg-0: 3 7 18;          /* #030712 - Deep Void Obsidian */
-  --bg-1: 8 14 30;         /* #080E1E - Abyssal Navy */
-  --surface: 15 23 42;      /* #0F172A - Titanium Slate */
-  --surface-hover: 30 41 59;/* #1E293B */
-  --border: 56 189 248;    /* #38BDF8 with alpha support */
-  --text-1: 248 250 252;   /* #F8FAFC - Pure Metallic White */
-  --text-2: 148 163 184;   /* #94A3B8 - Titanium Grey */
-  --accent: 0 229 255;     /* #00E5FF - Official Logo Electric Plasma Cyan */
-  --accent-hover: 0 180 216;/* #00B4D8 */
-  --accent-fg: 3 7 18;     /* #030712 - Deep Black for high contrast */
-  --accent-2: 56 189 248;  /* #38BDF8 - Circuit Trace Cyan */
-  --accent-2-hover: 14 165 233;
-  --accent-2-fg: 3 7 18;
+  /* Apple Official Dark Palette (HIG Specification) */
+  --bg-0: 0 0 0;                  /* #000000 - Apple True OLED Black */
+  --bg-1: 22 22 23;               /* #161617 - Apple Standard Surface */
+  --surface: 29 29 31;            /* #1D1D1F - Apple Elevated Card Surface */
+  --surface-hover: 36 36 38;      /* #242426 - Apple Card Hover */
+  --border: 255 255 255;
+  --text-1: 245 245 247;          /* #F5F5F7 - Apple Metallic White */
+  --text-2: 134 134 139;          /* #86868B - Apple Signature Secondary Gray */
+
+  /* Apple System Blue Actions */
+  --apple-blue: #2997FF;          /* Apple Cupertino Blue (Dark Mode Links & Glyphs) */
+  --apple-blue-btn: #0071E3;      /* Apple Signature Button Blue */
+  --apple-blue-hover: #0077ED;    /* Apple Blue Hover */
+  --apple-blue-fg: #FFFFFF;       /* Text on Blue */
+
+  /* Backward Compatibility Aliases for Tailwind */
+  --accent: 41 151 255;
+  --accent-hover: 0 119 237;
+  --accent-fg: 255 255 255;
+  --accent-2: 41 151 255;
+  --accent-2-hover: 0 119 237;
+  --accent-2-fg: 255 255 255;
+
+  --cyan-accent: #2997FF;
+  --cyan-hover: #0077ED;
+  --cyan-fg: #FFFFFF;
+
+  /* Apple HIG Adaptive Canvas Variables */
+  --canvas-bg: #000000;
+  --canvas-elevated: #161617;
+  --canvas-surface: #1D1D1F;
+  --canvas-glass: rgba(0, 0, 0, 0.80);
+  --border-subtle: rgba(255, 255, 255, 0.08);
+  --border-separator: rgba(255, 255, 255, 0.14);
+
+  --ink-primary: #F5F5F7;
+  --ink-secondary: #86868B;
+  --ink-tertiary: #6E6E73;
+
+  /* Apple System Colors (HIG Palette) */
+  --status-emerald: #30D158;      /* Apple System Green (Dark) */
+  --status-green: #30D158;
+  --status-orange: #FF9F0A;       /* Apple System Orange (Dark) */
+  --status-red: #FF453A;          /* Apple System Red (Dark) */
+  --status-purple: #BF5AF2;       /* Apple System Purple (Dark) */
+  --status-indigo: #5E5CE6;       /* Apple System Indigo (Dark) */
+
+  /* Apple System Typography Hierarchy */
+  --font-sf-display: 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'SF Pro', system-ui, sans-serif;
+  --font-sf-text: 'SF Pro Text', 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'SF Pro', system-ui, sans-serif;
+  --font-sf-mono: 'SF Mono', SFMono-Regular, ui-monospace, Menlo, Monaco, Consolas, monospace;
 }
 
 :root[data-theme="light"],
@@ -25,119 +65,149 @@ html.light,
 [data-theme="light"],
 html[class~="light"],
 body.light {
-  --bg-0: 248 250 252;     /* #F8FAFC - Cleanroom Architectural Slate */
-  --bg-1: 241 245 249;     /* #F1F5F9 - Elevated Section */
-  --surface: 255 255 255;  /* #FFFFFF - Pure White Surface */
-  --surface-hover: 226 232 240;
-  --border: 203 213 225;   /* #CBD5E1 - Precision Hairline */
-  --text-1: 15 23 42;      /* #0F172A - Deep Carbon Ink */
-  --text-2: 71 85 105;     /* #475569 - Secondary Slate */
-  --accent: 2 132 199;     /* #0284C7 - Surgical Cyan / Blue */
-  --accent-hover: 3 105 161;
+  /* Apple Official Light Palette (HIG Specification) */
+  --bg-0: 255 255 255;            /* #FFFFFF - Pure White */
+  --bg-1: 245 245 247;            /* #F5F5F7 - Apple Standard Off-White */
+  --surface: 255 255 255;         /* #FFFFFF - Apple White Card */
+  --surface-hover: 232 232 237;   /* #E8E8ED */
+  --border: 0 0 0;
+  --text-1: 29 29 31;             /* #1D1D1F - Apple Rich Dark Gray */
+  --text-2: 134 134 139;          /* #86868B - Apple Secondary Gray */
+
+  /* Apple System Blue Actions (Light Mode) */
+  --apple-blue: #0071E3;          /* Apple Link & Button Blue */
+  --apple-blue-btn: #0071E3;
+  --apple-blue-hover: #0077ED;
+  --apple-blue-fg: #FFFFFF;
+
+  --accent: 0 113 227;
+  --accent-hover: 0 119 237;
   --accent-fg: 255 255 255;
-  --accent-2: 14 165 233;  /* #0EA5E9 */
-  --accent-2-hover: 2 132 199;
+  --accent-2: 0 113 227;
+  --accent-2-hover: 0 119 237;
   --accent-2-fg: 255 255 255;
+
+  --cyan-accent: #0071E3;
+  --cyan-hover: #0077ED;
+  --cyan-fg: #FFFFFF;
+
+  /* Apple HIG Adaptive Variables (Light Mode) */
+  --canvas-bg: #FFFFFF;
+  --canvas-elevated: #F5F5F7;
+  --canvas-surface: #FFFFFF;
+  --canvas-glass: rgba(255, 255, 255, 0.82);
+  --border-subtle: rgba(0, 0, 0, 0.08);
+  --border-separator: rgba(0, 0, 0, 0.14);
+
+  --ink-primary: #1D1D1F;
+  --ink-secondary: #86868B;
+  --ink-tertiary: #6E6E73;
+
+  --status-emerald: #34C759;      /* Apple System Green (Light) */
+  --status-green: #34C759;
+  --status-orange: #FF9500;       /* Apple System Orange (Light) */
+  --status-red: #FF3B30;          /* Apple System Red (Light) */
+  --status-purple: #AF52DE;       /* Apple System Purple (Light) */
+  --status-indigo: #5856D6;       /* Apple System Indigo (Light) */
 }
 
 body {
-  background-color: rgb(var(--bg-0));
-  color: rgb(var(--text-1));
-  font-family: var(--font-inter), system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background-color: var(--canvas-bg);
+  color: var(--ink-primary);
+  font-family: var(--font-sf-text), -apple-system, BlinkMacSystemFont, "SF Pro", "Inter", sans-serif;
   overflow-x: hidden;
-  transition: background-color 0.2s ease, color 0.2s ease;
+  transition: background-color 0.25s cubic-bezier(0.16, 1, 0.3, 1), color 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  letter-spacing: -0.011em;
 }
 
 .tabular-nums {
   font-variant-numeric: tabular-nums;
 }
 
-/* Subtle circuit grid pattern matching official logo's PCB traces */
-.circuit-pattern {
-  background-image: radial-gradient(rgba(0, 229, 255, 0.15) 1px, transparent 1px),
-                    radial-gradient(rgba(14, 165, 233, 0.08) 1px, transparent 1px);
-  background-size: 32px 32px;
-  background-position: 0 0, 16px 16px;
+/* ==========================================================================
+   Apple HIG Standards, Accessibility (WCAG 2.2 AAA) & Ergonomics
+   ========================================================================== */
+
+/* Apple Universal Skip Link */
+.skip-link {
+  position: absolute;
+  top: -60px;
+  left: 16px;
+  z-index: 1000;
+  background: var(--apple-blue-btn);
+  color: #FFFFFF;
+  padding: 12px 24px;
+  font-weight: 500;
+  font-size: 14px;
+  border-radius: 9999px;
+  box-shadow: 0 4px 16px rgba(0, 113, 227, 0.3);
+  transition: top 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  text-decoration: none;
+}
+.skip-link:focus {
+  top: 16px;
 }
 
-html.light .circuit-pattern,
-[data-theme="light"] .circuit-pattern {
-  background-image: radial-gradient(rgba(2, 132, 199, 0.12) 1px, transparent 1px),
-                    radial-gradient(rgba(14, 165, 233, 0.06) 1px, transparent 1px);
+/* Apple Translucent Glass Navigation */
+.apple-nav-glass {
+  background: rgba(0, 0, 0, 0.80);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  backdrop-filter: blur(20px) saturate(180%);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
 }
 
-/* Glassmorphic border */
-.glass-panel {
-  background: rgba(15, 23, 42, 0.75);
-  backdrop-filter: blur(16px);
-  border: 1px solid rgba(56, 189, 248, 0.12);
-  border-top: 1px solid rgba(0, 229, 255, 0.35);
-  box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.5);
+html.light .apple-nav-glass,
+[data-theme="light"] .apple-nav-glass {
+  background: rgba(255, 255, 255, 0.82);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
 }
 
-html.light .glass-panel,
-[data-theme="light"] .glass-panel {
-  background: rgba(255, 255, 255, 0.9);
-  border: 1px solid rgba(203, 213, 225, 0.9);
-  border-top: 1px solid rgba(2, 132, 199, 0.4);
-  box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.05);
+/* Apple Squircle Card */
+.apple-card {
+  background-color: var(--canvas-elevated);
+  border: 1px solid var(--border-subtle);
+  border-radius: 24px;
+  color: var(--ink-primary);
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.25s ease, box-shadow 0.25s ease;
+}
+.apple-card:hover {
+  transform: translateY(-2px);
+  border-color: rgba(255, 255, 255, 0.16);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.4);
 }
 
-.glass-panel:hover {
-  border-color: rgba(0, 229, 255, 0.4);
-  border-top-color: rgba(0, 229, 255, 0.7);
+html.light .apple-card:hover,
+[data-theme="light"] .apple-card:hover {
+  border-color: rgba(0, 0, 0, 0.14);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.04);
 }
 
-html.light .glass-panel:hover,
-[data-theme="light"] .glass-panel:hover {
-  border-color: rgba(2, 132, 199, 0.45);
+/* Apple Ambient Specular Lighting */
+.apple-ambient-glow {
+  background: radial-gradient(circle at 50% 0%, rgba(41, 151, 255, 0.05) 0%, transparent 70%);
 }
 
-/* Glow effects */
-.glow-accent {
-  box-shadow: 0 0 25px rgba(0, 229, 255, 0.35);
+/* Scroll Reveal */
+.reveal-on-scroll {
+  opacity: 0;
+  transform: translateY(16px);
+  transition: opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1), transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.reveal-on-scroll.is-revealed {
+  opacity: 1;
+  transform: translateY(0);
 }
 
-html.light .glow-accent,
-[data-theme="light"] .glow-accent {
-  box-shadow: 0 0 25px rgba(2, 132, 199, 0.25);
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+  .reveal-on-scroll {
+    opacity: 1 !important;
+    transform: none !important;
+  }
 }
-
-.glow-cyan {
-  box-shadow: 0 0 35px rgba(0, 229, 255, 0.3);
-}
-
-html.light .glow-cyan,
-[data-theme="light"] .glow-cyan {
-  box-shadow: 0 0 25px rgba(2, 132, 199, 0.2);
-}
-
-/* Metallic Bezel Card matching logo */
-.metallic-card {
-  background: linear-gradient(135deg, rgba(15, 23, 42, 0.85) 0%, rgba(8, 14, 30, 0.9) 100%);
-  border: 1px solid rgba(56, 189, 248, 0.15);
-  border-top: 1.5px solid rgba(0, 229, 255, 0.4);
-  border-bottom: 1.5px solid rgba(15, 23, 42, 0.9);
-  box-shadow: 0 12px 35px -8px rgba(0, 0, 0, 0.6);
-}
-
-html.light .metallic-card {
-  background: #ffffff;
-  border: 1px solid #cbd5e1;
-  border-top: 2px solid #0284c7;
-  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.06);
-}
-
-/* Aerospace Bezel & Chamfered Frame */
-.aerospace-bezel {
-  border: 1.5px solid rgba(0, 229, 255, 0.4);
-  box-shadow: 0 0 20px rgba(0, 229, 255, 0.25);
-  backdrop-filter: blur(12px);
-}
-
-html.light .aerospace-bezel,
-[data-theme="light"] .aerospace-bezel {
-  border: 1.5px solid rgba(2, 132, 199, 0.45);
-  box-shadow: 0 4px 16px rgba(2, 132, 199, 0.15);
-}
-
