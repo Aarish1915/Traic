@@ -34,10 +34,12 @@
   - `pnpm -r typecheck`: **0 errors** across all packages (`@traic/shared`, `@traic/api`, `@traic/web`, `@traic/admin`).
   - `pnpm --filter @traic/web build`: **16/16 pages statically/dynamically generated** in Next.js App Router (zero warnings, zero errors).
 
-- **Day 1 Git Engineering Commits (v2.0.0 Lineage)**:
+- **Day 1 Git Engineering Commits (v2.0.0 Lineage — Pushed to origin main)**:
   - `a6272b9` `feat(design-system): implement core design tokens, subpixel antialiasing, and responsive typography`
   - `86f7497` `feat(shared): expand event hackathon schemas, application fields, and common content models`
   - `d6f9da7` `feat(api): configure Neon serverless PostgreSQL Prisma schema with pooled and direct connection strings`
+  - `74b9598` `feat(web): overhaul public showcase with Apple HIG design, dynamic data ingestion, and multi-device support`
+  - `83b2fc9` `fix(build): configure pnpm onlyBuiltDependencies and regenerate lockfile for CI/Vercel deployment`
 - **Neon & Vercel Production Deployment Guide**:
   - Full guide documented in [NEON_VERCEL_DEPLOYMENT_GUIDE.md](file:///c:/Users/Aarish%20ali/Downloads/traic_website/docs/NEON_VERCEL_DEPLOYMENT_GUIDE.md) detailing connection pooling (`DATABASE_URL`), direct migrations (`DIRECT_URL`), multi-domain CORS, and cookie security (`SameSite=Lax` / `SameSite=None; Secure`).
 

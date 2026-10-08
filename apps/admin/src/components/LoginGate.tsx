@@ -1,5 +1,5 @@
 import { useState, FormEvent } from 'react';
-import { ShieldAlert, Lock, Eye, EyeOff, KeyRound, AlertTriangle, Terminal } from 'lucide-react';
+import { Lock, Eye, EyeOff, KeyRound, AlertTriangle } from 'lucide-react';
 
 interface LoginGateProps {
   apiBase: string;
@@ -28,6 +28,7 @@ export function LoginGate({ apiBase, onSuccess }: LoginGateProps) {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ password }),
+        credentials: 'include',
       });
 
       const data = await res.json();
@@ -39,10 +40,8 @@ export function LoginGate({ apiBase, onSuccess }: LoginGateProps) {
         throw new Error(data.error || 'Authentication failed');
       }
 
-      // Success
-      if (data.token) {
-        sessionStorage.setItem('traic_admin_token', data.token);
-        onSuccess(data.token);
+      if (data.success) {
+        onSuccess('cookie-session');
       }
     } catch (err: any) {
       setError(err.message || 'Authentication error. Please verify API connection.');
@@ -52,168 +51,181 @@ export function LoginGate({ apiBase, onSuccess }: LoginGateProps) {
   };
 
   return (
-    <div style={{
-      minHeight: '100vh',
-      backgroundColor: '#07080B',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      padding: '24px',
-      fontFamily: 'monospace, system-ui, sans-serif',
-      position: 'relative',
-      overflow: 'hidden',
-    }}>
-      {/* Background Cyber Grid */}
-      <div style={{
-        position: 'absolute',
-        inset: 0,
-        backgroundImage: `
-          linear-gradient(to right, rgba(0, 229, 255, 0.04) 1px, transparent 1px),
-          linear-gradient(to bottom, rgba(0, 229, 255, 0.04) 1px, transparent 1px)
-        `,
-        backgroundSize: '36px 36px',
-        pointerEvents: 'none',
-      }} />
-
-      {/* Security Terminal Card */}
-      <div style={{
+    <div
+      style={{
+        minHeight: '100vh',
+        backgroundColor: '#000000',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: '24px',
+        fontFamily: 'var(--font-family-primary)',
         position: 'relative',
-        zIndex: 10,
-        width: '100%',
-        maxWidth: '460px',
-        backgroundColor: '#0F1219',
-        border: '1px solid #232838',
-        borderRadius: '16px',
-        padding: '36px',
-        boxShadow: '0 24px 64px -12px rgba(0, 0, 0, 0.8), 0 0 0 1px rgba(255, 255, 255, 0.05)',
-      }}>
-        {/* Terminal Header */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '28px', borderBottom: '1px solid #1E2330', paddingBottom: '16px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <div style={{
-              width: '38px',
-              height: '38px',
-              borderRadius: '10px',
-              backgroundColor: 'rgba(0, 229, 255, 0.12)',
-              border: '1px solid rgba(0, 229, 255, 0.35)',
+      }}
+    >
+      {/* Apple Store Online Sign-In Card */}
+      <div
+        style={{
+          position: 'relative',
+          width: '100%',
+          maxWidth: '440px',
+          backgroundColor: '#1D1D1F',
+          border: '1px solid rgba(255, 255, 255, 0.08)',
+          borderRadius: '18px',
+          padding: '36px',
+          boxShadow: '0 20px 48px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.04)',
+        }}
+      >
+        {/* Apple Brand Lockup */}
+        <div style={{ textAlign: 'center', marginBottom: '28px' }}>
+          <div
+            style={{
+              width: '48px',
+              height: '48px',
+              margin: '0 auto 16px',
+              borderRadius: '12px',
+              backgroundColor: 'rgba(0, 113, 227, 0.12)',
+              border: '1px solid rgba(0, 113, 227, 0.25)',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-            }}>
-              <ShieldAlert size={20} color="#00E5FF" />
-            </div>
-            <div>
-              <div style={{ fontSize: '13px', fontWeight: 800, color: '#F8FAFC', letterSpacing: '0.05em' }}>
-                TRAIC // AUTH GATEWAY
-              </div>
-              <div style={{ fontSize: '10px', color: '#94A3B8' }}>
-                RESTRICTED COORDINATOR ACCESS
-              </div>
-            </div>
+              padding: '6px',
+            }}
+          >
+            <img src="/traic-logo.png" alt="TRAIC" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
           </div>
-          <span style={{
-            fontSize: '9px',
-            padding: '3px 8px',
-            borderRadius: '4px',
-            backgroundColor: 'rgba(16, 185, 129, 0.1)',
-            border: '1px solid rgba(16, 185, 129, 0.3)',
-            color: '#34D399',
-            fontWeight: 700,
-          }}>
-            SHIELD ACTIVE
-          </span>
-        </div>
-
-        {/* Security Notification Banner */}
-        <div style={{
-          backgroundColor: '#161B26',
-          border: '1px solid #252D3D',
-          borderRadius: '8px',
-          padding: '12px 14px',
-          marginBottom: '24px',
-          display: 'flex',
-          gap: '10px',
-          alignItems: 'flex-start',
-        }}>
-          <Terminal size={16} color="#38BDF8" style={{ marginTop: '2px', flexShrink: 0 }} />
-          <div style={{ fontSize: '11px', color: '#CBD5E1', lineHeight: '1.5' }}>
-            All administrative queries and mutations require authorized cryptographic session tokens. Brute-force bot attacks are actively monitored and rate-limited.
-          </div>
+          <h1
+            style={{
+              margin: '0 0 6px 0',
+              fontSize: '21px',
+              fontWeight: 700,
+              letterSpacing: '-0.02em',
+              color: '#F5F5F7',
+              lineHeight: 1.2,
+            }}
+          >
+            TRAIC Admin Console
+          </h1>
+          <p
+            style={{
+              margin: 0,
+              fontSize: '13px',
+              color: '#86868B',
+              lineHeight: 1.4,
+            }}
+          >
+            Sign in with your master key to manage robotics projects, laboratory gear, and admissions.
+          </p>
         </div>
 
         {/* Error Alert Box */}
         {error && (
-          <div style={{
-            backgroundColor: '#2D1418',
-            border: '1px solid #EF4444',
-            borderRadius: '8px',
-            padding: '12px 14px',
-            marginBottom: '20px',
-            display: 'flex',
-            gap: '10px',
-            alignItems: 'center',
-            color: '#F87171',
-            fontSize: '12px',
-          }}>
-            <AlertTriangle size={18} color="#EF4444" style={{ flexShrink: 0 }} />
+          <div
+            role="alert"
+            style={{
+              backgroundColor: 'rgba(255, 69, 58, 0.12)',
+              border: '1px solid rgba(255, 69, 58, 0.3)',
+              borderRadius: '10px',
+              padding: '12px 14px',
+              marginBottom: '20px',
+              display: 'flex',
+              gap: '10px',
+              alignItems: 'center',
+              color: '#FF453A',
+              fontSize: '12.5px',
+            }}
+          >
+            <AlertTriangle size={16} color="#FF453A" style={{ flexShrink: 0 }} />
             <div>{error}</div>
           </div>
         )}
 
-        {/* Login Form */}
+        {/* Sign-In Form */}
         <form onSubmit={handleSubmit}>
-          <div style={{ marginBottom: '22px' }}>
-            <label style={{ display: 'block', fontSize: '11px', fontWeight: 700, color: '#CBD5E1', marginBottom: '8px', letterSpacing: '0.04em' }}>
-              MASTER SECURITY KEY / PASSWORD:
+          <div style={{ marginBottom: '20px' }}>
+            <label
+              htmlFor="admin-master-password"
+              style={{
+                display: 'block',
+                fontSize: '12px',
+                fontWeight: 600,
+                color: '#A1A1A6',
+                marginBottom: '8px',
+                letterSpacing: '-0.01em',
+              }}
+            >
+              Master Security Key
             </label>
             <div style={{ position: 'relative' }}>
-              <div style={{ position: 'absolute', left: '12px', top: '12px', color: '#64748B' }}>
+              <div
+                style={{
+                  position: 'absolute',
+                  left: '14px',
+                  top: '14px',
+                  color: '#86868B',
+                  pointerEvents: 'none',
+                }}
+              >
                 <KeyRound size={16} />
               </div>
               <input
+                id="admin-master-password"
                 type={showPassword ? 'text' : 'password'}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                placeholder="Enter admin password..."
+                placeholder="Enter administrator key..."
                 autoFocus
                 disabled={loading}
+                aria-required="true"
                 style={{
                   width: '100%',
                   boxSizing: 'border-box',
-                  padding: '12px 42px 12px 38px',
-                  backgroundColor: '#07080B',
-                  border: '1px solid #2D3748',
-                  borderRadius: '8px',
-                  color: '#F8FAFC',
+                  minHeight: '44px',
+                  padding: '12px 48px 12px 40px',
+                  backgroundColor: '#121214',
+                  border: '1px solid rgba(255, 255, 255, 0.12)',
+                  borderRadius: '10px',
+                  color: '#F5F5F7',
                   fontSize: '13px',
-                  fontFamily: 'monospace',
                   outline: 'none',
-                  transition: 'border-color 0.2s',
+                  transition: 'border-color 0.2s, box-shadow 0.2s',
                 }}
-                onFocus={(e) => (e.target.style.borderColor = '#00E5FF')}
-                onBlur={(e) => (e.target.style.borderColor = '#2D3748')}
+                onFocus={(e) => {
+                  e.target.style.borderColor = '#0071E3';
+                  e.target.style.boxShadow = '0 0 0 2px rgba(0, 113, 227, 0.25)';
+                }}
+                onBlur={(e) => {
+                  e.target.style.borderColor = 'rgba(255, 255, 255, 0.12)';
+                  e.target.style.boxShadow = 'none';
+                }}
               />
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
                 style={{
                   position: 'absolute',
-                  right: '12px',
-                  top: '12px',
+                  right: '6px',
+                  top: '2px',
                   background: 'none',
                   border: 'none',
-                  color: '#64748B',
+                  color: '#86868B',
                   cursor: 'pointer',
-                  padding: 0,
+                  padding: '10px',
+                  minHeight: '44px',
+                  minWidth: '44px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  borderRadius: '8px',
                 }}
-                aria-label={showPassword ? 'Hide password' : 'Show password'}
+                aria-label={showPassword ? 'Hide master key' : 'Show master key'}
               >
                 {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
               </button>
             </div>
             {attemptsLeft !== null && attemptsLeft > 0 && (
-              <div style={{ fontSize: '10px', color: '#F59E0B', marginTop: '6px' }}>
-                Warning: {attemptsLeft} attempts remaining before temporary 15-minute IP lockout.
+              <div style={{ fontSize: '11.5px', color: '#FF9F0A', marginTop: '6px' }}>
+                Notice: {attemptsLeft} attempts remaining before temporary rate-limit.
               </div>
             )}
           </div>
@@ -223,14 +235,15 @@ export function LoginGate({ apiBase, onSuccess }: LoginGateProps) {
             disabled={loading}
             style={{
               width: '100%',
-              padding: '13px 20px',
-              backgroundColor: '#00E5FF',
-              color: '#030712',
+              minHeight: '44px',
+              padding: '12px 20px',
+              backgroundColor: '#0071E3',
+              color: '#FFFFFF',
               border: 'none',
-              borderRadius: '8px',
-              fontWeight: 800,
+              borderRadius: '980px',
+              fontWeight: 600,
               fontSize: '13px',
-              letterSpacing: '0.04em',
+              letterSpacing: '-0.01em',
               cursor: loading ? 'not-allowed' : 'pointer',
               display: 'flex',
               alignItems: 'center',
@@ -239,19 +252,29 @@ export function LoginGate({ apiBase, onSuccess }: LoginGateProps) {
               transition: 'background-color 0.2s, transform 0.1s',
               opacity: loading ? 0.7 : 1,
             }}
-            onMouseOver={(e) => !loading && ((e.currentTarget.style.backgroundColor = '#00B4D8'))}
-            onMouseOut={(e) => !loading && ((e.currentTarget.style.backgroundColor = '#00E5FF'))}
+            onMouseOver={(e) => !loading && ((e.currentTarget.style.backgroundColor = '#0077ED'))}
+            onMouseOut={(e) => !loading && ((e.currentTarget.style.backgroundColor = '#0071E3'))}
+            onMouseDown={(e) => !loading && ((e.currentTarget.style.transform = 'scale(0.985)'))}
+            onMouseUp={(e) => !loading && ((e.currentTarget.style.transform = 'scale(1)'))}
           >
             <Lock size={15} />
-            <span>{loading ? 'VERIFYING CREDENTIALS...' : 'AUTHENTICATE & UNLOCK'}</span>
+            <span>{loading ? 'Authenticating...' : 'Sign In'}</span>
           </button>
         </form>
 
-        {/* Footer Security Badges */}
-        <div style={{ marginTop: '28px', paddingTop: '18px', borderTop: '1px solid #1E2330', display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: '10px', color: '#64748B' }}>
-          <span>RATE-LIMITED VIA IP</span>
-          <span>TIMING-SAFE EQUAL</span>
-          <span>SHA-256 SESSION</span>
+        {/* Apple Footer Note */}
+        <div
+          style={{
+            marginTop: '24px',
+            paddingTop: '16px',
+            borderTop: '1px solid rgba(255, 255, 255, 0.08)',
+            textAlign: 'center',
+            fontSize: '11px',
+            color: '#6E6E73',
+            lineHeight: 1.4,
+          }}
+        >
+          Protected under statutory IT & DPDP safeguards. Encrypted cryptographic session.
         </div>
       </div>
     </div>

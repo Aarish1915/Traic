@@ -16,7 +16,6 @@ import { Toast } from './components/Toast';
 import { Sidebar } from './components/Sidebar';
 import { Header } from './components/Header';
 import { ProjectsTab } from './components/tabs/ProjectsTab';
-import { ThreeDModelsTab } from './components/tabs/ThreeDModelsTab';
 import { BannersTab } from './components/tabs/BannersTab';
 import { GalleryTab } from './components/tabs/GalleryTab';
 import { GearTab } from './components/tabs/GearTab';
@@ -36,10 +35,7 @@ export function App() {
 
   // Authentication State
   const [token, setToken] = useState<string | null>(() => {
-    if (typeof window !== 'undefined') {
-      return sessionStorage.getItem('traic_admin_token') || localStorage.getItem('traic_admin_token');
-    }
-    return null;
+    return 'cookie-session';
   });
   const [authChecked, setAuthChecked] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -57,7 +53,6 @@ export function App() {
   const [applications, setApplications] = useState<JoinApplication[]>([]);
   const [loading, setLoading] = useState(false);
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
-  const [copiedSlug, setCopiedSlug] = useState<string | null>(null);
 
   // Modals state
   const [editingItem, setEditingItem] = useState<{ type: string; data?: any } | null>(null);
@@ -65,13 +60,6 @@ export function App() {
   const showToast = (message: string, type: 'success' | 'error' = 'success') => {
     setToast({ message, type });
     setTimeout(() => setToast(null), 3500);
-  };
-
-  const copyToClipboard = (text: string, slug: string) => {
-    navigator.clipboard.writeText(text);
-    setCopiedSlug(slug);
-    showToast(`Copied ${text} to clipboard!`);
-    setTimeout(() => setCopiedSlug(null), 2500);
   };
 
   // Verify authentication on startup
@@ -84,8 +72,7 @@ export function App() {
       }
       try {
         const res = await fetch(`${API_BASE}/admin/auth/verify`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
+          credentials: "include"});
         if (res.ok) {
           setIsAuthenticated(true);
         } else {
@@ -106,8 +93,7 @@ export function App() {
     if (token) {
       fetch(`${API_BASE}/admin/auth/logout`, {
         method: 'POST',
-        headers: { Authorization: `Bearer ${token}` },
-      }).catch(() => {});
+        credentials: "include"}).catch(() => {});
     }
     sessionStorage.removeItem('traic_admin_token');
     setToken(null);
@@ -118,23 +104,23 @@ export function App() {
   const fetchAllData = async () => {
     if (!token) return;
     setLoading(true);
-    const authHeaders: Record<string, string> = { Authorization: `Bearer ${token}` };
+    const authHeaders: Record<string, string> = {  };
 
     try {
       const [projRes, evRes, achRes, memRes, alRes, banRes, galRes, gearRes, setRes, appRes] = await Promise.all([
-        fetch(`${API_BASE}/admin/projects`, { headers: authHeaders }).then((r) => r.json()).catch(() => ({ data: [] })),
-        fetch(`${API_BASE}/admin/events`, { headers: authHeaders }).then((r) => r.json()).catch(() => ({ data: [] })),
-        fetch(`${API_BASE}/admin/achievements`, { headers: authHeaders }).then((r) => r.json()).catch(() => ({ data: [] })),
-        fetch(`${API_BASE}/admin/members`, { headers: authHeaders }).then((r) => r.json()).catch(() => ({ data: [] })),
-        fetch(`${API_BASE}/admin/alumni`, { headers: authHeaders }).then((r) => r.json()).catch(() => ({ data: [] })),
-        fetch(`${API_BASE}/admin/banners`, { headers: authHeaders }).then((r) => {
+        fetch(`${API_BASE}/admin/projects`, { headers: authHeaders, credentials: "include"}).then((r) => r.json()).catch(() => ({ data: [] })),
+        fetch(`${API_BASE}/admin/events`, { headers: authHeaders, credentials: "include"}).then((r) => r.json()).catch(() => ({ data: [] })),
+        fetch(`${API_BASE}/admin/achievements`, { headers: authHeaders, credentials: "include"}).then((r) => r.json()).catch(() => ({ data: [] })),
+        fetch(`${API_BASE}/admin/members`, { headers: authHeaders, credentials: "include"}).then((r) => r.json()).catch(() => ({ data: [] })),
+        fetch(`${API_BASE}/admin/alumni`, { headers: authHeaders, credentials: "include"}).then((r) => r.json()).catch(() => ({ data: [] })),
+        fetch(`${API_BASE}/admin/banners`, { headers: authHeaders, credentials: "include"}).then((r) => {
           if (r.status === 401) { handleLogout(); }
           return r.json();
         }).catch(() => ({ data: [] })),
-        fetch(`${API_BASE}/admin/gallery`, { headers: authHeaders }).then((r) => r.json()).catch(() => ({ data: [] })),
-        fetch(`${API_BASE}/admin/gear`, { headers: authHeaders }).then((r) => r.json()).catch(() => ({ data: [] })),
-        fetch(`${API_BASE}/admin/settings`, { headers: authHeaders }).then((r) => r.json()).catch(() => ({ data: null })),
-        fetch(`${API_BASE}/admin/applications`, { headers: authHeaders }).then((r) => r.json()).catch(() => ({ data: [] })),
+        fetch(`${API_BASE}/admin/gallery`, { headers: authHeaders, credentials: "include"}).then((r) => r.json()).catch(() => ({ data: [] })),
+        fetch(`${API_BASE}/admin/gear`, { headers: authHeaders, credentials: "include"}).then((r) => r.json()).catch(() => ({ data: [] })),
+        fetch(`${API_BASE}/admin/settings`, { headers: authHeaders, credentials: "include"}).then((r) => r.json()).catch(() => ({ data: null })),
+        fetch(`${API_BASE}/admin/applications`, { headers: authHeaders, credentials: "include"}).then((r) => r.json()).catch(() => ({ data: [] })),
       ]);
 
       if (projRes.data) setProjects(projRes.data);
@@ -165,8 +151,7 @@ export function App() {
     try {
       const res = await fetch(`${API_BASE}/admin/${type}/${id}`, {
         method: 'DELETE',
-        headers: { Authorization: `Bearer ${token}` },
-      });
+        credentials: "include"});
       if (res.status === 401) {
         handleLogout();
         throw new Error('Session expired. Please log in again.');
@@ -187,9 +172,10 @@ export function App() {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
+          
         },
         body: JSON.stringify({ isActive: !banner.isActive }),
+        credentials: "include",
       });
       if (res.status === 401) {
         handleLogout();
@@ -209,9 +195,10 @@ export function App() {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
+          
         },
         body: JSON.stringify(newSettings),
+        credentials: "include",
       });
       if (res.status === 401) {
         handleLogout();
@@ -237,9 +224,10 @@ export function App() {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
+          
         },
         body: JSON.stringify(body),
+        credentials: "include",
       });
 
       if (res.ok) {
@@ -257,7 +245,7 @@ export function App() {
     try {
       const res = await fetch(`${API_BASE}/admin/gear/${id}/toggle`, {
         method: 'PATCH',
-        headers: { Authorization: `Bearer ${token}` },
+        credentials: "include",
       });
       if (res.ok) {
         showToast('Lab gear visibility updated');
@@ -276,9 +264,10 @@ export function App() {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
+          
         },
         body: JSON.stringify({ status }),
+        credentials: "include",
       });
       if (res.ok) {
         showToast(`Candidate status updated to ${status}`);
@@ -291,10 +280,52 @@ export function App() {
     }
   };
 
+  const handleBulkUpdateApplicationStatus = async (ids: string[], status: string) => {
+    try {
+      const res = await fetch(`${API_BASE}/admin/applications/bulk-status`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ ids, status }),
+        credentials: "include",
+      });
+      if (res.ok) {
+        showToast(`Bulk updated ${ids.length} candidates to ${status}`);
+        fetchAllData();
+      } else {
+        showToast('Failed to bulk update candidates', 'error');
+      }
+    } catch {
+      showToast('Network error during bulk update', 'error');
+    }
+  };
+
+  const handleUpdateApplicationNotes = async (id: string, reviewNotes: string) => {
+    try {
+      const res = await fetch(`${API_BASE}/admin/applications/${id}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ reviewNotes }),
+        credentials: "include",
+      });
+      if (res.ok) {
+        showToast('Review notes saved');
+        fetchAllData();
+      } else {
+        showToast('Failed to save review notes', 'error');
+      }
+    } catch {
+      showToast('Network error while saving notes', 'error');
+    }
+  };
+
   if (!authChecked) {
     return (
-      <div style={{ minHeight: '100vh', backgroundColor: '#07080B', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#94A3B8', fontFamily: 'monospace' }}>
-        INITIALIZING SECURITY GATEWAY...
+      <div style={{ minHeight: '100vh', backgroundColor: '#000000', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#86868B', fontFamily: 'var(--font-family-primary)', fontSize: '13px' }}>
+        Verifying administrative credentials...
       </div>
     );
   }
@@ -316,7 +347,7 @@ export function App() {
   }
 
   return (
-    <div style={{ display: 'flex', minHeight: '100vh', backgroundColor: '#07080B', color: '#E8EAF0', fontFamily: 'system-ui, sans-serif' }}>
+    <div style={{ display: 'flex', minHeight: '100vh', backgroundColor: '#000000', color: '#F5F5F7', fontFamily: 'var(--font-family-primary)' }}>
       <Toast toast={toast} />
 
       <Sidebar
@@ -324,7 +355,6 @@ export function App() {
         setActiveTab={setActiveTab}
         counts={{
           projects: projects.length,
-          models3d: projects.filter((p) => !!p.model3dAssetUrl).length,
           banners: banners.length,
           gallery: gallery.length,
           gear: gear.length,
@@ -339,7 +369,7 @@ export function App() {
         onLogout={handleLogout}
       />
 
-      <main style={{ flex: 1, padding: '16px', paddingTop: '72px', overflowY: 'auto' }} className="admin-main">
+      <main id="admin-main-content" style={{ flex: 1, minWidth: 0, width: '100%', padding: '24px 32px', paddingTop: '32px', overflowY: 'auto', backgroundColor: '#000000' }} className="admin-main">
         <Header activeTab={activeTab} onCreateNew={() => setEditingItem({ type: activeTab })} />
 
         {activeTab === 'projects' && (
@@ -348,15 +378,6 @@ export function App() {
             onEdit={(p) => setEditingItem({ type: 'projects', data: p })}
             onDelete={(id) => handleDelete('projects', id)}
             onToggleVisibility={(id, currentVal) => handleQuickToggle('projects', id, currentVal)}
-          />
-        )}
-
-        {activeTab === '3d-models' && (
-          <ThreeDModelsTab
-            projects={projects}
-            copiedSlug={copiedSlug}
-            onCopyPath={copyToClipboard}
-            onEditProject={(p) => setEditingItem({ type: 'projects', data: p })}
           />
         )}
 
@@ -438,6 +459,8 @@ export function App() {
             applications={applications}
             onDelete={(id) => handleDelete('applications', id)}
             onUpdateStatus={handleUpdateApplicationStatus}
+            onBulkUpdateStatus={handleBulkUpdateApplicationStatus}
+            onUpdateNotes={handleUpdateApplicationNotes}
           />
         )}
       </main>

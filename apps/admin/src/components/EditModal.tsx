@@ -12,7 +12,7 @@ interface EditModalProps {
 
 export function EditModal({
   apiBase,
-  token,
+  token: _token,
   type,
   initialData,
   onClose,
@@ -72,6 +72,15 @@ export function EditModal({
         if (!payload.startsAt) {
           payload.startsAt = new Date().toISOString();
         }
+        if (typeof payload.tracks === 'string') {
+          payload.tracks = payload.tracks.split(',').map((s: string) => s.trim()).filter(Boolean);
+        }
+        if (payload.capacity) {
+          payload.capacity = Number(payload.capacity) || undefined;
+        }
+        if (payload.schedule && Array.isArray(payload.schedule)) {
+          payload.schedule = payload.schedule.filter((s: any) => s.time && s.title);
+        }
       } else if (type === 'gear') {
         payload.priority = Number(payload.priority) || 1;
         payload.isPublished = payload.isPublished !== false;
@@ -81,8 +90,8 @@ export function EditModal({
         method,
         headers: {
           'Content-Type': 'application/json',
-          ...(token ? { Authorization: `Bearer ${token}` } : {}),
         },
+        credentials: 'include',
         body: JSON.stringify(payload),
       });
 
@@ -126,9 +135,9 @@ export function EditModal({
       <div
         className="edit-modal-box"
         style={{
-          backgroundColor: '#141821',
-          border: '1px solid #232838',
-          borderRadius: '16px',
+          backgroundColor: '#1C1C1E',
+          border: '1px solid rgba(255, 255, 255, 0.10)',
+          borderRadius: '20px',
           width: '90vw',
           maxWidth: '600px',
           maxHeight: '90vh',
@@ -137,11 +146,11 @@ export function EditModal({
           boxShadow: '0 20px 40px rgba(0,0,0,0.6)',
         }}
       >
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', borderBottom: '1px solid #232838', paddingBottom: '12px' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', borderBottom: '1px solid rgba(255, 255, 255, 0.10)', paddingBottom: '12px' }}>
           <h2 style={{ margin: 0, fontSize: '18px', fontWeight: 800 }}>{getTitle()}</h2>
           <button
             onClick={onClose}
-            style={{ background: 'none', border: 'none', color: '#9AA3B5', cursor: 'pointer' }}
+            style={{ background: 'none', border: 'none', color: '#86868B', cursor: 'pointer' }}
           >
             <X size={20} />
           </button>
@@ -152,34 +161,34 @@ export function EditModal({
           {type === 'gear' && (
             <>
               <div>
-                <label style={{ display: 'block', fontSize: '11px', color: '#9AA3B5', marginBottom: '4px' }}>Equipment Name *</label>
+                <label style={{ display: 'block', fontSize: '11px', color: '#86868B', marginBottom: '4px' }}>Equipment Name *</label>
                 <input
                   required
                   type="text"
                   placeholder="e.g. Digital Storage Oscilloscope"
                   value={formData.name || ''}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  style={{ width: '100%', padding: '8px 12px', borderRadius: '6px', backgroundColor: '#07080B', border: '1px solid #232838', color: '#E8EAF0' }}
+                  style={{ width: '100%', padding: '8px 12px', borderRadius: '6px', backgroundColor: '#121214', border: '1px solid rgba(255, 255, 255, 0.10)', color: '#F5F5F7' }}
                 />
               </div>
               <div>
-                <label style={{ display: 'block', fontSize: '11px', color: '#9AA3B5', marginBottom: '4px' }}>Model / Version *</label>
+                <label style={{ display: 'block', fontSize: '11px', color: '#86868B', marginBottom: '4px' }}>Model / Version *</label>
                 <input
                   required
                   type="text"
                   placeholder="e.g. Rigol DS1054Z (4-Ch 50MHz)"
                   value={formData.model || ''}
                   onChange={(e) => setFormData({ ...formData, model: e.target.value })}
-                  style={{ width: '100%', padding: '8px 12px', borderRadius: '6px', backgroundColor: '#07080B', border: '1px solid #232838', color: '#E8EAF0' }}
+                  style={{ width: '100%', padding: '8px 12px', borderRadius: '6px', backgroundColor: '#121214', border: '1px solid rgba(255, 255, 255, 0.10)', color: '#F5F5F7' }}
                 />
               </div>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
                 <div>
-                  <label style={{ display: 'block', fontSize: '11px', color: '#9AA3B5', marginBottom: '4px' }}>Category *</label>
+                  <label style={{ display: 'block', fontSize: '11px', color: '#86868B', marginBottom: '4px' }}>Category *</label>
                   <select
                     value={formData.category || 'TESTING'}
                     onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                    style={{ width: '100%', padding: '8px 12px', borderRadius: '6px', backgroundColor: '#07080B', border: '1px solid #232838', color: '#E8EAF0' }}
+                    style={{ width: '100%', padding: '8px 12px', borderRadius: '6px', backgroundColor: '#121214', border: '1px solid rgba(255, 255, 255, 0.10)', color: '#F5F5F7' }}
                   >
                     <option value="TESTING">TESTING</option>
                     <option value="SOLDERING">SOLDERING</option>
@@ -189,11 +198,11 @@ export function EditModal({
                   </select>
                 </div>
                 <div>
-                  <label style={{ display: 'block', fontSize: '11px', color: '#9AA3B5', marginBottom: '4px' }}>Status *</label>
+                  <label style={{ display: 'block', fontSize: '11px', color: '#86868B', marginBottom: '4px' }}>Status *</label>
                   <select
                     value={formData.status || 'OPERATIONAL'}
                     onChange={(e) => setFormData({ ...formData, status: e.target.value })}
-                    style={{ width: '100%', padding: '8px 12px', borderRadius: '6px', backgroundColor: '#07080B', border: '1px solid #232838', color: '#E8EAF0' }}
+                    style={{ width: '100%', padding: '8px 12px', borderRadius: '6px', backgroundColor: '#121214', border: '1px solid rgba(255, 255, 255, 0.10)', color: '#F5F5F7' }}
                   >
                     <option value="OPERATIONAL">OPERATIONAL</option>
                     <option value="IN_USE">IN_USE</option>
@@ -202,24 +211,24 @@ export function EditModal({
                 </div>
               </div>
               <div>
-                <label style={{ display: 'block', fontSize: '11px', color: '#9AA3B5', marginBottom: '4px' }}>Specifications & Capabilities *</label>
+                <label style={{ display: 'block', fontSize: '11px', color: '#86868B', marginBottom: '4px' }}>Specifications & Capabilities *</label>
                 <textarea
                   required
                   rows={3}
                   placeholder="e.g. 4-Channel, 50MHz bandwidth, 1 GSa/s real-time sampling rate, hardware protocol decoding for I2C, SPI, UART, CAN."
                   value={formData.specifications || ''}
                   onChange={(e) => setFormData({ ...formData, specifications: e.target.value })}
-                  style={{ width: '100%', padding: '8px 12px', borderRadius: '6px', backgroundColor: '#07080B', border: '1px solid #232838', color: '#E8EAF0', lineHeight: 1.4 }}
+                  style={{ width: '100%', padding: '8px 12px', borderRadius: '6px', backgroundColor: '#121214', border: '1px solid rgba(255, 255, 255, 0.10)', color: '#F5F5F7', lineHeight: 1.4 }}
                 />
               </div>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
                 <div>
-                  <label style={{ display: 'block', fontSize: '11px', color: '#9AA3B5', marginBottom: '4px' }}>Priority Order</label>
+                  <label style={{ display: 'block', fontSize: '11px', color: '#86868B', marginBottom: '4px' }}>Priority Order</label>
                   <input
                     type="number"
                     value={formData.priority ?? 1}
                     onChange={(e) => setFormData({ ...formData, priority: e.target.value })}
-                    style={{ width: '100%', padding: '8px 12px', borderRadius: '6px', backgroundColor: '#07080B', border: '1px solid #232838', color: '#E8EAF0' }}
+                    style={{ width: '100%', padding: '8px 12px', borderRadius: '6px', backgroundColor: '#121214', border: '1px solid rgba(255, 255, 255, 0.10)', color: '#F5F5F7' }}
                   />
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px', paddingTop: '18px' }}>
@@ -228,21 +237,21 @@ export function EditModal({
                     id="gearIsPublished"
                     checked={formData.isPublished !== false}
                     onChange={(e) => setFormData({ ...formData, isPublished: e.target.checked })}
-                    style={{ width: '16px', height: '16px', accentColor: '#00E5FF', cursor: 'pointer' }}
+                    style={{ width: '16px', height: '16px', accentColor: '#2997FF', cursor: 'pointer' }}
                   />
-                  <label htmlFor="gearIsPublished" style={{ fontSize: '12px', color: '#E8EAF0', cursor: 'pointer' }}>
+                  <label htmlFor="gearIsPublished" style={{ fontSize: '12px', color: '#F5F5F7', cursor: 'pointer' }}>
                     Publish to Live Site
                   </label>
                 </div>
               </div>
               <div>
-                <label style={{ display: 'block', fontSize: '11px', color: '#9AA3B5', marginBottom: '4px' }}>Equipment Image URL</label>
+                <label style={{ display: 'block', fontSize: '11px', color: '#86868B', marginBottom: '4px' }}>Equipment Image URL</label>
                 <input
                   type="text"
                   placeholder="e.g. https://images.unsplash.com/... or /images/gear/oscilloscope.jpg"
                   value={formData.imageUrl || ''}
                   onChange={(e) => setFormData({ ...formData, imageUrl: e.target.value })}
-                  style={{ width: '100%', padding: '8px 12px', borderRadius: '6px', backgroundColor: '#07080B', border: '1px solid #232838', color: '#E8EAF0' }}
+                  style={{ width: '100%', padding: '8px 12px', borderRadius: '6px', backgroundColor: '#121214', border: '1px solid rgba(255, 255, 255, 0.10)', color: '#F5F5F7' }}
                 />
               </div>
             </>
@@ -252,28 +261,28 @@ export function EditModal({
           {type === 'gallery' && (
             <>
               <div>
-                <label style={{ display: 'block', fontSize: '11px', color: '#9AA3B5', marginBottom: '4px' }}>Dispatch / Photo Title *</label>
+                <label style={{ display: 'block', fontSize: '11px', color: '#86868B', marginBottom: '4px' }}>Dispatch / Photo Title *</label>
                 <input
                   required
                   type="text"
                   placeholder="e.g. Smart India Hackathon 2024 Grand Finale Stage"
                   value={formData.title || ''}
                   onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                  style={{ width: '100%', padding: '8px 12px', borderRadius: '6px', backgroundColor: '#07080B', border: '1px solid #232838', color: '#E8EAF0' }}
+                  style={{ width: '100%', padding: '8px 12px', borderRadius: '6px', backgroundColor: '#121214', border: '1px solid rgba(255, 255, 255, 0.10)', color: '#F5F5F7' }}
                 />
               </div>
               <div>
-                <label style={{ display: 'block', fontSize: '11px', color: '#9AA3B5', marginBottom: '4px' }}>Image URL *</label>
+                <label style={{ display: 'block', fontSize: '11px', color: '#86868B', marginBottom: '4px' }}>Image URL *</label>
                 <input
                   required
                   type="url"
                   placeholder="e.g. https://images.unsplash.com/... or /images/gallery/sih-stage.jpg"
                   value={formData.imageUrl || ''}
                   onChange={(e) => setFormData({ ...formData, imageUrl: e.target.value })}
-                  style={{ width: '100%', padding: '8px 12px', borderRadius: '6px', backgroundColor: '#07080B', border: '1px solid #232838', color: '#E8EAF0' }}
+                  style={{ width: '100%', padding: '8px 12px', borderRadius: '6px', backgroundColor: '#121214', border: '1px solid rgba(255, 255, 255, 0.10)', color: '#F5F5F7' }}
                 />
                 {formData.imageUrl && (
-                  <div style={{ marginTop: '8px', width: '100%', height: '140px', borderRadius: '6px', overflow: 'hidden', border: '1px solid #232838', backgroundColor: '#000' }}>
+                  <div style={{ marginTop: '8px', width: '100%', height: '140px', borderRadius: '6px', overflow: 'hidden', border: '1px solid rgba(255, 255, 255, 0.10)', backgroundColor: '#000' }}>
                     <img
                       src={formData.imageUrl}
                       alt="Preview"
@@ -284,23 +293,23 @@ export function EditModal({
                 )}
               </div>
               <div>
-                <label style={{ display: 'block', fontSize: '11px', color: '#9AA3B5', marginBottom: '4px' }}>Caption & Technical Context *</label>
+                <label style={{ display: 'block', fontSize: '11px', color: '#86868B', marginBottom: '4px' }}>Caption & Technical Context *</label>
                 <textarea
                   required
                   rows={3}
                   placeholder="e.g. TRAIC autonomous rover deployment at national hackathon finals after 36 hours of non-stop testing."
                   value={formData.caption || ''}
                   onChange={(e) => setFormData({ ...formData, caption: e.target.value })}
-                  style={{ width: '100%', padding: '8px 12px', borderRadius: '6px', backgroundColor: '#07080B', border: '1px solid #232838', color: '#E8EAF0' }}
+                  style={{ width: '100%', padding: '8px 12px', borderRadius: '6px', backgroundColor: '#121214', border: '1px solid rgba(255, 255, 255, 0.10)', color: '#F5F5F7' }}
                 />
               </div>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
                 <div>
-                  <label style={{ display: 'block', fontSize: '11px', color: '#9AA3B5', marginBottom: '4px' }}>Category *</label>
+                  <label style={{ display: 'block', fontSize: '11px', color: '#86868B', marginBottom: '4px' }}>Category *</label>
                   <select
                     value={formData.category || 'ROBOTICS'}
                     onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                    style={{ width: '100%', padding: '8px 12px', borderRadius: '6px', backgroundColor: '#07080B', border: '1px solid #232838', color: '#E8EAF0' }}
+                    style={{ width: '100%', padding: '8px 12px', borderRadius: '6px', backgroundColor: '#121214', border: '1px solid rgba(255, 255, 255, 0.10)', color: '#F5F5F7' }}
                   >
                     <option value="ROBOTICS">ROBOTICS</option>
                     <option value="FABRICATION">FABRICATION</option>
@@ -310,41 +319,41 @@ export function EditModal({
                   </select>
                 </div>
                 <div>
-                  <label style={{ display: 'block', fontSize: '11px', color: '#9AA3B5', marginBottom: '4px' }}>Date (YYYY-MM-DD) *</label>
+                  <label style={{ display: 'block', fontSize: '11px', color: '#86868B', marginBottom: '4px' }}>Date (YYYY-MM-DD) *</label>
                   <input
                     required
                     type="text"
                     placeholder="2024-12-20"
                     value={formData.date || '2024-12-20'}
                     onChange={(e) => setFormData({ ...formData, date: e.target.value })}
-                    style={{ width: '100%', padding: '8px 12px', borderRadius: '6px', backgroundColor: '#07080B', border: '1px solid #232838', color: '#E8EAF0' }}
+                    style={{ width: '100%', padding: '8px 12px', borderRadius: '6px', backgroundColor: '#121214', border: '1px solid rgba(255, 255, 255, 0.10)', color: '#F5F5F7' }}
                   />
                 </div>
               </div>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
                 <div>
-                  <label style={{ display: 'block', fontSize: '11px', color: '#9AA3B5', marginBottom: '4px' }}>Location (e.g. Lab 402, SIH Stage)</label>
+                  <label style={{ display: 'block', fontSize: '11px', color: '#86868B', marginBottom: '4px' }}>Location (e.g. Lab 402, SIH Stage)</label>
                   <input
                     type="text"
                     placeholder="e.g. Lab 402 - Robotics Bay"
                     value={formData.location || ''}
                     onChange={(e) => setFormData({ ...formData, location: e.target.value })}
-                    style={{ width: '100%', padding: '8px 12px', borderRadius: '6px', backgroundColor: '#07080B', border: '1px solid #232838', color: '#E8EAF0' }}
+                    style={{ width: '100%', padding: '8px 12px', borderRadius: '6px', backgroundColor: '#121214', border: '1px solid rgba(255, 255, 255, 0.10)', color: '#F5F5F7' }}
                   />
                 </div>
                 <div>
-                  <label style={{ display: 'block', fontSize: '11px', color: '#9AA3B5', marginBottom: '4px' }}>Associated Project Slug (Optional)</label>
+                  <label style={{ display: 'block', fontSize: '11px', color: '#86868B', marginBottom: '4px' }}>Associated Project Slug (Optional)</label>
                   <input
                     type="text"
                     placeholder="e.g. autonomous-rover-v2"
                     value={formData.projectSlug || ''}
                     onChange={(e) => setFormData({ ...formData, projectSlug: e.target.value })}
-                    style={{ width: '100%', padding: '8px 12px', borderRadius: '6px', backgroundColor: '#07080B', border: '1px solid #232838', color: '#E8EAF0' }}
+                    style={{ width: '100%', padding: '8px 12px', borderRadius: '6px', backgroundColor: '#121214', border: '1px solid rgba(255, 255, 255, 0.10)', color: '#F5F5F7' }}
                   />
                 </div>
               </div>
               <div>
-                <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontSize: '12px', color: '#E8EAF0' }}>
+                <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontSize: '12px', color: '#F5F5F7' }}>
                   <input
                     type="checkbox"
                     checked={formData.featured === true}
@@ -360,75 +369,75 @@ export function EditModal({
           {type === 'banners' && (
             <>
               <div>
-                <label style={{ display: 'block', fontSize: '11px', color: '#9AA3B5', marginBottom: '4px' }}>Banner Title *</label>
+                <label style={{ display: 'block', fontSize: '11px', color: '#86868B', marginBottom: '4px' }}>Banner Title *</label>
                 <input
                   required
                   type="text"
                   placeholder="e.g. 2025 Cohort Announcement"
                   value={formData.title || ''}
                   onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                  style={{ width: '100%', padding: '8px 12px', borderRadius: '6px', backgroundColor: '#07080B', border: '1px solid #232838', color: '#E8EAF0' }}
+                  style={{ width: '100%', padding: '8px 12px', borderRadius: '6px', backgroundColor: '#121214', border: '1px solid rgba(255, 255, 255, 0.10)', color: '#F5F5F7' }}
                 />
               </div>
               <div>
-                <label style={{ display: 'block', fontSize: '11px', color: '#9AA3B5', marginBottom: '4px' }}>Banner Alert Message *</label>
+                <label style={{ display: 'block', fontSize: '11px', color: '#86868B', marginBottom: '4px' }}>Banner Alert Message *</label>
                 <textarea
                   required
                   rows={2}
                   placeholder="e.g. Applications for the 2025 cohort are officially open! Apply before the deadline."
                   value={formData.message || ''}
                   onChange={(e) => setFormData({ ...formData, message: e.target.value })}
-                  style={{ width: '100%', padding: '8px 12px', borderRadius: '6px', backgroundColor: '#07080B', border: '1px solid #232838', color: '#E8EAF0' }}
+                  style={{ width: '100%', padding: '8px 12px', borderRadius: '6px', backgroundColor: '#121214', border: '1px solid rgba(255, 255, 255, 0.10)', color: '#F5F5F7' }}
                 />
               </div>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
                 <div>
-                  <label style={{ display: 'block', fontSize: '11px', color: '#9AA3B5', marginBottom: '4px' }}>Banner Type *</label>
+                  <label style={{ display: 'block', fontSize: '11px', color: '#86868B', marginBottom: '4px' }}>Banner Type *</label>
                   <select
                     value={formData.type || 'ANNOUNCEMENT'}
                     onChange={(e) => setFormData({ ...formData, type: e.target.value })}
-                    style={{ width: '100%', padding: '8px 12px', borderRadius: '6px', backgroundColor: '#07080B', border: '1px solid #232838', color: '#E8EAF0' }}
+                    style={{ width: '100%', padding: '8px 12px', borderRadius: '6px', backgroundColor: '#121214', border: '1px solid rgba(255, 255, 255, 0.10)', color: '#F5F5F7' }}
                   >
-                    <option value="ANNOUNCEMENT">ANNOUNCEMENT (Amber Sparkles)</option>
-                    <option value="EVENT">EVENT (Cyan Calendar)</option>
+                    <option value="ANNOUNCEMENT">ANNOUNCEMENT (Amber Notice)</option>
+                    <option value="EVENT">EVENT (Event Ribbon)</option>
                     <option value="URGENT">URGENT (Red Warning)</option>
-                    <option value="ACHIEVEMENT">ACHIEVEMENT (Green Trophy)</option>
+                    <option value="ACHIEVEMENT">ACHIEVEMENT (Green Laurels)</option>
                   </select>
                 </div>
                 <div>
-                  <label style={{ display: 'block', fontSize: '11px', color: '#9AA3B5', marginBottom: '4px' }}>Priority (1 = Highest)</label>
+                  <label style={{ display: 'block', fontSize: '11px', color: '#86868B', marginBottom: '4px' }}>Priority (1 = Highest)</label>
                   <input
                     type="number"
                     value={formData.priority || 1}
                     onChange={(e) => setFormData({ ...formData, priority: e.target.value })}
-                    style={{ width: '100%', padding: '8px 12px', borderRadius: '6px', backgroundColor: '#07080B', border: '1px solid #232838', color: '#E8EAF0' }}
+                    style={{ width: '100%', padding: '8px 12px', borderRadius: '6px', backgroundColor: '#121214', border: '1px solid rgba(255, 255, 255, 0.10)', color: '#F5F5F7' }}
                   />
                 </div>
               </div>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
                 <div>
-                  <label style={{ display: 'block', fontSize: '11px', color: '#9AA3B5', marginBottom: '4px' }}>Link URL</label>
+                  <label style={{ display: 'block', fontSize: '11px', color: '#86868B', marginBottom: '4px' }}>Link URL</label>
                   <input
                     type="text"
                     placeholder="e.g. /join or /events"
                     value={formData.linkUrl || ''}
                     onChange={(e) => setFormData({ ...formData, linkUrl: e.target.value })}
-                    style={{ width: '100%', padding: '8px 12px', borderRadius: '6px', backgroundColor: '#07080B', border: '1px solid #232838', color: '#E8EAF0' }}
+                    style={{ width: '100%', padding: '8px 12px', borderRadius: '6px', backgroundColor: '#121214', border: '1px solid rgba(255, 255, 255, 0.10)', color: '#F5F5F7' }}
                   />
                 </div>
                 <div>
-                  <label style={{ display: 'block', fontSize: '11px', color: '#9AA3B5', marginBottom: '4px' }}>Link CTA Button Text</label>
+                  <label style={{ display: 'block', fontSize: '11px', color: '#86868B', marginBottom: '4px' }}>Link CTA Button Text</label>
                   <input
                     type="text"
                     placeholder="e.g. Apply Now"
                     value={formData.linkText || ''}
                     onChange={(e) => setFormData({ ...formData, linkText: e.target.value })}
-                    style={{ width: '100%', padding: '8px 12px', borderRadius: '6px', backgroundColor: '#07080B', border: '1px solid #232838', color: '#E8EAF0' }}
+                    style={{ width: '100%', padding: '8px 12px', borderRadius: '6px', backgroundColor: '#121214', border: '1px solid rgba(255, 255, 255, 0.10)', color: '#F5F5F7' }}
                   />
                 </div>
               </div>
               <div>
-                <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontSize: '12px', color: '#E8EAF0' }}>
+                <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontSize: '12px', color: '#F5F5F7' }}>
                   <input
                     type="checkbox"
                     checked={formData.isActive !== false}
@@ -444,43 +453,43 @@ export function EditModal({
           {type === 'projects' && (
             <>
               <div>
-                <label style={{ display: 'block', fontSize: '11px', color: '#9AA3B5', marginBottom: '4px' }}>Title *</label>
+                <label style={{ display: 'block', fontSize: '11px', color: '#86868B', marginBottom: '4px' }}>Title *</label>
                 <input
                   required
                   type="text"
                   value={formData.title || ''}
                   onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                  style={{ width: '100%', padding: '8px 12px', borderRadius: '6px', backgroundColor: '#07080B', border: '1px solid #232838', color: '#E8EAF0' }}
+                  style={{ width: '100%', padding: '8px 12px', borderRadius: '6px', backgroundColor: '#121214', border: '1px solid rgba(255, 255, 255, 0.10)', color: '#F5F5F7' }}
                 />
               </div>
               <div>
-                <label style={{ display: 'block', fontSize: '11px', color: '#9AA3B5', marginBottom: '4px' }}>Slug (lowercase, hyphens) *</label>
+                <label style={{ display: 'block', fontSize: '11px', color: '#86868B', marginBottom: '4px' }}>Slug (lowercase, hyphens) *</label>
                 <input
                   required
                   type="text"
                   placeholder="e.g. autonomous-rover-v2"
                   value={formData.slug || ''}
                   onChange={(e) => setFormData({ ...formData, slug: e.target.value })}
-                  style={{ width: '100%', padding: '8px 12px', borderRadius: '6px', backgroundColor: '#07080B', border: '1px solid #232838', color: '#E8EAF0' }}
+                  style={{ width: '100%', padding: '8px 12px', borderRadius: '6px', backgroundColor: '#121214', border: '1px solid rgba(255, 255, 255, 0.10)', color: '#F5F5F7' }}
                 />
               </div>
               <div>
-                <label style={{ display: 'block', fontSize: '11px', color: '#9AA3B5', marginBottom: '4px' }}>Tagline *</label>
+                <label style={{ display: 'block', fontSize: '11px', color: '#86868B', marginBottom: '4px' }}>Tagline *</label>
                 <input
                   required
                   type="text"
                   value={formData.tagline || ''}
                   onChange={(e) => setFormData({ ...formData, tagline: e.target.value })}
-                  style={{ width: '100%', padding: '8px 12px', borderRadius: '6px', backgroundColor: '#07080B', border: '1px solid #232838', color: '#E8EAF0' }}
+                  style={{ width: '100%', padding: '8px 12px', borderRadius: '6px', backgroundColor: '#121214', border: '1px solid rgba(255, 255, 255, 0.10)', color: '#F5F5F7' }}
                 />
               </div>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
                 <div>
-                  <label style={{ display: 'block', fontSize: '11px', color: '#9AA3B5', marginBottom: '4px' }}>Category *</label>
+                  <label style={{ display: 'block', fontSize: '11px', color: '#86868B', marginBottom: '4px' }}>Category *</label>
                   <select
                     value={formData.category || 'HARDWARE'}
                     onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                    style={{ width: '100%', padding: '8px 12px', borderRadius: '6px', backgroundColor: '#07080B', border: '1px solid #232838', color: '#E8EAF0' }}
+                    style={{ width: '100%', padding: '8px 12px', borderRadius: '6px', backgroundColor: '#121214', border: '1px solid rgba(255, 255, 255, 0.10)', color: '#F5F5F7' }}
                   >
                     <option value="HARDWARE">HARDWARE</option>
                     <option value="SOFTWARE">SOFTWARE</option>
@@ -488,74 +497,57 @@ export function EditModal({
                   </select>
                 </div>
                 <div>
-                  <label style={{ display: 'block', fontSize: '11px', color: '#9AA3B5', marginBottom: '4px' }}>Year *</label>
+                  <label style={{ display: 'block', fontSize: '11px', color: '#86868B', marginBottom: '4px' }}>Year *</label>
                   <input
                     required
                     type="number"
                     value={formData.year || 2024}
                     onChange={(e) => setFormData({ ...formData, year: e.target.value })}
-                    style={{ width: '100%', padding: '8px 12px', borderRadius: '6px', backgroundColor: '#07080B', border: '1px solid #232838', color: '#E8EAF0' }}
+                    style={{ width: '100%', padding: '8px 12px', borderRadius: '6px', backgroundColor: '#121214', border: '1px solid rgba(255, 255, 255, 0.10)', color: '#F5F5F7' }}
                   />
                 </div>
               </div>
 
-              {/* 3D Asset URL field */}
-              <div style={{ padding: '12px', backgroundColor: '#0D0F14', border: '1px solid rgba(56, 189, 248, 0.3)', borderRadius: '8px' }}>
-                <label style={{ display: 'block', fontSize: '11px', color: '#38BDF8', fontWeight: 700, marginBottom: '4px' }}>
-                  3D Model Asset URL (.glb file)
-                </label>
-                <input
-                  type="text"
-                  placeholder="e.g. /models/rover.glb or https://.../board.glb"
-                  value={formData.model3dAssetUrl || ''}
-                  onChange={(e) => setFormData({ ...formData, model3dAssetUrl: e.target.value })}
-                  style={{ width: '100%', padding: '8px 12px', borderRadius: '6px', backgroundColor: '#07080B', border: '1px solid #232838', color: '#E8EAF0' }}
-                />
-                <div style={{ fontSize: '11px', color: '#9AA3B5', marginTop: '4px' }}>
-                  Place your file in <code>apps/web/public/models/</code> and reference it as <code>/models/filename.glb</code>.
-                </div>
-              </div>
-
               <div>
-                <label style={{ display: 'block', fontSize: '11px', color: '#9AA3B5', marginBottom: '4px' }}>Tech Stack (comma-separated)</label>
+                <label style={{ display: 'block', fontSize: '11px', color: '#86868B', marginBottom: '4px' }}>Tech Stack (comma-separated)</label>
                 <input
                   type="text"
                   placeholder="ROS2, C++, LiDAR, CAN Bus"
                   value={Array.isArray(formData.techStack) ? formData.techStack.join(', ') : formData.techStack || ''}
                   onChange={(e) => setFormData({ ...formData, techStack: e.target.value })}
-                  style={{ width: '100%', padding: '8px 12px', borderRadius: '6px', backgroundColor: '#07080B', border: '1px solid #232838', color: '#E8EAF0' }}
+                  style={{ width: '100%', padding: '8px 12px', borderRadius: '6px', backgroundColor: '#121214', border: '1px solid rgba(255, 255, 255, 0.10)', color: '#F5F5F7' }}
                 />
               </div>
               <div>
-                <label style={{ display: 'block', fontSize: '11px', color: '#9AA3B5', marginBottom: '4px' }}>Description / Markdown *</label>
+                <label style={{ display: 'block', fontSize: '11px', color: '#86868B', marginBottom: '4px' }}>Description / Markdown *</label>
                 <textarea
                   required
                   rows={4}
                   placeholder="Describe this project, its goals, hardware used, outcomes..."
                   value={formData.descriptionMd || ''}
                   onChange={(e) => setFormData({ ...formData, descriptionMd: e.target.value })}
-                  style={{ width: '100%', padding: '8px 12px', borderRadius: '6px', backgroundColor: '#07080B', border: '1px solid #232838', color: '#E8EAF0' }}
+                  style={{ width: '100%', padding: '8px 12px', borderRadius: '6px', backgroundColor: '#121214', border: '1px solid rgba(255, 255, 255, 0.10)', color: '#F5F5F7' }}
                 />
               </div>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
                 <div>
-                  <label style={{ display: 'block', fontSize: '11px', color: '#9AA3B5', marginBottom: '4px' }}>GitHub Repo URL</label>
+                  <label style={{ display: 'block', fontSize: '11px', color: '#86868B', marginBottom: '4px' }}>GitHub Repo URL</label>
                   <input
                     type="text"
                     placeholder="https://github.com/TRAIC-community/..."
                     value={formData.repoUrl || ''}
                     onChange={(e) => setFormData({ ...formData, repoUrl: e.target.value })}
-                    style={{ width: '100%', padding: '8px 12px', borderRadius: '6px', backgroundColor: '#07080B', border: '1px solid #232838', color: '#E8EAF0' }}
+                    style={{ width: '100%', padding: '8px 12px', borderRadius: '6px', backgroundColor: '#121214', border: '1px solid rgba(255, 255, 255, 0.10)', color: '#F5F5F7' }}
                   />
                 </div>
                 <div>
-                  <label style={{ display: 'block', fontSize: '11px', color: '#9AA3B5', marginBottom: '4px' }}>Live Demo / Video URL</label>
+                  <label style={{ display: 'block', fontSize: '11px', color: '#86868B', marginBottom: '4px' }}>Live Demo / Video URL</label>
                   <input
                     type="text"
                     placeholder="https://demo.traic.in/... or YouTube link"
                     value={formData.demoUrl || ''}
                     onChange={(e) => setFormData({ ...formData, demoUrl: e.target.value })}
-                    style={{ width: '100%', padding: '8px 12px', borderRadius: '6px', backgroundColor: '#07080B', border: '1px solid #232838', color: '#E8EAF0' }}
+                    style={{ width: '100%', padding: '8px 12px', borderRadius: '6px', backgroundColor: '#121214', border: '1px solid rgba(255, 255, 255, 0.10)', color: '#F5F5F7' }}
                   />
                 </div>
               </div>
@@ -563,18 +555,18 @@ export function EditModal({
               {/* Publication Status & Featured */}
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
                 <div>
-                  <label style={{ display: 'block', fontSize: '11px', color: '#9AA3B5', marginBottom: '4px' }}>Publication Status *</label>
+                  <label style={{ display: 'block', fontSize: '11px', color: '#86868B', marginBottom: '4px' }}>Publication Status *</label>
                   <select
                     value={formData.status || 'DRAFT'}
                     onChange={(e) => setFormData({ ...formData, status: e.target.value })}
-                    style={{ width: '100%', padding: '8px 12px', borderRadius: '6px', backgroundColor: '#07080B', border: '1px solid #232838', color: '#E8EAF0' }}
+                    style={{ width: '100%', padding: '8px 12px', borderRadius: '6px', backgroundColor: '#121214', border: '1px solid rgba(255, 255, 255, 0.10)', color: '#F5F5F7' }}
                   >
                     <option value="DRAFT">DRAFT (Hidden from Public)</option>
                     <option value="PUBLISHED">PUBLISHED (Live on Public Website)</option>
                   </select>
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', paddingTop: '18px' }}>
-                  <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontSize: '12px', color: '#E8EAF0' }}>
+                  <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontSize: '12px', color: '#F5F5F7' }}>
                     <input
                       type="checkbox"
                       checked={formData.featured === true}
@@ -586,7 +578,7 @@ export function EditModal({
               </div>
 
               {/* Hardware Specifications Builder */}
-              <div style={{ padding: '14px', backgroundColor: '#0D0F14', border: '1px solid #232838', borderRadius: '8px' }}>
+              <div style={{ padding: '14px', backgroundColor: '#161618', border: '1px solid rgba(255, 255, 255, 0.10)', borderRadius: '8px' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
                   <label style={{ fontSize: '12px', fontWeight: 700, color: '#38BDF8' }}>
                     Technical Specifications ({Array.isArray(formData.specs) ? formData.specs.length : 0})
@@ -597,7 +589,7 @@ export function EditModal({
                       const cur = Array.isArray(formData.specs) ? [...formData.specs] : [];
                       setFormData({ ...formData, specs: [...cur, { label: '', value: '' }] });
                     }}
-                    style={{ backgroundColor: '#1A2338', border: '1px solid #28344D', color: '#38BDF8', padding: '4px 10px', borderRadius: '4px', fontSize: '11px', cursor: 'pointer', fontWeight: 700 }}
+                    style={{ backgroundColor: 'rgba(0, 113, 227, 0.15)', border: '1px solid rgba(0, 113, 227, 0.35)', color: '#38BDF8', padding: '4px 10px', borderRadius: '4px', fontSize: '11px', cursor: 'pointer', fontWeight: 700 }}
                   >
                     + Add Spec Row
                   </button>
@@ -618,7 +610,7 @@ export function EditModal({
                           specs[idx] = { ...specs[idx], label: e.target.value };
                           setFormData({ ...formData, specs });
                         }}
-                        style={{ flex: 1, padding: '6px 10px', borderRadius: '4px', backgroundColor: '#07080B', border: '1px solid #232838', color: '#E8EAF0', fontSize: '12px' }}
+                        style={{ flex: 1, padding: '6px 10px', borderRadius: '4px', backgroundColor: '#121214', border: '1px solid rgba(255, 255, 255, 0.10)', color: '#F5F5F7', fontSize: '12px' }}
                       />
                       <input
                         type="text"
@@ -629,7 +621,7 @@ export function EditModal({
                           specs[idx] = { ...specs[idx], value: e.target.value };
                           setFormData({ ...formData, specs });
                         }}
-                        style={{ flex: 2, padding: '6px 10px', borderRadius: '4px', backgroundColor: '#07080B', border: '1px solid #232838', color: '#E8EAF0', fontSize: '12px' }}
+                        style={{ flex: 2, padding: '6px 10px', borderRadius: '4px', backgroundColor: '#121214', border: '1px solid rgba(255, 255, 255, 0.10)', color: '#F5F5F7', fontSize: '12px' }}
                       />
                       <button
                         type="button"
@@ -647,9 +639,9 @@ export function EditModal({
               </div>
 
               {/* Bill of Materials (BOM) Builder */}
-              <div style={{ padding: '14px', backgroundColor: '#0D0F14', border: '1px solid #232838', borderRadius: '8px' }}>
+              <div style={{ padding: '14px', backgroundColor: '#161618', border: '1px solid rgba(255, 255, 255, 0.10)', borderRadius: '8px' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
-                  <label style={{ fontSize: '12px', fontWeight: 700, color: '#00E5FF' }}>
+                  <label style={{ fontSize: '12px', fontWeight: 700, color: '#2997FF' }}>
                     Bill of Materials (BOM) ({Array.isArray(formData.bom) ? formData.bom.length : 0} Components)
                   </label>
                   <button
@@ -658,7 +650,7 @@ export function EditModal({
                       const cur = Array.isArray(formData.bom) ? [...formData.bom] : [];
                       setFormData({ ...formData, bom: [...cur, { component: '', partNumber: '', function: '' }] });
                     }}
-                    style={{ backgroundColor: '#1A2338', border: '1px solid #28344D', color: '#00E5FF', padding: '4px 10px', borderRadius: '4px', fontSize: '11px', cursor: 'pointer', fontWeight: 700 }}
+                    style={{ backgroundColor: 'rgba(0, 113, 227, 0.15)', border: '1px solid rgba(0, 113, 227, 0.35)', color: '#2997FF', padding: '4px 10px', borderRadius: '4px', fontSize: '11px', cursor: 'pointer', fontWeight: 700 }}
                   >
                     + Add Part
                   </button>
@@ -679,7 +671,7 @@ export function EditModal({
                           bom[idx] = { ...bom[idx], component: e.target.value };
                           setFormData({ ...formData, bom });
                         }}
-                        style={{ padding: '6px 10px', borderRadius: '4px', backgroundColor: '#07080B', border: '1px solid #232838', color: '#E8EAF0', fontSize: '12px' }}
+                        style={{ padding: '6px 10px', borderRadius: '4px', backgroundColor: '#121214', border: '1px solid rgba(255, 255, 255, 0.10)', color: '#F5F5F7', fontSize: '12px' }}
                       />
                       <input
                         type="text"
@@ -690,7 +682,7 @@ export function EditModal({
                           bom[idx] = { ...bom[idx], partNumber: e.target.value };
                           setFormData({ ...formData, bom });
                         }}
-                        style={{ padding: '6px 10px', borderRadius: '4px', backgroundColor: '#07080B', border: '1px solid #232838', color: '#E8EAF0', fontSize: '12px' }}
+                        style={{ padding: '6px 10px', borderRadius: '4px', backgroundColor: '#121214', border: '1px solid rgba(255, 255, 255, 0.10)', color: '#F5F5F7', fontSize: '12px' }}
                       />
                       <input
                         type="text"
@@ -701,7 +693,7 @@ export function EditModal({
                           bom[idx] = { ...bom[idx], function: e.target.value };
                           setFormData({ ...formData, bom });
                         }}
-                        style={{ padding: '6px 10px', borderRadius: '4px', backgroundColor: '#07080B', border: '1px solid #232838', color: '#E8EAF0', fontSize: '12px' }}
+                        style={{ padding: '6px 10px', borderRadius: '4px', backgroundColor: '#121214', border: '1px solid rgba(255, 255, 255, 0.10)', color: '#F5F5F7', fontSize: '12px' }}
                       />
                       <button
                         type="button"
@@ -724,32 +716,32 @@ export function EditModal({
           {type === 'events' && (
             <>
               <div>
-                <label style={{ display: 'block', fontSize: '11px', color: '#9AA3B5', marginBottom: '4px' }}>Event Title *</label>
+                <label style={{ display: 'block', fontSize: '11px', color: '#86868B', marginBottom: '4px' }}>Event Title *</label>
                 <input
                   required
                   type="text"
                   value={formData.title || ''}
                   onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                  style={{ width: '100%', padding: '8px 12px', borderRadius: '6px', backgroundColor: '#07080B', border: '1px solid #232838', color: '#E8EAF0' }}
+                  style={{ width: '100%', padding: '8px 12px', borderRadius: '6px', backgroundColor: '#121214', border: '1px solid rgba(255, 255, 255, 0.10)', color: '#F5F5F7' }}
                 />
               </div>
               <div>
-                <label style={{ display: 'block', fontSize: '11px', color: '#9AA3B5', marginBottom: '4px' }}>Slug *</label>
+                <label style={{ display: 'block', fontSize: '11px', color: '#86868B', marginBottom: '4px' }}>Slug *</label>
                 <input
                   required
                   type="text"
                   value={formData.slug || ''}
                   onChange={(e) => setFormData({ ...formData, slug: e.target.value })}
-                  style={{ width: '100%', padding: '8px 12px', borderRadius: '6px', backgroundColor: '#07080B', border: '1px solid #232838', color: '#E8EAF0' }}
+                  style={{ width: '100%', padding: '8px 12px', borderRadius: '6px', backgroundColor: '#121214', border: '1px solid rgba(255, 255, 255, 0.10)', color: '#F5F5F7' }}
                 />
               </div>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
                 <div>
-                  <label style={{ display: 'block', fontSize: '11px', color: '#9AA3B5', marginBottom: '4px' }}>Type *</label>
+                  <label style={{ display: 'block', fontSize: '11px', color: '#86868B', marginBottom: '4px' }}>Type *</label>
                   <select
                     value={formData.type || 'HACKATHON'}
                     onChange={(e) => setFormData({ ...formData, type: e.target.value })}
-                    style={{ width: '100%', padding: '8px 12px', borderRadius: '6px', backgroundColor: '#07080B', border: '1px solid #232838', color: '#E8EAF0' }}
+                    style={{ width: '100%', padding: '8px 12px', borderRadius: '6px', backgroundColor: '#121214', border: '1px solid rgba(255, 255, 255, 0.10)', color: '#F5F5F7' }}
                   >
                     <option value="HACKATHON">HACKATHON</option>
                     <option value="WORKSHOP">WORKSHOP</option>
@@ -758,11 +750,11 @@ export function EditModal({
                   </select>
                 </div>
                 <div>
-                  <label style={{ display: 'block', fontSize: '11px', color: '#9AA3B5', marginBottom: '4px' }}>Mode *</label>
+                  <label style={{ display: 'block', fontSize: '11px', color: '#86868B', marginBottom: '4px' }}>Mode *</label>
                   <select
                     value={formData.mode || 'OFFLINE'}
                     onChange={(e) => setFormData({ ...formData, mode: e.target.value })}
-                    style={{ width: '100%', padding: '8px 12px', borderRadius: '6px', backgroundColor: '#07080B', border: '1px solid #232838', color: '#E8EAF0' }}
+                    style={{ width: '100%', padding: '8px 12px', borderRadius: '6px', backgroundColor: '#121214', border: '1px solid rgba(255, 255, 255, 0.10)', color: '#F5F5F7' }}
                   >
                     <option value="OFFLINE">OFFLINE</option>
                     <option value="ONLINE">ONLINE</option>
@@ -772,64 +764,171 @@ export function EditModal({
               </div>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
                 <div>
-                  <label style={{ display: 'block', fontSize: '11px', color: '#9AA3B5', marginBottom: '4px' }}>Start Date & Time *</label>
+                  <label style={{ display: 'block', fontSize: '11px', color: '#86868B', marginBottom: '4px' }}>Start Date & Time *</label>
                   <input
                     required
                     type="text"
                     placeholder="2025-03-15T09:00:00.000Z or 2025-03-15"
                     value={formData.startsAt || ''}
                     onChange={(e) => setFormData({ ...formData, startsAt: e.target.value })}
-                    style={{ width: '100%', padding: '8px 12px', borderRadius: '6px', backgroundColor: '#07080B', border: '1px solid #232838', color: '#E8EAF0' }}
+                    style={{ width: '100%', padding: '8px 12px', borderRadius: '6px', backgroundColor: '#121214', border: '1px solid rgba(255, 255, 255, 0.10)', color: '#F5F5F7' }}
                   />
                 </div>
                 <div>
-                  <label style={{ display: 'block', fontSize: '11px', color: '#9AA3B5', marginBottom: '4px' }}>End Date & Time (optional)</label>
+                  <label style={{ display: 'block', fontSize: '11px', color: '#86868B', marginBottom: '4px' }}>End Date & Time (optional)</label>
                   <input
                     type="text"
                     placeholder="2025-03-16T18:00:00.000Z"
                     value={formData.endsAt || ''}
                     onChange={(e) => setFormData({ ...formData, endsAt: e.target.value })}
-                    style={{ width: '100%', padding: '8px 12px', borderRadius: '6px', backgroundColor: '#07080B', border: '1px solid #232838', color: '#E8EAF0' }}
+                    style={{ width: '100%', padding: '8px 12px', borderRadius: '6px', backgroundColor: '#121214', border: '1px solid rgba(255, 255, 255, 0.10)', color: '#F5F5F7' }}
                   />
                 </div>
               </div>
               <div>
-                <label style={{ display: 'block', fontSize: '11px', color: '#9AA3B5', marginBottom: '4px' }}>Venue *</label>
+                <label style={{ display: 'block', fontSize: '11px', color: '#86868B', marginBottom: '4px' }}>Venue *</label>
                 <input
                   required
                   type="text"
                   placeholder="e.g. College Auditorium, Online - Google Meet"
                   value={formData.venue || ''}
                   onChange={(e) => setFormData({ ...formData, venue: e.target.value })}
-                  style={{ width: '100%', padding: '8px 12px', borderRadius: '6px', backgroundColor: '#07080B', border: '1px solid #232838', color: '#E8EAF0' }}
+                  style={{ width: '100%', padding: '8px 12px', borderRadius: '6px', backgroundColor: '#121214', border: '1px solid rgba(255, 255, 255, 0.10)', color: '#F5F5F7' }}
                 />
               </div>
               <div>
-                <label style={{ display: 'block', fontSize: '11px', color: '#9AA3B5', marginBottom: '4px' }}>Registration URL</label>
+                <label style={{ display: 'block', fontSize: '11px', color: '#86868B', marginBottom: '4px' }}>Registration URL</label>
                 <input
                   type="text"
                   placeholder="/join or https://forms.google.com/..."
                   value={formData.registerUrl || ''}
                   onChange={(e) => setFormData({ ...formData, registerUrl: e.target.value })}
-                  style={{ width: '100%', padding: '8px 12px', borderRadius: '6px', backgroundColor: '#07080B', border: '1px solid #232838', color: '#E8EAF0' }}
+                  style={{ width: '100%', padding: '8px 12px', borderRadius: '6px', backgroundColor: '#121214', border: '1px solid rgba(255, 255, 255, 0.10)', color: '#F5F5F7' }}
                 />
               </div>
+
+              {/* Flexible Hackathon / Event Fields */}
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '12px' }}>
+                <div>
+                  <label style={{ display: 'block', fontSize: '11px', color: '#86868B', marginBottom: '4px' }}>Prize Pool / Awards</label>
+                  <input
+                    type="text"
+                    placeholder="e.g. ₹50,000 Cash Pool"
+                    value={formData.prizePool || ''}
+                    onChange={(e) => setFormData({ ...formData, prizePool: e.target.value })}
+                    style={{ width: '100%', padding: '8px 12px', borderRadius: '6px', backgroundColor: '#121214', border: '1px solid rgba(255, 255, 255, 0.10)', color: '#F5F5F7' }}
+                  />
+                </div>
+                <div>
+                  <label style={{ display: 'block', fontSize: '11px', color: '#86868B', marginBottom: '4px' }}>Team Structure</label>
+                  <input
+                    type="text"
+                    placeholder="e.g. 1–4 Builders"
+                    value={formData.teamSize || ''}
+                    onChange={(e) => setFormData({ ...formData, teamSize: e.target.value })}
+                    style={{ width: '100%', padding: '8px 12px', borderRadius: '6px', backgroundColor: '#121214', border: '1px solid rgba(255, 255, 255, 0.10)', color: '#F5F5F7' }}
+                  />
+                </div>
+                <div>
+                  <label style={{ display: 'block', fontSize: '11px', color: '#86868B', marginBottom: '4px' }}>Participant Capacity</label>
+                  <input
+                    type="number"
+                    placeholder="e.g. 150"
+                    value={formData.capacity || ''}
+                    onChange={(e) => setFormData({ ...formData, capacity: e.target.value })}
+                    style={{ width: '100%', padding: '8px 12px', borderRadius: '6px', backgroundColor: '#121214', border: '1px solid rgba(255, 255, 255, 0.10)', color: '#F5F5F7' }}
+                  />
+                </div>
+              </div>
+
               <div>
-                <label style={{ display: 'block', fontSize: '11px', color: '#9AA3B5', marginBottom: '4px' }}>Description *</label>
+                <label style={{ display: 'block', fontSize: '11px', color: '#86868B', marginBottom: '4px' }}>Hackathon Tracks / Challenge Domains (comma-separated)</label>
+                <input
+                  type="text"
+                  placeholder="Autonomous Robotics, Edge AI, PCB Design, Bare-Metal Linux"
+                  value={Array.isArray(formData.tracks) ? formData.tracks.join(', ') : formData.tracks || ''}
+                  onChange={(e) => setFormData({ ...formData, tracks: e.target.value })}
+                  style={{ width: '100%', padding: '8px 12px', borderRadius: '6px', backgroundColor: '#121214', border: '1px solid rgba(255, 255, 255, 0.10)', color: '#F5F5F7' }}
+                />
+              </div>
+
+              {/* Dynamic Schedule Milestone Builder */}
+              <div style={{ padding: '14px', backgroundColor: '#161618', border: '1px solid rgba(255, 255, 255, 0.10)', borderRadius: '8px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
+                  <label style={{ fontSize: '12px', fontWeight: 700, color: '#0071E3' }}>
+                    Schedule & Milestones ({Array.isArray(formData.schedule) ? formData.schedule.length : 0})
+                  </label>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const cur = Array.isArray(formData.schedule) ? [...formData.schedule] : [];
+                      setFormData({ ...formData, schedule: [...cur, { time: '', title: '', description: '' }] });
+                    }}
+                    style={{ backgroundColor: 'rgba(0, 113, 227, 0.15)', border: '1px solid rgba(0, 113, 227, 0.4)', color: '#2997FF', padding: '4px 10px', borderRadius: '4px', fontSize: '11px', cursor: 'pointer', fontWeight: 600 }}
+                  >
+                    + Add Milestone
+                  </button>
+                </div>
+                {(formData.schedule || []).length === 0 ? (
+                  <div style={{ fontSize: '11px', color: '#64748B', fontStyle: 'italic' }}>
+                    No schedule milestones configured. Click &quot;+ Add Milestone&quot; to add timeline phases.
+                  </div>
+                ) : (
+                  (formData.schedule || []).map((milestone: any, idx: number) => (
+                    <div key={idx} style={{ display: 'grid', gridTemplateColumns: '1fr 2fr auto', gap: '8px', marginBottom: '8px' }}>
+                      <input
+                        type="text"
+                        placeholder="Time (e.g. Day 1 · 10:00 AM)"
+                        value={milestone.time || ''}
+                        onChange={(e) => {
+                          const sched = [...formData.schedule];
+                          sched[idx] = { ...sched[idx], time: e.target.value };
+                          setFormData({ ...formData, schedule: sched });
+                        }}
+                        style={{ padding: '6px 10px', borderRadius: '4px', backgroundColor: '#121214', border: '1px solid rgba(255, 255, 255, 0.10)', color: '#F5F5F7', fontSize: '12px' }}
+                      />
+                      <input
+                        type="text"
+                        placeholder="Activity (e.g. Hardware Check-in & Tool Calibration)"
+                        value={milestone.title || ''}
+                        onChange={(e) => {
+                          const sched = [...formData.schedule];
+                          sched[idx] = { ...sched[idx], title: e.target.value };
+                          setFormData({ ...formData, schedule: sched });
+                        }}
+                        style={{ padding: '6px 10px', borderRadius: '4px', backgroundColor: '#121214', border: '1px solid rgba(255, 255, 255, 0.10)', color: '#F5F5F7', fontSize: '12px' }}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const sched = formData.schedule.filter((_: any, i: number) => i !== idx);
+                          setFormData({ ...formData, schedule: sched });
+                        }}
+                        style={{ backgroundColor: 'rgba(239, 68, 68, 0.1)', border: '1px solid rgba(239, 68, 68, 0.3)', color: '#EF4444', padding: '0 10px', borderRadius: '4px', cursor: 'pointer' }}
+                      >
+                        ✕
+                      </button>
+                    </div>
+                  ))
+                )}
+              </div>
+
+              <div>
+                <label style={{ display: 'block', fontSize: '11px', color: '#86868B', marginBottom: '4px' }}>Description *</label>
                 <textarea
                   required
                   rows={3}
                   value={formData.descriptionMd || ''}
                   onChange={(e) => setFormData({ ...formData, descriptionMd: e.target.value })}
-                  style={{ width: '100%', padding: '8px 12px', borderRadius: '6px', backgroundColor: '#07080B', border: '1px solid #232838', color: '#E8EAF0' }}
+                  style={{ width: '100%', padding: '8px 12px', borderRadius: '6px', backgroundColor: '#121214', border: '1px solid rgba(255, 255, 255, 0.10)', color: '#F5F5F7' }}
                 />
               </div>
               <div>
-                <label style={{ display: 'block', fontSize: '11px', color: '#9AA3B5', marginBottom: '4px' }}>Publication Status *</label>
+                <label style={{ display: 'block', fontSize: '11px', color: '#86868B', marginBottom: '4px' }}>Publication Status *</label>
                 <select
                   value={formData.status || 'PUBLISHED'}
                   onChange={(e) => setFormData({ ...formData, status: e.target.value })}
-                  style={{ width: '100%', padding: '8px 12px', borderRadius: '6px', backgroundColor: '#07080B', border: '1px solid #232838', color: '#E8EAF0' }}
+                  style={{ width: '100%', padding: '8px 12px', borderRadius: '6px', backgroundColor: '#121214', border: '1px solid rgba(255, 255, 255, 0.10)', color: '#F5F5F7' }}
                 >
                   <option value="PUBLISHED">PUBLISHED (Visible on Public Website)</option>
                   <option value="DRAFT">DRAFT (Hidden from Public Website)</option>
@@ -842,32 +941,32 @@ export function EditModal({
           {type === 'achievements' && (
             <>
               <div>
-                <label style={{ display: 'block', fontSize: '11px', color: '#9AA3B5', marginBottom: '4px' }}>Title *</label>
+                <label style={{ display: 'block', fontSize: '11px', color: '#86868B', marginBottom: '4px' }}>Title *</label>
                 <input
                   required
                   type="text"
                   value={formData.title || ''}
                   onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                  style={{ width: '100%', padding: '8px 12px', borderRadius: '6px', backgroundColor: '#07080B', border: '1px solid #232838', color: '#E8EAF0' }}
+                  style={{ width: '100%', padding: '8px 12px', borderRadius: '6px', backgroundColor: '#121214', border: '1px solid rgba(255, 255, 255, 0.10)', color: '#F5F5F7' }}
                 />
               </div>
               <div>
-                <label style={{ display: 'block', fontSize: '11px', color: '#9AA3B5', marginBottom: '4px' }}>Event Name *</label>
+                <label style={{ display: 'block', fontSize: '11px', color: '#86868B', marginBottom: '4px' }}>Event Name *</label>
                 <input
                   required
                   type="text"
                   value={formData.eventName || ''}
                   onChange={(e) => setFormData({ ...formData, eventName: e.target.value })}
-                  style={{ width: '100%', padding: '8px 12px', borderRadius: '6px', backgroundColor: '#07080B', border: '1px solid #232838', color: '#E8EAF0' }}
+                  style={{ width: '100%', padding: '8px 12px', borderRadius: '6px', backgroundColor: '#121214', border: '1px solid rgba(255, 255, 255, 0.10)', color: '#F5F5F7' }}
                 />
               </div>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
                 <div>
-                  <label style={{ display: 'block', fontSize: '11px', color: '#9AA3B5', marginBottom: '4px' }}>Level *</label>
+                  <label style={{ display: 'block', fontSize: '11px', color: '#86868B', marginBottom: '4px' }}>Level *</label>
                   <select
                     value={formData.level || 'NATIONAL'}
                     onChange={(e) => setFormData({ ...formData, level: e.target.value })}
-                    style={{ width: '100%', padding: '8px 12px', borderRadius: '6px', backgroundColor: '#07080B', border: '1px solid #232838', color: '#E8EAF0' }}
+                    style={{ width: '100%', padding: '8px 12px', borderRadius: '6px', backgroundColor: '#121214', border: '1px solid rgba(255, 255, 255, 0.10)', color: '#F5F5F7' }}
                   >
                     <option value="NATIONAL">NATIONAL</option>
                     <option value="INTERNATIONAL">INTERNATIONAL</option>
@@ -876,34 +975,34 @@ export function EditModal({
                   </select>
                 </div>
                 <div>
-                  <label style={{ display: 'block', fontSize: '11px', color: '#9AA3B5', marginBottom: '4px' }}>Rank / Honor *</label>
+                  <label style={{ display: 'block', fontSize: '11px', color: '#86868B', marginBottom: '4px' }}>Rank / Honor *</label>
                   <input
                     required
                     type="text"
                     placeholder="1st Prize, AIR 4, Winner..."
                     value={formData.rank || ''}
                     onChange={(e) => setFormData({ ...formData, rank: e.target.value })}
-                    style={{ width: '100%', padding: '8px 12px', borderRadius: '6px', backgroundColor: '#07080B', border: '1px solid #232838', color: '#E8EAF0' }}
+                    style={{ width: '100%', padding: '8px 12px', borderRadius: '6px', backgroundColor: '#121214', border: '1px solid rgba(255, 255, 255, 0.10)', color: '#F5F5F7' }}
                   />
                 </div>
               </div>
               <div>
-                <label style={{ display: 'block', fontSize: '11px', color: '#9AA3B5', marginBottom: '4px' }}>Date (YYYY-MM-DD) *</label>
+                <label style={{ display: 'block', fontSize: '11px', color: '#86868B', marginBottom: '4px' }}>Date (YYYY-MM-DD) *</label>
                 <input
                   required
                   type="text"
                   placeholder="2024-12-20"
                   value={formData.date || '2024-12-20'}
                   onChange={(e) => setFormData({ ...formData, date: e.target.value })}
-                  style={{ width: '100%', padding: '8px 12px', borderRadius: '6px', backgroundColor: '#07080B', border: '1px solid #232838', color: '#E8EAF0' }}
+                  style={{ width: '100%', padding: '8px 12px', borderRadius: '6px', backgroundColor: '#121214', border: '1px solid rgba(255, 255, 255, 0.10)', color: '#F5F5F7' }}
                 />
               </div>
               <div>
-                <label style={{ display: 'block', fontSize: '11px', color: '#9AA3B5', marginBottom: '4px' }}>Publication Status</label>
+                <label style={{ display: 'block', fontSize: '11px', color: '#86868B', marginBottom: '4px' }}>Publication Status</label>
                 <select
                   value={formData.status || 'PUBLISHED'}
                   onChange={(e) => setFormData({ ...formData, status: e.target.value })}
-                  style={{ width: '100%', padding: '8px 12px', borderRadius: '6px', backgroundColor: '#07080B', border: '1px solid #232838', color: '#E8EAF0' }}
+                  style={{ width: '100%', padding: '8px 12px', borderRadius: '6px', backgroundColor: '#121214', border: '1px solid rgba(255, 255, 255, 0.10)', color: '#F5F5F7' }}
                 >
                   <option value="PUBLISHED">PUBLISHED (Visible)</option>
                   <option value="DRAFT">DRAFT (Hidden)</option>
@@ -916,22 +1015,22 @@ export function EditModal({
           {type === 'members' && (
             <>
               <div>
-                <label style={{ display: 'block', fontSize: '11px', color: '#9AA3B5', marginBottom: '4px' }}>Name *</label>
+                <label style={{ display: 'block', fontSize: '11px', color: '#86868B', marginBottom: '4px' }}>Name *</label>
                 <input
                   required
                   type="text"
                   value={formData.name || ''}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  style={{ width: '100%', padding: '8px 12px', borderRadius: '6px', backgroundColor: '#07080B', border: '1px solid #232838', color: '#E8EAF0' }}
+                  style={{ width: '100%', padding: '8px 12px', borderRadius: '6px', backgroundColor: '#121214', border: '1px solid rgba(255, 255, 255, 0.10)', color: '#F5F5F7' }}
                 />
               </div>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
                 <div>
-                  <label style={{ display: 'block', fontSize: '11px', color: '#9AA3B5', marginBottom: '4px' }}>Position *</label>
+                  <label style={{ display: 'block', fontSize: '11px', color: '#86868B', marginBottom: '4px' }}>Position *</label>
                   <select
                     value={formData.position || 'MEMBER'}
                     onChange={(e) => setFormData({ ...formData, position: e.target.value })}
-                    style={{ width: '100%', padding: '8px 12px', borderRadius: '6px', backgroundColor: '#07080B', border: '1px solid #232838', color: '#E8EAF0' }}
+                    style={{ width: '100%', padding: '8px 12px', borderRadius: '6px', backgroundColor: '#121214', border: '1px solid rgba(255, 255, 255, 0.10)', color: '#F5F5F7' }}
                   >
                     <option value="COORDINATOR">COORDINATOR</option>
                     <option value="CO_COORDINATOR">CO_COORDINATOR</option>
@@ -940,32 +1039,32 @@ export function EditModal({
                   </select>
                 </div>
                 <div>
-                  <label style={{ display: 'block', fontSize: '11px', color: '#9AA3B5', marginBottom: '4px' }}>Academic Year *</label>
+                  <label style={{ display: 'block', fontSize: '11px', color: '#86868B', marginBottom: '4px' }}>Academic Year *</label>
                   <input
                     required
                     type="text"
                     placeholder="2024-2025"
                     value={formData.academicYear || '2024-2025'}
                     onChange={(e) => setFormData({ ...formData, academicYear: e.target.value })}
-                    style={{ width: '100%', padding: '8px 12px', borderRadius: '6px', backgroundColor: '#07080B', border: '1px solid #232838', color: '#E8EAF0' }}
+                    style={{ width: '100%', padding: '8px 12px', borderRadius: '6px', backgroundColor: '#121214', border: '1px solid rgba(255, 255, 255, 0.10)', color: '#F5F5F7' }}
                   />
                 </div>
               </div>
               <div>
-                <label style={{ display: 'block', fontSize: '11px', color: '#9AA3B5', marginBottom: '4px' }}>Bio</label>
+                <label style={{ display: 'block', fontSize: '11px', color: '#86868B', marginBottom: '4px' }}>Bio</label>
                 <textarea
                   rows={2}
                   value={formData.bio || ''}
                   onChange={(e) => setFormData({ ...formData, bio: e.target.value })}
-                  style={{ width: '100%', padding: '8px 12px', borderRadius: '6px', backgroundColor: '#07080B', border: '1px solid #232838', color: '#E8EAF0' }}
+                  style={{ width: '100%', padding: '8px 12px', borderRadius: '6px', backgroundColor: '#121214', border: '1px solid rgba(255, 255, 255, 0.10)', color: '#F5F5F7' }}
                 />
               </div>
               <div>
-                <label style={{ display: 'block', fontSize: '11px', color: '#9AA3B5', marginBottom: '4px' }}>Membership Status</label>
+                <label style={{ display: 'block', fontSize: '11px', color: '#86868B', marginBottom: '4px' }}>Membership Status</label>
                 <select
                   value={formData.status || 'PUBLISHED'}
                   onChange={(e) => setFormData({ ...formData, status: e.target.value })}
-                  style={{ width: '100%', padding: '8px 12px', borderRadius: '6px', backgroundColor: '#07080B', border: '1px solid #232838', color: '#E8EAF0' }}
+                  style={{ width: '100%', padding: '8px 12px', borderRadius: '6px', backgroundColor: '#121214', border: '1px solid rgba(255, 255, 255, 0.10)', color: '#F5F5F7' }}
                 >
                   <option value="PUBLISHED">PUBLISHED / ACTIVE (Visible on Team Page)</option>
                   <option value="DRAFT">DRAFT / HIDDEN (Hidden from Public)</option>
@@ -978,63 +1077,63 @@ export function EditModal({
           {type === 'alumni' && (
             <>
               <div>
-                <label style={{ display: 'block', fontSize: '11px', color: '#9AA3B5', marginBottom: '4px' }}>Name *</label>
+                <label style={{ display: 'block', fontSize: '11px', color: '#86868B', marginBottom: '4px' }}>Name *</label>
                 <input
                   required
                   type="text"
                   value={formData.name || ''}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  style={{ width: '100%', padding: '8px 12px', borderRadius: '6px', backgroundColor: '#07080B', border: '1px solid #232838', color: '#E8EAF0' }}
+                  style={{ width: '100%', padding: '8px 12px', borderRadius: '6px', backgroundColor: '#121214', border: '1px solid rgba(255, 255, 255, 0.10)', color: '#F5F5F7' }}
                 />
               </div>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
                 <div>
-                  <label style={{ display: 'block', fontSize: '11px', color: '#9AA3B5', marginBottom: '4px' }}>Batch Year (YYYY) *</label>
+                  <label style={{ display: 'block', fontSize: '11px', color: '#86868B', marginBottom: '4px' }}>Batch Year (YYYY) *</label>
                   <input
                     required
                     type="text"
                     placeholder="2023"
                     value={formData.batch || '2023'}
                     onChange={(e) => setFormData({ ...formData, batch: e.target.value })}
-                    style={{ width: '100%', padding: '8px 12px', borderRadius: '6px', backgroundColor: '#07080B', border: '1px solid #232838', color: '#E8EAF0' }}
+                    style={{ width: '100%', padding: '8px 12px', borderRadius: '6px', backgroundColor: '#121214', border: '1px solid rgba(255, 255, 255, 0.10)', color: '#F5F5F7' }}
                   />
                 </div>
                 <div>
-                  <label style={{ display: 'block', fontSize: '11px', color: '#9AA3B5', marginBottom: '4px' }}>Company *</label>
+                  <label style={{ display: 'block', fontSize: '11px', color: '#86868B', marginBottom: '4px' }}>Company *</label>
                   <input
                     required
                     type="text"
                     value={formData.company || ''}
                     onChange={(e) => setFormData({ ...formData, company: e.target.value })}
-                    style={{ width: '100%', padding: '8px 12px', borderRadius: '6px', backgroundColor: '#07080B', border: '1px solid #232838', color: '#E8EAF0' }}
+                    style={{ width: '100%', padding: '8px 12px', borderRadius: '6px', backgroundColor: '#121214', border: '1px solid rgba(255, 255, 255, 0.10)', color: '#F5F5F7' }}
                   />
                 </div>
               </div>
               <div>
-                <label style={{ display: 'block', fontSize: '11px', color: '#9AA3B5', marginBottom: '4px' }}>Current Role *</label>
+                <label style={{ display: 'block', fontSize: '11px', color: '#86868B', marginBottom: '4px' }}>Current Role *</label>
                 <input
                   required
                   type="text"
                   value={formData.currentRole || ''}
                   onChange={(e) => setFormData({ ...formData, currentRole: e.target.value })}
-                  style={{ width: '100%', padding: '8px 12px', borderRadius: '6px', backgroundColor: '#07080B', border: '1px solid #232838', color: '#E8EAF0' }}
+                  style={{ width: '100%', padding: '8px 12px', borderRadius: '6px', backgroundColor: '#121214', border: '1px solid rgba(255, 255, 255, 0.10)', color: '#F5F5F7' }}
                 />
               </div>
               <div>
-                <label style={{ display: 'block', fontSize: '11px', color: '#9AA3B5', marginBottom: '4px' }}>Quote / Testimonial</label>
+                <label style={{ display: 'block', fontSize: '11px', color: '#86868B', marginBottom: '4px' }}>Quote / Testimonial</label>
                 <textarea
                   rows={2}
                   value={formData.quote || ''}
                   onChange={(e) => setFormData({ ...formData, quote: e.target.value })}
-                  style={{ width: '100%', padding: '8px 12px', borderRadius: '6px', backgroundColor: '#07080B', border: '1px solid #232838', color: '#E8EAF0' }}
+                  style={{ width: '100%', padding: '8px 12px', borderRadius: '6px', backgroundColor: '#121214', border: '1px solid rgba(255, 255, 255, 0.10)', color: '#F5F5F7' }}
                 />
               </div>
               <div>
-                <label style={{ display: 'block', fontSize: '11px', color: '#9AA3B5', marginBottom: '4px' }}>Alumni Profile Visibility</label>
+                <label style={{ display: 'block', fontSize: '11px', color: '#86868B', marginBottom: '4px' }}>Alumni Profile Visibility</label>
                 <select
                   value={formData.status || 'PUBLISHED'}
                   onChange={(e) => setFormData({ ...formData, status: e.target.value })}
-                  style={{ width: '100%', padding: '8px 12px', borderRadius: '6px', backgroundColor: '#07080B', border: '1px solid #232838', color: '#E8EAF0' }}
+                  style={{ width: '100%', padding: '8px 12px', borderRadius: '6px', backgroundColor: '#121214', border: '1px solid rgba(255, 255, 255, 0.10)', color: '#F5F5F7' }}
                 >
                   <option value="PUBLISHED">PUBLISHED (Visible in Alumni Network)</option>
                   <option value="DRAFT">DRAFT (Hidden from Public)</option>
@@ -1047,13 +1146,13 @@ export function EditModal({
             <button
               type="button"
               onClick={onClose}
-              style={{ background: 'none', border: '1px solid #232838', color: '#9AA3B5', padding: '10px 20px', borderRadius: '6px', cursor: 'pointer', fontSize: '13px', flex: '1 1 auto', minWidth: '100px' }}
+              style={{ background: 'rgba(255, 255, 255, 0.06)', border: '1px solid rgba(255, 255, 255, 0.08)', color: '#F5F5F7', padding: '10px 20px', minHeight: '44px', borderRadius: '9999px', cursor: 'pointer', fontSize: '13px', fontWeight: 500, flex: '1 1 auto', minWidth: '100px' }}
             >
               Cancel
             </button>
             <button
               type="submit"
-              style={{ backgroundColor: '#00E5FF', color: '#030712', border: 'none', padding: '10px 24px', borderRadius: '6px', fontWeight: 700, fontSize: '13px', cursor: 'pointer', flex: '2 1 auto', minWidth: '140px' }}
+              style={{ backgroundColor: '#0071E3', color: '#FFFFFF', border: 'none', padding: '10px 24px', minHeight: '44px', borderRadius: '9999px', fontWeight: 600, fontSize: '13px', cursor: 'pointer', flex: '2 1 auto', minWidth: '140px', transition: 'background-color 0.15s ease' }}
             >
               Save Changes
             </button>

@@ -6,6 +6,7 @@ interface ApplicationDetailDrawerProps {
   onClose: () => void;
   onUpdateStatus: (id: string, status: string) => Promise<void>;
   onDelete: (id: string) => void;
+  onUpdateNotes?: (id: string, notes: string) => Promise<void>;
 }
 
 export function ApplicationDetailDrawer({
@@ -13,13 +14,18 @@ export function ApplicationDetailDrawer({
   onClose,
   onUpdateStatus,
   onDelete,
+  onUpdateNotes,
 }: ApplicationDetailDrawerProps) {
   const [updating, setUpdating] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [reviewNotes, setReviewNotes] = useState((application as any)?.reviewNotes || '');
+  const [savingNotes, setSavingNotes] = useState(false);
+  const [notesSaved, setNotesSaved] = useState(false);
 
   if (!application) return null;
 
   const currentStatus = (application as any).status || 'PENDING';
+  const skills: string[] = (application as any).skills || [];
 
   const handleStatusChange = async (newStatus: string) => {
     if (!application.id) return;
@@ -31,6 +37,18 @@ export function ApplicationDetailDrawer({
     }
   };
 
+  const handleSaveNotes = async () => {
+    if (!application.id || !onUpdateNotes) return;
+    setSavingNotes(true);
+    try {
+      await onUpdateNotes(application.id, reviewNotes);
+      setNotesSaved(true);
+      setTimeout(() => setNotesSaved(false), 2000);
+    } finally {
+      setSavingNotes(false);
+    }
+  };
+
   const handleCopyDetails = () => {
     const text = `TRAIC Induction Application
 Candidate: ${application.fullName}
@@ -39,12 +57,16 @@ Phone: ${application.phone}
 Student ID: ${application.studentId}
 Branch: ${application.branch} (Year ${application.yearOfStudy})
 Track: ${application.interest}
+Skills: ${skills.length > 0 ? skills.join(', ') : 'None specified'}
 Portfolio: ${application.githubOrPortfolio || 'N/A'}
 Status: ${currentStatus}
 Submitted: ${application.createdAt || 'N/A'}
 
 Statement of Purpose:
-${application.statementOfPurpose}`;
+${application.statementOfPurpose}
+
+Admin Review Notes:
+${reviewNotes || 'None'}`;
 
     navigator.clipboard.writeText(text);
     setCopied(true);
@@ -62,22 +84,18 @@ ${application.statementOfPurpose}`;
       })
     : 'Unknown date';
 
-  const relativeTime = application.createdAt
-    ? getRelativeTimeString(new Date(application.createdAt))
-    : '';
-
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'ACCEPTED':
-        return { bg: 'rgba(16, 185, 129, 0.15)', text: '#34D399', border: 'rgba(16, 185, 129, 0.4)' };
+        return { bg: 'rgba(48, 209, 88, 0.15)', text: '#30D158', border: 'rgba(48, 209, 88, 0.35)' };
       case 'SHORTLISTED':
-        return { bg: 'rgba(56, 189, 248, 0.15)', text: '#38BDF8', border: 'rgba(56, 189, 248, 0.4)' };
+        return { bg: 'rgba(41, 151, 255, 0.15)', text: '#2997FF', border: 'rgba(41, 151, 255, 0.35)' };
       case 'REVIEWING':
-        return { bg: 'rgba(245, 158, 11, 0.15)', text: '#F59E0B', border: 'rgba(245, 158, 11, 0.4)' };
+        return { bg: 'rgba(255, 159, 10, 0.15)', text: '#FF9F0A', border: 'rgba(255, 159, 10, 0.35)' };
       case 'REJECTED':
-        return { bg: 'rgba(239, 68, 68, 0.15)', text: '#F87171', border: 'rgba(239, 68, 68, 0.4)' };
+        return { bg: 'rgba(255, 69, 58, 0.15)', text: '#FF453A', border: 'rgba(255, 69, 58, 0.35)' };
       default:
-        return { bg: 'rgba(148, 163, 184, 0.15)', text: '#94A3B8', border: 'rgba(148, 163, 184, 0.4)' };
+        return { bg: 'rgba(142, 142, 147, 0.15)', text: '#8E8E93', border: 'rgba(142, 142, 147, 0.35)' };
     }
   };
 
@@ -89,8 +107,9 @@ ${application.statementOfPurpose}`;
         position: 'fixed',
         inset: 0,
         zIndex: 9999,
-        backgroundColor: 'rgba(4, 5, 8, 0.85)',
-        backdropFilter: 'blur(8px)',
+        backgroundColor: 'rgba(0, 0, 0, 0.72)',
+        backdropFilter: 'blur(16px)',
+        WebkitBackdropFilter: 'blur(16px)',
         display: 'flex',
         justifyContent: 'flex-end',
       }}
@@ -101,22 +120,22 @@ ${application.statementOfPurpose}`;
           width: '100%',
           maxWidth: '720px',
           height: '100%',
-          backgroundColor: '#0C0F17',
-          borderLeft: '1px solid #232C3D',
-          boxShadow: '-10px 0 30px rgba(0, 0, 0, 0.6)',
+          backgroundColor: '#161617',
+          borderLeft: '1px solid rgba(255, 255, 255, 0.08)',
+          boxShadow: '-12px 0 40px rgba(0, 0, 0, 0.7)',
           display: 'flex',
           flexDirection: 'column',
           overflow: 'hidden',
-          animation: 'slideIn 0.25s cubic-bezier(0.16, 1, 0.3, 1)',
+          fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif',
         }}
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Top Header */}
+        {/* Apple Top Header */}
         <div
           style={{
-            padding: '20px 24px',
-            borderBottom: '1px solid #1E2638',
-            backgroundColor: '#090C12',
+            padding: '18px 24px',
+            borderBottom: '1px solid rgba(255, 255, 255, 0.08)',
+            backgroundColor: '#1D1D1F',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
@@ -129,16 +148,15 @@ ${application.statementOfPurpose}`;
                 color: statusStyle.text,
                 border: `1px solid ${statusStyle.border}`,
                 padding: '4px 10px',
-                borderRadius: '6px',
+                borderRadius: '9999px',
                 fontSize: '11px',
-                fontFamily: 'monospace',
-                fontWeight: 700,
-                letterSpacing: '0.05em',
+                fontWeight: 600,
+                letterSpacing: '0.04em',
               }}
             >
               {currentStatus}
             </span>
-            <span style={{ fontSize: '13px', color: '#94A3B8', fontFamily: 'monospace' }}>
+            <span style={{ fontSize: '13px', color: '#86868B', fontFamily: 'var(--font-family-mono, monospace)', fontVariantNumeric: 'tabular-nums' }}>
               REF: {application.id ? application.id.slice(0, 8).toUpperCase() : 'APP-LIVE'}
             </span>
           </div>
@@ -148,171 +166,281 @@ ${application.statementOfPurpose}`;
               type="button"
               onClick={handleCopyDetails}
               style={{
-                backgroundColor: '#151C2C',
-                border: '1px solid #28344D',
-                color: '#CBD5E1',
-                padding: '6px 12px',
-                borderRadius: '6px',
+                backgroundColor: 'rgba(255, 255, 255, 0.06)',
+                border: '1px solid rgba(255, 255, 255, 0.12)',
+                color: '#F5F5F7',
+                padding: '8px 16px',
+                borderRadius: '980px',
                 fontSize: '12px',
+                fontWeight: 500,
                 cursor: 'pointer',
-                fontFamily: 'monospace',
+                minHeight: '44px',
+                display: 'inline-flex',
+                alignItems: 'center',
+                transition: 'all 0.15s ease',
               }}
             >
-              {copied ? '✓ COPIED' : '📋 COPY BRIEF'}
+              {copied ? '✓ Copied' : 'Copy Brief'}
             </button>
             <button
               type="button"
               onClick={onClose}
               style={{
-                backgroundColor: 'transparent',
+                backgroundColor: 'rgba(255, 255, 255, 0.06)',
                 border: 'none',
-                color: '#94A3B8',
-                fontSize: '20px',
+                color: '#86868B',
+                width: '44px',
+                height: '44px',
+                minWidth: '44px',
+                minHeight: '44px',
+                borderRadius: '50%',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
                 cursor: 'pointer',
-                padding: '4px 8px',
-                lineHeight: 1,
+                fontSize: '14px',
               }}
-              title="Close Review Pane (Esc)"
+              title="Close Inspector (Esc)"
+              aria-label="Close Inspector"
             >
               ✕
             </button>
           </div>
         </div>
 
-        {/* Scrollable Content Body */}
-        <div style={{ flex: 1, overflowY: 'auto', padding: '24px' }}>
-          {/* Candidate Hero Card */}
+        {/* Scrollable Inspector Body */}
+        <div style={{ flex: 1, overflowY: 'auto', padding: '24px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
+          {/* Candidate Primary Hero Card */}
           <div
             style={{
-              backgroundColor: '#121724',
-              border: '1px solid #232C3D',
-              borderRadius: '10px',
-              padding: '20px',
-              marginBottom: '20px',
+              backgroundColor: '#1D1D1F',
+              border: '1px solid rgba(255, 255, 255, 0.08)',
+              borderRadius: '16px',
+              padding: '22px',
             }}
           >
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '12px' }}>
               <div>
-                <h2 style={{ margin: 0, fontSize: '22px', fontWeight: 800, color: '#F1F5F9' }}>
+                <h2 style={{ margin: 0, fontSize: '24px', fontWeight: 700, color: '#F5F5F7', letterSpacing: '-0.02em' }}>
                   {application.fullName}
                 </h2>
                 <div style={{ margin: '6px 0 0 0', display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
-                  <span style={{ fontSize: '13px', color: '#38BDF8', fontFamily: 'monospace' }}>
+                  <a
+                    href={`mailto:${application.email}`}
+                    style={{ fontSize: '13px', color: '#2997FF', textDecoration: 'none' }}
+                  >
                     {application.email}
-                  </span>
-                  <span style={{ color: '#475569' }}>•</span>
-                  <span style={{ fontSize: '13px', color: '#94A3B8', fontFamily: 'monospace' }}>
+                  </a>
+                  <span style={{ color: '#48484A' }}>•</span>
+                  <a
+                    href={`tel:${application.phone}`}
+                    style={{ fontSize: '13px', color: '#86868B', textDecoration: 'none' }}
+                  >
                     {application.phone}
-                  </span>
+                  </a>
                 </div>
               </div>
 
               <div
                 style={{
-                  backgroundColor: '#0A0E17',
-                  border: '1px solid #1E273A',
+                  backgroundColor: 'rgba(255, 255, 255, 0.04)',
+                  border: '1px solid rgba(255, 255, 255, 0.08)',
                   padding: '8px 14px',
-                  borderRadius: '8px',
+                  borderRadius: '10px',
                   textAlign: 'right',
                 }}
               >
-                <div style={{ fontSize: '10px', color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                  TRACK PREFERENCE
+                <div style={{ fontSize: '10px', color: '#86868B', textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: 600 }}>
+                  Track Domain
                 </div>
-                <div style={{ fontSize: '13px', fontWeight: 700, color: '#00E5FF', fontFamily: 'monospace', marginTop: '2px' }}>
-                  {application.interest}
+                <div style={{ fontSize: '13px', fontWeight: 600, color: '#2997FF', marginTop: '2px' }}>
+                  {application.interest.replace(/_/g, ' ')}
                 </div>
               </div>
             </div>
 
-            {/* Academic & Timestamp Grid */}
+            {/* Academic & Metadata Grid */}
             <div
               style={{
                 display: 'grid',
                 gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
-                gap: '12px',
-                marginTop: '16px',
+                gap: '14px',
+                marginTop: '18px',
                 paddingTop: '16px',
-                borderTop: '1px solid #1E2638',
+                borderTop: '1px solid rgba(255, 255, 255, 0.06)',
               }}
             >
               <div>
-                <div style={{ fontSize: '11px', color: '#64748B' }}>STUDENT ROLL NO</div>
-                <div style={{ fontSize: '13px', fontWeight: 700, color: '#F1F5F9', fontFamily: 'monospace', marginTop: '2px' }}>
+                <div style={{ fontSize: '11px', color: '#86868B', fontWeight: 500 }}>STUDENT ID / ROLL NO</div>
+                <div style={{ fontSize: '14px', fontWeight: 600, color: '#F5F5F7', fontFamily: 'var(--font-family-mono, monospace)', fontVariantNumeric: 'tabular-nums', marginTop: '3px' }}>
                   {application.studentId}
                 </div>
               </div>
               <div>
-                <div style={{ fontSize: '11px', color: '#64748B' }}>BRANCH & YEAR</div>
-                <div style={{ fontSize: '13px', fontWeight: 600, color: '#F1F5F9', marginTop: '2px' }}>
+                <div style={{ fontSize: '11px', color: '#86868B', fontWeight: 500 }}>ACADEMIC PROGRAM</div>
+                <div style={{ fontSize: '13px', fontWeight: 500, color: '#F5F5F7', marginTop: '3px' }}>
                   Year {application.yearOfStudy} • {application.branch}
                 </div>
               </div>
               <div>
-                <div style={{ fontSize: '11px', color: '#64748B' }}>SUBMISSION TIMESTAMP</div>
-                <div style={{ fontSize: '12px', color: '#CBD5E1', fontFamily: 'monospace', marginTop: '2px' }}>
-                  {formattedDate} {relativeTime ? `(${relativeTime})` : ''}
+                <div style={{ fontSize: '11px', color: '#86868B', fontWeight: 500 }}>SUBMITTED ON</div>
+                <div style={{ fontSize: '12px', color: '#86868B', marginTop: '3px' }}>
+                  {formattedDate}
                 </div>
               </div>
               <div>
-                <div style={{ fontSize: '11px', color: '#64748B' }}>PORTFOLIO / GITHUB</div>
-                <div style={{ marginTop: '2px' }}>
+                <div style={{ fontSize: '11px', color: '#86868B', fontWeight: 500 }}>PORTFOLIO / GITHUB</div>
+                <div style={{ marginTop: '3px' }}>
                   {application.githubOrPortfolio ? (
                     <a
                       href={application.githubOrPortfolio.startsWith('http') ? application.githubOrPortfolio : `https://${application.githubOrPortfolio}`}
                       target="_blank"
                       rel="noreferrer"
-                      style={{ color: '#38BDF8', fontSize: '12px', fontFamily: 'monospace', textDecoration: 'underline' }}
+                      style={{ color: '#2997FF', fontSize: '12.5px', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '4px' }}
                     >
-                      {application.githubOrPortfolio} ↗
+                      <span>{application.githubOrPortfolio.replace(/^https?:\/\//, '')}</span>
+                      <span>↗</span>
                     </a>
                   ) : (
-                    <span style={{ color: '#64748B', fontSize: '12px' }}>None provided</span>
+                    <span style={{ color: '#6E6E73', fontSize: '12px' }}>None provided</span>
                   )}
                 </div>
               </div>
             </div>
+
+            {/* Skills Badges */}
+            {skills.length > 0 && (
+              <div style={{ marginTop: '16px', paddingTop: '14px', borderTop: '1px solid rgba(255, 255, 255, 0.06)' }}>
+                <div style={{ fontSize: '11px', color: '#86868B', fontWeight: 500, marginBottom: '8px' }}>
+                  REPORTED SKILLS & TECHNOLOGIES
+                </div>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+                  {skills.map((skill) => (
+                    <span
+                      key={skill}
+                      style={{
+                        backgroundColor: 'rgba(41, 151, 255, 0.1)',
+                        color: '#2997FF',
+                        border: '1px solid rgba(41, 151, 255, 0.25)',
+                        padding: '3px 10px',
+                        borderRadius: '9999px',
+                        fontSize: '11.5px',
+                        fontWeight: 500,
+                      }}
+                    >
+                      {skill}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
 
-          {/* Statement of Purpose Reader Pane */}
+          {/* Statement of Purpose & Pitch */}
           <div
             style={{
-              backgroundColor: '#0F1420',
-              border: '1px solid #1E2638',
-              borderRadius: '10px',
-              padding: '24px',
+              backgroundColor: '#1D1D1F',
+              border: '1px solid rgba(255, 255, 255, 0.08)',
+              borderRadius: '16px',
+              padding: '22px',
             }}
           >
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <span style={{ width: '8px', height: '8px', borderRadius: '9999px', backgroundColor: '#38BDF8' }} />
-                <h3 style={{ margin: 0, fontSize: '14px', fontWeight: 700, color: '#F1F5F9', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
-                  Statement of Purpose & Project Pitch
+                <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#2997FF' }} />
+                <h3 style={{ margin: 0, fontSize: '14px', fontWeight: 600, color: '#F5F5F7', letterSpacing: '-0.01em' }}>
+                  Statement of Purpose & Technical Pitch
                 </h3>
               </div>
-              <span style={{ fontSize: '11px', color: '#64748B', fontFamily: 'monospace' }}>
+              <span style={{ fontSize: '11.5px', color: '#86868B', fontFamily: 'var(--font-family-mono, monospace)', fontVariantNumeric: 'tabular-nums' }}>
                 {application.statementOfPurpose.length} characters
               </span>
             </div>
 
             <div
               style={{
-                backgroundColor: '#070A10',
-                border: '1px solid #19202F',
-                borderRadius: '8px',
-                padding: '20px',
-                color: '#E2E8F0',
-                fontSize: '14px',
-                lineHeight: 1.7,
+                backgroundColor: '#161617',
+                border: '1px solid rgba(255, 255, 255, 0.06)',
+                borderRadius: '10px',
+                padding: '18px',
+                color: '#F5F5F7',
+                fontSize: '13.5px',
+                lineHeight: 1.65,
                 whiteSpace: 'pre-wrap',
                 wordBreak: 'break-word',
-                fontFamily: 'Inter, system-ui, -apple-system, sans-serif',
-                maxHeight: '400px',
+                maxHeight: '320px',
                 overflowY: 'auto',
               }}
             >
               {application.statementOfPurpose}
             </div>
+          </div>
+
+          {/* Admin Reviewer Notes Card */}
+          <div
+            style={{
+              backgroundColor: '#1D1D1F',
+              border: '1px solid rgba(255, 255, 255, 0.08)',
+              borderRadius: '16px',
+              padding: '22px',
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
+              <h3 style={{ margin: 0, fontSize: '14px', fontWeight: 600, color: '#F5F5F7' }}>
+                Internal Reviewer Evaluation Notes
+              </h3>
+              {notesSaved && (
+                <span style={{ fontSize: '11px', color: '#30D158', fontWeight: 600 }}>
+                  ✓ Notes saved
+                </span>
+              )}
+            </div>
+
+            <textarea
+              value={reviewNotes}
+              onChange={(e) => setReviewNotes(e.target.value)}
+              placeholder="Record interview notes, technical rubric score, project match recommendations, or interviewer feedback..."
+              rows={4}
+              style={{
+                width: '100%',
+                backgroundColor: '#161617',
+                border: '1px solid rgba(255, 255, 255, 0.08)',
+                borderRadius: '10px',
+                padding: '12px',
+                fontSize: '13px',
+                color: '#F5F5F7',
+                outline: 'none',
+                resize: 'vertical',
+                fontFamily: 'inherit',
+                lineHeight: 1.5,
+                boxSizing: 'border-box',
+              }}
+            />
+
+            {onUpdateNotes && (
+              <div style={{ marginTop: '10px', display: 'flex', justifyContent: 'flex-end' }}>
+                <button
+                  type="button"
+                  onClick={handleSaveNotes}
+                  disabled={savingNotes}
+                  style={{
+                    backgroundColor: '#0071E3',
+                    border: 'none',
+                    color: '#FFFFFF',
+                    padding: '8px 18px',
+                    borderRadius: '980px',
+                    fontSize: '12px',
+                    fontWeight: 600,
+                    cursor: savingNotes ? 'default' : 'pointer',
+                    minHeight: '44px',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                  }}
+                >
+                  {savingNotes ? 'Saving...' : 'Save Notes'}
+                </button>
+              </div>
+            )}
           </div>
         </div>
 
@@ -320,87 +448,53 @@ ${application.statementOfPurpose}`;
         <div
           style={{
             padding: '16px 24px',
-            borderTop: '1px solid #1E2638',
-            backgroundColor: '#090C12',
+            borderTop: '1px solid rgba(255, 255, 255, 0.08)',
+            backgroundColor: '#1D1D1F',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
             flexWrap: 'wrap',
-            gap: '12px',
+            gap: '14px',
           }}
         >
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
-            <span style={{ fontSize: '11px', color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-              CHANGE STATUS:
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
+            <span style={{ fontSize: '11px', color: '#86868B', textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: 600 }}>
+              Status
             </span>
-            <button
-              type="button"
-              disabled={updating || currentStatus === 'REVIEWING'}
-              onClick={() => handleStatusChange('REVIEWING')}
-              style={{
-                backgroundColor: currentStatus === 'REVIEWING' ? '#F59E0B' : '#151C2C',
-                color: currentStatus === 'REVIEWING' ? '#080A0F' : '#F59E0B',
-                border: '1px solid #F59E0B',
-                padding: '6px 12px',
-                borderRadius: '6px',
-                fontSize: '11px',
-                fontWeight: 700,
-                cursor: updating || currentStatus === 'REVIEWING' ? 'default' : 'pointer',
-              }}
+            <div
+              className="apple-segmented-control"
+              role="radiogroup"
+              aria-label="Application Status"
             >
-              Reviewing
-            </button>
-            <button
-              type="button"
-              disabled={updating || currentStatus === 'SHORTLISTED'}
-              onClick={() => handleStatusChange('SHORTLISTED')}
-              style={{
-                backgroundColor: currentStatus === 'SHORTLISTED' ? '#38BDF8' : '#151C2C',
-                color: currentStatus === 'SHORTLISTED' ? '#080A0F' : '#38BDF8',
-                border: '1px solid #38BDF8',
-                padding: '6px 12px',
-                borderRadius: '6px',
-                fontSize: '11px',
-                fontWeight: 700,
-                cursor: updating || currentStatus === 'SHORTLISTED' ? 'default' : 'pointer',
-              }}
-            >
-              Shortlist
-            </button>
-            <button
-              type="button"
-              disabled={updating || currentStatus === 'ACCEPTED'}
-              onClick={() => handleStatusChange('ACCEPTED')}
-              style={{
-                backgroundColor: currentStatus === 'ACCEPTED' ? '#10B981' : '#151C2C',
-                color: currentStatus === 'ACCEPTED' ? '#080A0F' : '#34D399',
-                border: '1px solid #10B981',
-                padding: '6px 12px',
-                borderRadius: '6px',
-                fontSize: '11px',
-                fontWeight: 700,
-                cursor: updating || currentStatus === 'ACCEPTED' ? 'default' : 'pointer',
-              }}
-            >
-              Accept
-            </button>
-            <button
-              type="button"
-              disabled={updating || currentStatus === 'REJECTED'}
-              onClick={() => handleStatusChange('REJECTED')}
-              style={{
-                backgroundColor: currentStatus === 'REJECTED' ? '#EF4444' : '#151C2C',
-                color: currentStatus === 'REJECTED' ? '#FFFFFF' : '#F87171',
-                border: '1px solid #EF4444',
-                padding: '6px 12px',
-                borderRadius: '6px',
-                fontSize: '11px',
-                fontWeight: 700,
-                cursor: updating || currentStatus === 'REJECTED' ? 'default' : 'pointer',
-              }}
-            >
-              Reject
-            </button>
+              {[
+                { value: 'REVIEWING', label: 'Reviewing' },
+                { value: 'SHORTLISTED', label: 'Shortlist' },
+                { value: 'ACCEPTED', label: 'Accept' },
+                { value: 'REJECTED', label: 'Reject' },
+              ].map((opt) => {
+                const isSelected = currentStatus === opt.value;
+                return (
+                  <button
+                    key={opt.value}
+                    type="button"
+                    role="radio"
+                    aria-checked={isSelected}
+                    disabled={updating || isSelected}
+                    onClick={() => handleStatusChange(opt.value)}
+                    className={`apple-segment-button ${isSelected ? 'active' : ''}`}
+                    style={{
+                      backgroundColor: isSelected ? 'rgba(255, 255, 255, 0.12)' : 'transparent',
+                      color: isSelected ? '#FFFFFF' : '#86868B',
+                      border: isSelected ? '1px solid rgba(255, 255, 255, 0.14)' : '1px solid transparent',
+                      minHeight: '44px',
+                      borderRadius: '980px',
+                    }}
+                  >
+                    {opt.label}
+                  </button>
+                );
+              })}
+            </div>
           </div>
 
           <div>
@@ -414,14 +508,18 @@ ${application.statementOfPurpose}`;
                   }
                 }}
                 style={{
-                  backgroundColor: 'rgba(239, 68, 68, 0.1)',
-                  border: '1px solid rgba(239, 68, 68, 0.3)',
-                  color: '#EF4444',
-                  padding: '6px 14px',
-                  borderRadius: '6px',
-                  fontSize: '11px',
-                  fontWeight: 600,
+                  backgroundColor: 'transparent',
+                  border: '1px solid rgba(255, 69, 58, 0.25)',
+                  color: '#FF453A',
+                  padding: '8px 18px',
+                  borderRadius: '980px',
+                  fontSize: '12px',
+                  fontWeight: 500,
                   cursor: 'pointer',
+                  minHeight: '44px',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  transition: 'all 0.15s ease',
                 }}
               >
                 Delete Application
@@ -432,19 +530,4 @@ ${application.statementOfPurpose}`;
       </div>
     </div>
   );
-}
-
-function getRelativeTimeString(date: Date): string {
-  const diffMs = Date.now() - date.getTime();
-  const diffSec = Math.floor(diffMs / 1000);
-  const diffMin = Math.floor(diffSec / 60);
-  const diffHours = Math.floor(diffMin / 60);
-  const diffDays = Math.floor(diffHours / 24);
-
-  if (diffSec < 60) return 'just now';
-  if (diffMin < 60) return `${diffMin}m ago`;
-  if (diffHours < 24) return `${diffHours}h ago`;
-  if (diffDays === 1) return 'yesterday';
-  if (diffDays < 30) return `${diffDays}d ago`;
-  return `${Math.floor(diffDays / 30)}mo ago`;
 }

@@ -1,6 +1,6 @@
 {
   "name": "@traic/admin",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "private": true,
   "type": "module",
   "scripts": {
@@ -11,10 +11,15 @@
     "lint": "echo \"Admin linted\""
   },
   "dependencies": {
+    "@hookform/resolvers": "^5.9.1",
+    "@tanstack/react-query": "^5.104.1",
     "@traic/shared": "workspace:*",
+    "lucide-react": "^1.16.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
-    "lucide-react": "^1.16.0"
+    "react-hook-form": "^7.89.0",
+    "react-router-dom": "^7.18.4",
+    "zod": "^4.6.5"
   },
   "devDependencies": {
     "@traic/config": "workspace:*",

@@ -6,7 +6,6 @@ export type TabId =
   | 'alumni'
   | 'banners'
   | 'gallery'
-  | '3d-models'
   | 'gear'
   | 'settings'
   | 'applications';
