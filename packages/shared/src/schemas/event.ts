@@ -19,5 +19,15 @@ export const EventSchema = z.object({
   bannerAssetUrl: z.string().optional().nullable().or(z.literal('')),
   photos: z.array(z.string()).default([]),
   status: ContentStatusSchema.default('PUBLISHED'),
+  prizePool: z.string().optional().nullable().or(z.literal('')),
+  teamSize: z.string().optional().nullable().or(z.literal('')),
+  capacity: z.number().int().optional().nullable(),
+  tracks: z.array(z.string()).optional().default([]),
+  schedule: z.array(z.object({
+    time: z.string(),
+    title: z.string(),
+    description: z.string().optional(),
+  })).optional().default([]),
+  customDetails: z.record(z.string()).optional().default({}),
 });
 export type Event = z.infer<typeof EventSchema>;
