@@ -3,6 +3,7 @@
 import { useState, useEffect, use } from 'react';
 import Link from 'next/link';
 import { ArrowLeft, Calendar, MapPin, CheckCircle2, Trophy, Users, Layers, Clock, AlertCircle } from 'lucide-react';
+import { SpotlightCard } from '@/components/SpotlightCard';
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
 
@@ -175,7 +176,7 @@ export default function EventDetailPage({ params }: { params: Promise<{ slug: st
     return (
       <div className="min-h-screen bg-canvas text-ink-primary pt-36 pb-24 px-4 flex items-center justify-center">
         <div className="text-center">
-          <div className="w-8 h-8 rounded-full border-2 border-apple-blue border-t-transparent animate-spin mx-auto mb-4" />
+          <div className="w-8 h-8 rounded-full border-2 border-ink-primary border-t-transparent animate-spin mx-auto mb-4" />
           <p className="text-[13px] font-mono text-ink-secondary">Loading event specification...</p>
         </div>
       </div>
@@ -186,15 +187,15 @@ export default function EventDetailPage({ params }: { params: Promise<{ slug: st
     return (
       <div className="min-h-screen bg-canvas text-ink-primary pt-36 pb-24 px-4">
         <div className="max-w-apple mx-auto text-center py-20">
-          <AlertCircle className="w-12 h-12 text-apple-blue mx-auto mb-4 opacity-80" />
+          <AlertCircle className="w-12 h-12 text-ink-tertiary mx-auto mb-4 opacity-80" />
           <h1 className="text-[28px] font-display font-bold text-ink-primary">Event Not Found</h1>
           <p className="mt-2 text-[14px] text-ink-secondary max-w-md mx-auto">
-            The event specified by <code className="font-mono text-apple-blue">/{slug}</code> does not exist or may have been unlisted.
+            The event specified by <code className="font-mono text-ink-primary">/{slug}</code> does not exist or may have been unlisted.
           </p>
           <div className="mt-8">
             <Link
               href="/events"
-              className="inline-flex items-center justify-center min-h-[44px] px-6 rounded-pill bg-[#0071E3] hover:bg-[#0077ED] text-white text-[13.5px] font-medium transition-colors"
+              className="inline-flex items-center justify-center min-h-[48px] px-8 rounded-pill bg-ink-primary text-canvas hover:opacity-90 text-[14px] font-semibold transition-all active:scale-95 shadow-md"
             >
               Browse All Events →
             </Link>
@@ -205,7 +206,7 @@ export default function EventDetailPage({ params }: { params: Promise<{ slug: st
   }
 
   return (
-    <div className="min-h-screen bg-canvas text-ink-primary pt-32 pb-24 px-4" data-event-slug={slug}>
+    <div className="min-h-screen bg-canvas text-ink-primary pt-32 pb-24 px-4 selection:bg-neutral-700 selection:text-white" data-event-slug={slug}>
       <div className="w-full max-w-apple mx-auto">
         {/* Back Link */}
         <div className="mb-8">
@@ -221,14 +222,14 @@ export default function EventDetailPage({ params }: { params: Promise<{ slug: st
         {/* Hero Section */}
         <div className="mb-14">
           <div className="flex flex-wrap items-center gap-3 mb-4">
-            <span className="px-3 py-1 rounded-pill bg-canvas-surface border border-subtle text-apple-blue text-[11px] font-mono font-bold uppercase">
+            <span className="px-3 py-1 rounded-pill bg-canvas-surface border border-subtle text-ink-primary text-[11px] font-mono font-bold uppercase tracking-wider">
               {event.type}
             </span>
             <span className="px-3 py-1 rounded-pill bg-canvas-surface border border-subtle text-ink-secondary text-[11px] font-mono uppercase">
               {event.mode}
             </span>
             {event.prizePool && (
-              <span className="px-3 py-1 rounded-pill bg-[var(--status-emerald)]/15 text-[var(--status-emerald)] border border-[var(--status-emerald)]/30 text-[11px] font-mono font-bold flex items-center gap-1.5">
+              <span className="px-3 py-1 rounded-pill bg-apple-blue/10 text-apple-blue border border-apple-blue/20 text-[11px] font-mono font-bold flex items-center gap-1.5">
                 <Trophy className="h-3 w-3" />
                 <span>{event.prizePool}</span>
               </span>
@@ -241,19 +242,19 @@ export default function EventDetailPage({ params }: { params: Promise<{ slug: st
             )}
           </div>
 
-          <h1 className="text-[34px] sm:text-[46px] font-display font-bold tracking-tight text-ink-primary leading-tight">
+          <h1 className="text-[36px] sm:text-[48px] font-display font-extrabold tracking-[-0.035em] text-ink-primary leading-tight">
             {event.title}
           </h1>
 
           {event.tagline && (
-            <p className="mt-4 text-[16px] text-ink-secondary max-w-3xl leading-relaxed">
+            <p className="mt-4 text-[16.5px] text-ink-secondary max-w-3xl leading-relaxed">
               {event.tagline}
             </p>
           )}
 
           <div className="mt-6 flex flex-wrap items-center gap-6 text-[13.5px] font-mono text-ink-secondary">
             <span className="inline-flex items-center gap-2">
-              <Calendar className="h-4 w-4 text-apple-blue" />
+              <Calendar className="h-4 w-4 text-ink-tertiary" />
               {new Date(event.startsAt).toLocaleDateString('en-US', {
                 weekday: 'short',
                 month: 'short',
@@ -263,12 +264,12 @@ export default function EventDetailPage({ params }: { params: Promise<{ slug: st
               {event.endsAt ? ` – ${new Date(event.endsAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}` : ''}
             </span>
             <span className="inline-flex items-center gap-2">
-              <MapPin className="h-4 w-4 text-apple-blue" />
+              <MapPin className="h-4 w-4 text-ink-tertiary" />
               {event.venue}
             </span>
             {event.capacity && (
               <span className="inline-flex items-center gap-2">
-                <Clock className="h-4 w-4 text-apple-blue" />
+                <Clock className="h-4 w-4 text-ink-tertiary" />
                 Capacity: {event.capacity} seats
               </span>
             )}
@@ -277,8 +278,8 @@ export default function EventDetailPage({ params }: { params: Promise<{ slug: st
           {/* Tracks Pill Bar */}
           {event.tracks && event.tracks.length > 0 && (
             <div className="mt-6 flex flex-wrap items-center gap-2">
-              <span className="text-[11px] font-mono uppercase text-ink-tertiary mr-1 flex items-center gap-1">
-                <Layers className="h-3 w-3" /> Tracks:
+              <span className="text-[11px] font-mono uppercase text-ink-tertiary mr-1 flex items-center gap-1 font-bold">
+                <Layers className="h-3.5 w-3.5" /> Tracks:
               </span>
               {event.tracks.map((t) => (
                 <span
@@ -295,65 +296,65 @@ export default function EventDetailPage({ params }: { params: Promise<{ slug: st
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
           {/* Left Column: Description, Tracks & Schedule */}
           <div className="lg:col-span-7 space-y-8">
-            <div className="p-8 rounded-3xl bg-canvas-surface border border-subtle">
-              <h2 className="text-[20px] font-display font-bold text-ink-primary mb-4">
+            <SpotlightCard className="p-8 rounded-3xl">
+              <h2 className="text-[20px] font-display font-bold text-ink-primary mb-4 tracking-tight">
                 Syllabus &amp; Overview
               </h2>
-              <div className="space-y-4 text-[14.5px] text-ink-secondary leading-relaxed whitespace-pre-line">
+              <div className="space-y-4 text-[15px] text-ink-secondary leading-relaxed whitespace-pre-line">
                 {event.descriptionMd}
               </div>
-            </div>
+            </SpotlightCard>
 
             {/* Phased Timeline Schedule */}
             {event.schedule && event.schedule.length > 0 && (
-              <div className="p-8 rounded-3xl bg-canvas-surface border border-subtle">
+              <SpotlightCard className="p-8 rounded-3xl">
                 <h3 className="text-[18px] font-display font-bold text-ink-primary mb-5 flex items-center gap-2">
-                  <Clock className="h-5 w-5 text-apple-blue" />
+                  <Clock className="h-5 w-5 text-ink-primary" />
                   <span>Timeline &amp; Schedule Milestones</span>
                 </h3>
                 <div className="space-y-4 border-l-2 border-subtle pl-4 ml-1">
                   {event.schedule.map((item, idx) => (
                     <div key={idx} className="relative">
-                      <span className="absolute -left-[23px] top-1.5 w-3 h-3 rounded-full bg-apple-blue border-2 border-canvas" />
-                      <div className="text-[11px] font-mono text-apple-blue font-bold uppercase">{item.time}</div>
-                      <div className="text-[14px] font-medium text-ink-primary mt-0.5">{item.title}</div>
+                      <span className="absolute -left-[23px] top-1.5 w-3 h-3 rounded-full bg-ink-primary border-2 border-canvas" />
+                      <div className="text-[11px] font-mono text-ink-tertiary font-bold uppercase">{item.time}</div>
+                      <div className="text-[14px] font-bold text-ink-primary mt-0.5">{item.title}</div>
                       {item.description && (
-                        <div className="text-[12.5px] text-ink-secondary mt-1">{item.description}</div>
+                        <div className="text-[13px] text-ink-secondary mt-1">{item.description}</div>
                       )}
                     </div>
                   ))}
                 </div>
-              </div>
+              </SpotlightCard>
             )}
 
-            <div className="p-8 rounded-3xl bg-canvas-surface border border-subtle">
+            <SpotlightCard className="p-8 rounded-3xl">
               <h3 className="text-[18px] font-display font-bold text-ink-primary mb-4">
                 Laboratory Safety &amp; Requirements
               </h3>
               <ul className="space-y-3 list-none p-0 m-0 text-[14px] text-ink-secondary">
                 <li className="flex items-start gap-2.5">
-                  <CheckCircle2 className="h-4 w-4 text-apple-blue shrink-0 mt-0.5" />
+                  <CheckCircle2 className="h-4 w-4 text-ink-primary shrink-0 mt-0.5" />
                   <span>Bring personal laptop with required toolchains installed prior to arrival.</span>
                 </li>
                 <li className="flex items-start gap-2.5">
-                  <CheckCircle2 className="h-4 w-4 text-apple-blue shrink-0 mt-0.5" />
+                  <CheckCircle2 className="h-4 w-4 text-ink-primary shrink-0 mt-0.5" />
                   <span>All specialized test equipment, oscilloscopes, and logic analyzers are provided on lab benches.</span>
                 </li>
                 <li className="flex items-start gap-2.5">
-                  <CheckCircle2 className="h-4 w-4 text-apple-blue shrink-0 mt-0.5" />
+                  <CheckCircle2 className="h-4 w-4 text-ink-primary shrink-0 mt-0.5" />
                   <span>Participants must hold active university ID for physical security clearance at DIA Labs.</span>
                 </li>
               </ul>
-            </div>
+            </SpotlightCard>
           </div>
 
           {/* Right Column: Registration Form */}
           <div className="lg:col-span-5">
-            <div className="p-8 rounded-3xl bg-canvas-surface border border-subtle sticky top-28">
+            <SpotlightCard className="p-8 rounded-3xl sticky top-28">
               {submitted ? (
                 <div className="text-center py-6">
-                  <div className="w-12 h-12 rounded-full bg-apple-blue/15 text-apple-blue flex items-center justify-center mx-auto mb-4 border border-apple-blue/30">
-                    <CheckCircle2 className="h-6 w-6 text-apple-blue" />
+                  <div className="w-12 h-12 rounded-full bg-white/[0.08] border border-white/15 text-ink-primary flex items-center justify-center mx-auto mb-4 shadow-sm">
+                    <CheckCircle2 className="h-6 w-6 text-ink-primary" />
                   </div>
                   <h3 className="text-[20px] font-display font-bold text-ink-primary">
                     Registration Confirmed
@@ -361,7 +362,7 @@ export default function EventDetailPage({ params }: { params: Promise<{ slug: st
                   <p className="mt-2 text-[14px] text-ink-secondary">
                     Your seat is reserved for this session. Show your confirmation at {event.venue}.
                   </p>
-                  <div className="mt-6 p-4 rounded-xl bg-canvas border border-subtle font-mono text-[13px] text-apple-blue">
+                  <div className="mt-6 p-4 rounded-xl bg-canvas border border-subtle font-mono text-[14px] font-bold text-ink-primary">
                     Receipt Code: {receiptCode}
                   </div>
                   {selectedTrack && (
@@ -395,7 +396,7 @@ export default function EventDetailPage({ params }: { params: Promise<{ slug: st
                   />
 
                   <div>
-                    <label htmlFor="fullName" className="text-[11px] font-mono text-ink-tertiary uppercase block mb-1">
+                    <label htmlFor="fullName" className="text-[11px] font-mono text-ink-tertiary uppercase block mb-1 font-bold">
                       Lead Participant Name *
                     </label>
                     <input
@@ -405,12 +406,12 @@ export default function EventDetailPage({ params }: { params: Promise<{ slug: st
                       value={formData.fullName}
                       onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
                       placeholder="e.g. Aarish Ali"
-                      className="w-full px-4 min-h-[44px] rounded-xl bg-canvas border border-subtle text-[13.5px] text-ink-primary focus:border-apple-blue focus:outline-none"
+                      className="w-full px-4 min-h-[46px] rounded-xl bg-canvas border border-subtle text-[13.5px] text-ink-primary focus:border-ink-primary focus:outline-none"
                     />
                   </div>
 
                   <div>
-                    <label htmlFor="rollNo" className="text-[11px] font-mono text-ink-tertiary uppercase block mb-1">
+                    <label htmlFor="rollNo" className="text-[11px] font-mono text-ink-tertiary uppercase block mb-1 font-bold">
                       University Roll Number *
                     </label>
                     <input
@@ -420,12 +421,12 @@ export default function EventDetailPage({ params }: { params: Promise<{ slug: st
                       value={formData.rollNo}
                       onChange={(e) => setFormData({ ...formData, rollNo: e.target.value })}
                       placeholder="e.g. 210120101"
-                      className="w-full px-4 min-h-[44px] rounded-xl bg-canvas border border-subtle text-[13.5px] text-ink-primary focus:border-apple-blue focus:outline-none"
+                      className="w-full px-4 min-h-[46px] rounded-xl bg-canvas border border-subtle text-[13.5px] text-ink-primary focus:border-ink-primary focus:outline-none"
                     />
                   </div>
 
                   <div>
-                    <label htmlFor="email" className="text-[11px] font-mono text-ink-tertiary uppercase block mb-1">
+                    <label htmlFor="email" className="text-[11px] font-mono text-ink-tertiary uppercase block mb-1 font-bold">
                       Institutional Email *
                     </label>
                     <input
@@ -435,20 +436,20 @@ export default function EventDetailPage({ params }: { params: Promise<{ slug: st
                       value={formData.email}
                       onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                       placeholder="you@coer.ac.in"
-                      className="w-full px-4 min-h-[44px] rounded-xl bg-canvas border border-subtle text-[13.5px] text-ink-primary focus:border-apple-blue focus:outline-none"
+                      className="w-full px-4 min-h-[46px] rounded-xl bg-canvas border border-subtle text-[13.5px] text-ink-primary focus:border-ink-primary focus:outline-none"
                     />
                   </div>
 
                   {event.tracks && event.tracks.length > 0 && (
                     <div>
-                      <label htmlFor="selectedTrack" className="text-[11px] font-mono text-ink-tertiary uppercase block mb-1">
+                      <label htmlFor="selectedTrack" className="text-[11px] font-mono text-ink-tertiary uppercase block mb-1 font-bold">
                         Focus Track *
                       </label>
                       <select
                         id="selectedTrack"
                         value={selectedTrack}
                         onChange={(e) => setSelectedTrack(e.target.value)}
-                        className="w-full px-4 min-h-[44px] rounded-xl bg-canvas border border-subtle text-[13.5px] text-ink-primary focus:border-apple-blue focus:outline-none"
+                        className="w-full px-4 min-h-[46px] rounded-xl bg-canvas border border-subtle text-[13.5px] text-ink-primary focus:border-ink-primary focus:outline-none"
                       >
                         {event.tracks.map((t) => (
                           <option key={t} value={t} className="bg-canvas-surface text-ink-primary">
@@ -460,7 +461,7 @@ export default function EventDetailPage({ params }: { params: Promise<{ slug: st
                   )}
 
                   <div>
-                    <label htmlFor="teamName" className="text-[11px] font-mono text-ink-tertiary uppercase block mb-1">
+                    <label htmlFor="teamName" className="text-[11px] font-mono text-ink-tertiary uppercase block mb-1 font-bold">
                       Team Name (Optional)
                     </label>
                     <input
@@ -469,7 +470,7 @@ export default function EventDetailPage({ params }: { params: Promise<{ slug: st
                       value={formData.teamName}
                       onChange={(e) => setFormData({ ...formData, teamName: e.target.value })}
                       placeholder="e.g. Team RoverX"
-                      className="w-full px-4 min-h-[44px] rounded-xl bg-canvas border border-subtle text-[13.5px] text-ink-primary focus:border-apple-blue focus:outline-none"
+                      className="w-full px-4 min-h-[46px] rounded-xl bg-canvas border border-subtle text-[13.5px] text-ink-primary focus:border-ink-primary focus:outline-none"
                     />
                   </div>
 
@@ -483,7 +484,7 @@ export default function EventDetailPage({ params }: { params: Promise<{ slug: st
                         required
                         checked={dpdpConsent}
                         onChange={(e) => setDpdpConsent(e.target.checked)}
-                        className="mt-0.5 rounded border-subtle bg-canvas text-apple-blue focus:ring-apple-blue h-4 w-4"
+                        className="mt-0.5 rounded border-subtle bg-canvas text-ink-primary focus:ring-ink-primary h-4 w-4"
                       />
                       <span>
                         I consent to TRAIC processing my contact details for lab event coordination in compliance with the Indian DPDP Act 2023. Data is never shared with third parties.
@@ -494,13 +495,13 @@ export default function EventDetailPage({ params }: { params: Promise<{ slug: st
                   <button
                     type="submit"
                     disabled={!dpdpConsent}
-                    className="w-full mt-4 min-h-[48px] rounded-pill bg-[#0071E3] hover:bg-[#0077ED] disabled:opacity-50 text-white font-medium text-[14px] transition-colors cursor-pointer"
+                    className="w-full mt-4 min-h-[48px] rounded-pill bg-ink-primary text-canvas hover:opacity-90 disabled:opacity-50 font-semibold text-[14.5px] transition-all active:scale-95 shadow-md cursor-pointer"
                   >
                     Confirm Registration →
                   </button>
                 </form>
               )}
-            </div>
+            </SpotlightCard>
           </div>
         </div>
       </div>

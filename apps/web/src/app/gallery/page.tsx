@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { MapPin } from 'lucide-react';
+import { SpotlightCard } from '@/components/SpotlightCard';
 
 interface GalleryItem {
   id?: string;
@@ -94,30 +95,30 @@ export default function GalleryPage() {
     : galleryItems.filter((i) => i.category === selectedCategory);
 
   return (
-    <div className="min-h-screen bg-canvas text-ink-primary pt-32 pb-24 px-4">
+    <div className="min-h-screen bg-canvas text-ink-primary pt-32 pb-24 px-4 selection:bg-neutral-700 selection:text-white">
       <div className="w-full max-w-apple mx-auto">
         {/* Header */}
         <div className="max-w-3xl mb-12">
-          <span className="text-[11px] font-mono uppercase tracking-widest text-apple-blue font-semibold">
+          <span className="text-[11px] font-mono uppercase tracking-widest text-ink-tertiary font-bold">
             VISUAL ARCHIVE
           </span>
-          <h1 className="text-[36px] sm:text-[52px] font-display font-bold tracking-tight text-ink-primary mt-2 leading-[1.08]">
+          <h1 className="text-[38px] sm:text-[54px] font-display font-extrabold tracking-[-0.035em] text-ink-primary mt-2 leading-[1.08]">
             The lab, the benches, the arena.
           </h1>
-          <p className="mt-4 text-[16px] text-ink-secondary leading-relaxed">
+          <p className="mt-4 text-[17px] text-ink-secondary leading-relaxed">
             Real engineering captured in the wild. From high-voltage motor tests to national championship stages.
           </p>
         </div>
 
-        {/* Category Pills (44px touch targets) */}
+        {/* Category Pills (Apple HIG segmented design) */}
         <div className="flex items-center gap-2 overflow-x-auto pb-4 mb-10 scrollbar-none">
           {categories.map((cat) => (
             <button
               key={cat}
               onClick={() => setSelectedCategory(cat)}
-              className={`min-h-[44px] px-5 rounded-pill text-[13px] font-medium transition-colors cursor-pointer shrink-0 ${
+              className={`min-h-[44px] px-5 rounded-pill text-[13px] font-medium transition-all active:scale-95 cursor-pointer shrink-0 ${
                 selectedCategory === cat
-                  ? 'bg-[#0071E3] text-white font-semibold shadow-sm'
+                  ? 'bg-ink-primary text-canvas font-semibold shadow-sm'
                   : 'bg-canvas-surface hover:bg-canvas-elevated text-ink-secondary hover:text-ink-primary border border-subtle'
               }`}
             >
@@ -126,12 +127,12 @@ export default function GalleryPage() {
           ))}
         </div>
 
-        {/* Masonry / Dynamic Grid */}
+        {/* Dynamic Card Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filtered.map((item, idx) => (
-            <div
-              key={item.title + idx}
-              className={`rounded-3xl bg-canvas-surface border border-subtle overflow-hidden flex flex-col justify-between hover:border-apple-blue/40 transition-colors group ${
+            <SpotlightCard
+              key={`${item.title}-${idx}`}
+              className={`rounded-3xl overflow-hidden flex flex-col justify-between group ${
                 item.featured ? 'md:col-span-2' : ''
               }`}
             >
@@ -144,7 +145,7 @@ export default function GalleryPage() {
                   loading="lazy"
                 />
                 <div className="absolute top-4 left-4">
-                  <span className="px-2.5 py-1 rounded-pill bg-canvas/90 backdrop-blur-md border border-subtle text-[10.5px] font-mono font-bold text-apple-blue uppercase">
+                  <span className="px-3 py-1 rounded-pill bg-canvas/90 backdrop-blur-md border border-subtle text-[10.5px] font-mono font-bold text-ink-primary uppercase tracking-wider">
                     {item.category.replace('_', ' ')}
                   </span>
                 </div>
@@ -155,20 +156,20 @@ export default function GalleryPage() {
                   {item.title}
                 </h3>
                 {item.caption && (
-                  <p className="mt-2 text-[13.5px] text-ink-secondary leading-relaxed">
+                  <p className="mt-2 text-[14px] text-ink-secondary leading-relaxed">
                     {item.caption}
                   </p>
                 )}
 
-                <div className="mt-6 pt-4 border-t border-subtle flex items-center justify-between text-[11.5px] font-mono text-ink-tertiary">
-                  <span className="flex items-center gap-1">
-                    <MapPin className="h-3.5 w-3.5 text-apple-blue" />
+                <div className="mt-6 pt-4 border-t border-subtle flex items-center justify-between text-[12px] font-mono text-ink-tertiary">
+                  <span className="flex items-center gap-1.5 text-ink-secondary">
+                    <MapPin className="h-3.5 w-3.5 text-ink-tertiary" />
                     <span>{item.location || 'DIA Labs'}</span>
                   </span>
                   <span>{item.date || '2024'}</span>
                 </div>
               </div>
-            </div>
+            </SpotlightCard>
           ))}
         </div>
       </div>

@@ -34,7 +34,13 @@ export function SFIcon({
 export function IconLogo(props: IconProps) {
   return (
     <SFIcon {...props}>
-      <path d="M4 6h16M12 6v14M8 20h8" />
+      <rect x="3" y="3" width="18" height="18" rx="4.5" strokeWidth="1.2" />
+      <path d="M7 8.5h10M12 8.5v8.5M9 17h6" strokeWidth="1.8" />
+      <circle cx="12" cy="12.5" r="1.2" fill="currentColor" />
+      <circle cx="5.5" cy="5.5" r="0.75" fill="currentColor" />
+      <circle cx="18.5" cy="5.5" r="0.75" fill="currentColor" />
+      <circle cx="5.5" cy="18.5" r="0.75" fill="currentColor" />
+      <circle cx="18.5" cy="18.5" r="0.75" fill="currentColor" />
     </SFIcon>
   );
 }

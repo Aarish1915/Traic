@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { Compass, Shield, HeartHandshake, BookOpen } from 'lucide-react';
+import { SpotlightCard } from '@/components/SpotlightCard';
 
 export const metadata = {
   title: 'About TRAIC — Technology, Robotics & AI Community',
@@ -53,29 +54,29 @@ export default async function AboutPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-canvas text-ink-primary pt-32 pb-24 px-4">
+    <div className="min-h-screen bg-canvas text-ink-primary pt-32 pb-24 px-4 selection:bg-neutral-700 selection:text-white">
       <div className="w-full max-w-apple mx-auto">
         {/* Section 1: Hero & Mission Statement */}
         <div className="text-center max-w-[840px] mx-auto mb-20">
-          <span className="text-[11px] font-mono uppercase tracking-widest text-apple-blue font-semibold">
+          <span className="text-[11px] font-mono uppercase tracking-widest text-ink-tertiary font-bold">
             ABOUT {clubName}
           </span>
-          <h1 className="text-[36px] sm:text-[50px] font-display font-bold tracking-tight text-ink-primary mt-3 leading-[1.12]">
+          <h1 className="text-[38px] sm:text-[54px] font-display font-extrabold tracking-[-0.035em] text-ink-primary mt-3 leading-[1.08]">
             We do not lecture from slides. We put soldering irons into your hands on day one.
           </h1>
-          <p className="mt-6 text-[17px] text-ink-secondary leading-relaxed">
+          <p className="mt-6 text-[17px] sm:text-[19px] text-ink-secondary leading-relaxed max-w-[760px] mx-auto">
             {clubName} ({tagline}) is an autonomous collegiate laboratory based out of {labLocation}. Founded by undergraduate builders who refused to settle for theoretical computer science and canned breadboard kits.
           </p>
         </div>
 
         {/* Section 2: Founding Story */}
-        <div className="grid grid-cols-1 md:grid-cols-12 gap-8 my-20 p-8 sm:p-12 rounded-3xl bg-canvas-surface border border-subtle">
+        <SpotlightCard className="grid grid-cols-1 md:grid-cols-12 gap-8 my-20 p-8 sm:p-12 rounded-3xl">
           <div className="md:col-span-5 flex flex-col justify-between">
             <div>
-              <span className="text-[11px] font-mono uppercase tracking-widest text-apple-blue font-bold">
+              <span className="text-[11px] font-mono uppercase tracking-widest text-ink-tertiary font-bold">
                 THE GENESIS
               </span>
-              <h2 className="text-[28px] font-display font-bold text-ink-primary mt-2">
+              <h2 className="text-[28px] sm:text-[34px] font-display font-bold text-ink-primary mt-2 tracking-tight">
                 Born out of raw frustration with canned hobby kits.
               </h2>
             </div>
@@ -84,7 +85,7 @@ export default async function AboutPage() {
             </div>
           </div>
 
-          <div className="md:col-span-7 space-y-4 text-[15px] text-ink-secondary leading-relaxed">
+          <div className="md:col-span-7 space-y-4 text-[15.5px] text-ink-secondary leading-relaxed">
             <p>
               In 2021, a group of electrical and computer engineering students noticed a troubling disconnect: classrooms taught 1980s 8051 assembly on paper, while the frontier of autonomous robotics and edge silicon was advancing exponentially.
             </p>
@@ -95,63 +96,63 @@ export default async function AboutPage() {
               Today, {clubName} operates a 24/7 research bay equipped with 1GHz oscilloscopes, automated SMD reflow stations, high-speed 3D printers, and bare-metal server racks running our private compute cloud.
             </p>
           </div>
-        </div>
+        </SpotlightCard>
 
         {/* Section 3: Three Core Values */}
         <div className="my-24">
           <div className="text-center max-w-[600px] mx-auto mb-14">
-            <span className="text-[11px] font-mono uppercase tracking-widest text-apple-blue font-semibold">
+            <span className="text-[11px] font-mono uppercase tracking-widest text-ink-tertiary font-bold">
               THE ETHOS
             </span>
-            <h2 className="text-[30px] font-display font-bold text-ink-primary mt-2">
+            <h2 className="text-[30px] sm:text-[36px] font-display font-bold text-ink-primary mt-2 tracking-tight">
               {mottoText}
             </h2>
-            <p className="text-[14.5px] text-ink-secondary mt-2">
+            <p className="text-[15px] text-ink-secondary mt-2">
               The immutable principles etched into every PCB, chassis, and line of firmware.
             </p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {values.map((v) => {
+            {values.map((v, vIdx) => {
               const Icon = v.icon;
               return (
-                <div
-                  key={v.title}
-                  className="p-8 rounded-3xl bg-canvas-surface border border-subtle flex flex-col justify-between hover:border-apple-blue/30 transition-colors"
+                <SpotlightCard
+                  key={`${v.title}-${vIdx}`}
+                  className="p-8 rounded-3xl flex flex-col justify-between"
                 >
                   <div>
-                    <div className="w-12 h-12 rounded-2xl bg-canvas flex items-center justify-center text-apple-blue border border-subtle mb-6">
+                    <div className="w-12 h-12 rounded-2xl bg-canvas flex items-center justify-center text-ink-primary border border-subtle mb-6 shadow-sm">
                       <Icon className="h-6 w-6" />
                     </div>
                     <h3 className="text-[22px] font-display font-bold text-ink-primary">{v.title}</h3>
-                    <div className="text-[12px] font-mono text-apple-blue uppercase tracking-wider mt-1 mb-4">
+                    <div className="text-[12px] font-mono text-ink-secondary uppercase tracking-wider mt-1 mb-4">
                       {v.subtitle}
                     </div>
-                    <p className="text-[14px] text-ink-secondary leading-relaxed">
+                    <p className="text-[14.5px] text-ink-secondary leading-relaxed">
                       {v.desc}
                     </p>
                   </div>
-                </div>
+                </SpotlightCard>
               );
             })}
           </div>
         </div>
 
         {/* Section 4: Faculty Advisor & Institutional Guidance */}
-        <div className="my-24 p-8 sm:p-12 rounded-3xl bg-canvas-surface border border-subtle">
+        <SpotlightCard className="my-24 p-8 sm:p-12 rounded-3xl">
           <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-center">
             <div className="md:col-span-4 flex flex-col items-center sm:items-start text-center sm:text-left">
-              <div className="w-28 h-28 rounded-2xl bg-canvas border border-subtle flex items-center justify-center text-apple-blue shadow-sm mb-4">
-                <BookOpen className="h-12 w-12 text-apple-blue" />
+              <div className="w-24 h-24 rounded-2xl bg-canvas border border-subtle flex items-center justify-center text-ink-primary shadow-sm mb-4">
+                <BookOpen className="h-10 w-10 text-ink-primary" />
               </div>
               <h3 className="text-[20px] font-display font-bold text-ink-primary">Faculty Advisory Board</h3>
               <p className="text-[13px] text-ink-secondary mt-1">School of Engineering, COER University</p>
-              <div className="mt-3 inline-flex items-center gap-1.5 px-3 py-1 rounded-pill bg-canvas border border-subtle text-[11px] font-mono text-apple-blue">
+              <div className="mt-3 inline-flex items-center gap-1.5 px-3 py-1 rounded-pill bg-canvas border border-subtle text-[11px] font-mono text-ink-secondary">
                 <span>Academic Sponsorship</span>
               </div>
             </div>
 
-            <div className="md:col-span-8 text-[15px] text-ink-secondary leading-relaxed space-y-4">
+            <div className="md:col-span-8 text-[15.5px] text-ink-secondary leading-relaxed space-y-4">
               <p>
                 TRAIC operates under the official sanction and mentorship of senior faculty from the Department of Electronics &amp; Communication and Computer Science Engineering at COER University.
               </p>
@@ -160,18 +161,18 @@ export default async function AboutPage() {
               </p>
             </div>
           </div>
-        </div>
+        </SpotlightCard>
 
         {/* Section 5: Call to Action */}
         <div className="text-center py-12">
-          <h2 className="text-[26px] font-display font-bold text-ink-primary">Want to be part of our next chapter?</h2>
-          <p className="text-[15px] text-ink-secondary mt-2 max-w-[500px] mx-auto">
+          <h2 className="text-[28px] sm:text-[34px] font-display font-bold text-ink-primary tracking-tight">Want to be part of our next chapter?</h2>
+          <p className="text-[15.5px] text-ink-secondary mt-2 max-w-[520px] mx-auto">
             Admissions open once every semester. We evaluate commitment, problem-solving mindset, and engineering hunger.
           </p>
-          <div className="mt-8">
+          <div className="mt-8 flex justify-center">
             <Link
               href="/join"
-              className="inline-flex items-center justify-center min-h-[44px] px-8 rounded-pill bg-[#0071E3] hover:bg-[#0077ED] text-white font-medium text-[14px] transition-colors"
+              className="inline-flex items-center justify-center min-h-[48px] px-8 rounded-pill bg-ink-primary text-canvas hover:opacity-90 font-semibold text-[14.5px] transition-all active:scale-95 shadow-md"
             >
               Apply for Cohort 2026 →
             </Link>

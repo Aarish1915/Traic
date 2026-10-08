@@ -66,4 +66,6 @@ traic_comprehensive_plan.md
 *.tmp
 *.bak
 scripts/
+archive/
+tasks/
 *.pdf

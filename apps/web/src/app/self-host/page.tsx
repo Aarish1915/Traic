@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { Server, ShieldCheck, Terminal, Cpu, Database, Network, KeyRound, CheckCircle2 } from 'lucide-react';
+import { SpotlightCard } from '@/components/SpotlightCard';
 
 export const metadata = {
   title: 'Self-Hosted Systems Sovereignty — TRAIC Infrastructure',
@@ -67,18 +68,18 @@ export default function SelfHostPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-canvas text-ink-primary pt-32 pb-24 px-4">
+    <div className="min-h-screen bg-canvas text-ink-primary pt-32 pb-24 px-4 selection:bg-neutral-700 selection:text-white">
       <div className="w-full max-w-apple mx-auto">
         {/* Section 1: Hero */}
         <div className="text-center max-w-[840px] mx-auto mb-20">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-pill bg-canvas-surface border border-subtle text-[11px] font-mono text-apple-blue mb-4">
-            <span className="w-1.5 h-1.5 rounded-full bg-apple-blue animate-pulse" />
+          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-pill bg-canvas-surface border border-subtle text-[11px] font-mono text-ink-secondary mb-5 shadow-sm">
+            <span className="w-1.5 h-1.5 rounded-full bg-ink-primary/60 animate-pulse" />
             <span>SYSTEMS SOVEREIGNTY // BARE-METAL COMPUTE</span>
           </div>
-          <h1 className="text-[36px] sm:text-[52px] font-display font-bold tracking-tight text-ink-primary mt-2 leading-[1.08]">
+          <h1 className="text-[38px] sm:text-[54px] font-display font-extrabold tracking-[-0.035em] text-ink-primary mt-2 leading-[1.08]">
             We own our infrastructure. Every single bit of it.
           </h1>
-          <p className="mt-4 text-[16px] sm:text-[18px] text-ink-secondary leading-relaxed">
+          <p className="mt-4 text-[17px] sm:text-[19px] text-ink-secondary leading-relaxed max-w-[740px] mx-auto">
             While others rely on expensive proprietary cloud SaaS, TRAIC operates an on-premise server rack inside DIA Labs. We teach students the discipline of true systems engineering: hypervisors, ZFS storage pools, and private local neural inference.
           </p>
         </div>
@@ -86,24 +87,24 @@ export default function SelfHostPage() {
         {/* Section 2: Server Rack Specs */}
         <div className="mb-24">
           <div className="mb-8">
-            <span className="text-[11px] font-mono uppercase tracking-widest text-apple-blue font-semibold">
+            <span className="text-[11px] font-mono uppercase tracking-widest text-ink-tertiary font-bold">
               RACK HARDWARE SPECIFICATIONS
             </span>
-            <h2 className="text-[28px] font-display font-bold text-ink-primary mt-1">
+            <h2 className="text-[28px] font-display font-bold text-ink-primary mt-1 tracking-tight">
               DIA Labs Server Rack — 42U Array
             </h2>
           </div>
 
           <div className="space-y-8">
-            {rackNodes.map((node) => (
-              <div
-                key={node.name}
-                className="p-8 sm:p-10 rounded-3xl bg-canvas-surface border border-subtle hover:border-apple-blue/30 transition-colors"
+            {rackNodes.map((node, nIdx) => (
+              <SpotlightCard
+                key={`${node.name}-${nIdx}`}
+                className="p-8 sm:p-10 rounded-3xl"
               >
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
                   <div className="lg:col-span-5 flex flex-col justify-between">
                     <div>
-                      <span className="text-[11px] font-mono text-apple-blue font-bold block mb-1">
+                      <span className="text-[11px] font-mono text-ink-tertiary font-bold block mb-1">
                         {node.name}
                       </span>
                       <h3 className="text-[22px] sm:text-[26px] font-display font-bold text-ink-primary">
@@ -115,10 +116,10 @@ export default function SelfHostPage() {
                     </div>
 
                     <div className="mt-6 pt-6 border-t border-subtle">
-                      <span className="text-[11px] font-mono uppercase tracking-wider text-ink-tertiary block mb-2">
+                      <span className="text-[11px] font-mono uppercase tracking-wider text-ink-tertiary block mb-2 font-bold">
                         Operating System
                       </span>
-                      <span className="text-[14px] font-medium text-apple-blue">
+                      <span className="text-[14px] font-medium text-ink-primary font-mono">
                         {node.os}
                       </span>
                     </div>
@@ -126,13 +127,13 @@ export default function SelfHostPage() {
 
                   <div className="lg:col-span-7 space-y-6">
                     <div>
-                      <span className="text-[11px] font-mono uppercase tracking-widest text-ink-tertiary font-semibold block mb-3">
+                      <span className="text-[11px] font-mono uppercase tracking-widest text-ink-tertiary font-bold block mb-3">
                         Silicon &amp; Memory Allocation
                       </span>
                       <div className="space-y-2">
                         {node.specs.map((spec, sIdx) => (
-                          <div key={sIdx} className="p-3 rounded-xl bg-canvas border border-subtle text-[13px] font-mono text-ink-secondary flex items-start gap-2">
-                            <span className="text-apple-blue">›</span>
+                          <div key={sIdx} className="p-3.5 rounded-xl bg-canvas border border-subtle text-[13px] font-mono text-ink-secondary flex items-start gap-2">
+                            <span className="text-ink-tertiary">›</span>
                             <span>{spec}</span>
                           </div>
                         ))}
@@ -140,7 +141,7 @@ export default function SelfHostPage() {
                     </div>
 
                     <div>
-                      <span className="text-[11px] font-mono uppercase tracking-widest text-ink-tertiary font-semibold block mb-2">
+                      <span className="text-[11px] font-mono uppercase tracking-widest text-ink-tertiary font-bold block mb-2">
                         Active Services
                       </span>
                       <div className="flex flex-wrap gap-2">
@@ -153,7 +154,7 @@ export default function SelfHostPage() {
                     </div>
                   </div>
                 </div>
-              </div>
+              </SpotlightCard>
             ))}
           </div>
         </div>
@@ -161,10 +162,10 @@ export default function SelfHostPage() {
         {/* Section 3: Running Services Bento */}
         <div className="mb-24">
           <div className="mb-8">
-            <span className="text-[11px] font-mono uppercase tracking-widest text-apple-blue font-semibold">
+            <span className="text-[11px] font-mono uppercase tracking-widest text-ink-tertiary font-bold">
               LOCAL HOSTED APPLICATION STACK
             </span>
-            <h2 className="text-[28px] font-display font-bold text-ink-primary mt-1">
+            <h2 className="text-[28px] font-display font-bold text-ink-primary mt-1 tracking-tight">
               Zero Cloud Lock-in
             </h2>
             <p className="text-[15px] text-ink-secondary mt-1">
@@ -173,62 +174,62 @@ export default function SelfHostPage() {
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-            {runningServices.map((srv) => {
+            {runningServices.map((srv, sIdx) => {
               const Icon = srv.icon;
               return (
-                <div
-                  key={srv.name}
-                  className="p-6 rounded-3xl bg-canvas-surface border border-subtle flex flex-col justify-between hover:border-apple-blue/30 transition-colors"
+                <SpotlightCard
+                  key={`${srv.name}-${sIdx}`}
+                  className="p-6 rounded-3xl flex flex-col justify-between"
                 >
                   <div>
-                    <div className="w-10 h-10 rounded-xl bg-canvas border border-subtle flex items-center justify-center text-apple-blue mb-4">
+                    <div className="w-10 h-10 rounded-xl bg-canvas border border-subtle flex items-center justify-center text-ink-primary mb-4 shadow-sm">
                       <Icon className="h-5 w-5" />
                     </div>
                     <h3 className="text-[17px] font-display font-bold text-ink-primary">{srv.name}</h3>
                     <p className="text-[13.5px] text-ink-secondary mt-2 leading-relaxed">{srv.desc}</p>
                   </div>
-                  <div className="mt-6 pt-4 border-t border-subtle flex items-center gap-1.5 text-[11px] font-mono text-[var(--status-emerald)]">
-                    <span className="w-1.5 h-1.5 rounded-full bg-[var(--status-emerald)]" />
+                  <div className="mt-6 pt-4 border-t border-subtle flex items-center gap-1.5 text-[11px] font-mono text-ink-secondary">
+                    <span className="w-1.5 h-1.5 rounded-full bg-ink-primary/70" />
                     <span>Self-Hosted &amp; Healthy</span>
                   </div>
-                </div>
+                </SpotlightCard>
               );
             })}
           </div>
         </div>
 
         {/* Section 4: Student Builder Access Privileges */}
-        <div className="mb-20 p-8 sm:p-12 rounded-3xl bg-canvas-surface border border-subtle">
-          <div className="flex items-center gap-3 mb-6 text-apple-blue">
-            <ShieldCheck className="h-6 w-6 text-apple-blue" />
-            <h2 className="text-[24px] font-display font-bold text-ink-primary">
+        <SpotlightCard className="mb-20 p-8 sm:p-12 rounded-3xl">
+          <div className="flex items-center gap-3 mb-6 text-ink-primary">
+            <ShieldCheck className="h-6 w-6 text-ink-primary" />
+            <h2 className="text-[24px] sm:text-[28px] font-display font-bold text-ink-primary">
               Student Builder Access Package
             </h2>
           </div>
-          <p className="text-[15px] text-ink-secondary leading-relaxed mb-6 max-w-[720px]">
+          <p className="text-[15.5px] text-ink-secondary leading-relaxed mb-6 max-w-[720px]">
             Every admitted recruit receives immediate access to our self-hosted computing cluster upon clearing the 2-week lab induction.
           </p>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {memberPrivileges.map((priv, idx) => (
-              <div key={idx} className="p-4 rounded-2xl bg-canvas border border-subtle flex items-start gap-3 text-[13.5px] text-ink-secondary">
-                <CheckCircle2 className="h-4 w-4 text-apple-blue shrink-0 mt-0.5" />
+              <div key={idx} className="p-4 rounded-2xl bg-white/[0.04] border border-white/10 flex items-start gap-3 text-[14px] text-ink-secondary">
+                <CheckCircle2 className="h-4 w-4 text-ink-primary shrink-0 mt-0.5" />
                 <span>{priv}</span>
               </div>
             ))}
           </div>
-        </div>
+        </SpotlightCard>
 
         {/* Section 5: Admissions CTA */}
         <div className="text-center py-8">
-          <h2 className="text-[26px] font-display font-bold text-ink-primary">Want your own Linux shell account on our rack?</h2>
-          <p className="mt-2 text-[15px] text-ink-secondary max-w-[500px] mx-auto">
+          <h2 className="text-[28px] sm:text-[34px] font-display font-bold text-ink-primary tracking-tight">Want your own Linux shell account on our rack?</h2>
+          <p className="mt-2 text-[15.5px] text-ink-secondary max-w-[520px] mx-auto">
             Join the only student collective on campus with dedicated bare-metal infrastructure.
           </p>
-          <div className="mt-6">
+          <div className="mt-8 flex justify-center">
             <Link
               href="/join"
-              className="inline-flex items-center justify-center min-h-[44px] px-8 rounded-pill bg-[#0071E3] hover:bg-[#0077ED] text-white font-medium text-[14px] transition-colors"
+              className="inline-flex items-center justify-center min-h-[48px] px-8 rounded-pill bg-ink-primary text-canvas hover:opacity-90 font-semibold text-[14.5px] transition-all active:scale-95 shadow-md"
             >
               Apply for Cohort 2026 →
             </Link>

@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { ArrowRight, CheckCircle2, ChevronRight } from 'lucide-react';
+import { SpotlightCard } from '@/components/SpotlightCard';
 
 interface TrackItem {
   id?: string;
@@ -88,27 +89,27 @@ export default function LearnPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-canvas text-ink-primary pt-32 pb-24 px-4">
+    <div className="min-h-screen bg-canvas text-ink-primary pt-32 pb-24 px-4 selection:bg-neutral-700 selection:text-white">
       <div className="w-full max-w-apple mx-auto">
         {/* Section 1: Hero & Philosophy */}
         <div className="text-center max-w-[820px] mx-auto mb-20">
-          <span className="text-[11px] font-mono uppercase tracking-widest text-apple-blue font-semibold">
+          <span className="text-[11px] font-mono uppercase tracking-widest text-ink-tertiary font-bold">
             THE APPRENTICESHIP
           </span>
-          <h1 className="text-[36px] sm:text-[52px] font-display font-bold tracking-tight text-ink-primary mt-2 leading-[1.08]">
+          <h1 className="text-[38px] sm:text-[54px] font-display font-extrabold tracking-[-0.035em] text-ink-primary mt-2 leading-[1.08]">
             From zero to systems builder.
           </h1>
-          <p className="mt-4 text-[16px] sm:text-[18px] text-ink-secondary leading-relaxed">
+          <p className="mt-4 text-[17px] sm:text-[19px] text-ink-secondary leading-relaxed max-w-[720px] mx-auto">
             Our curriculum was authored by senior student engineers who build real robots. We don't grade multiple-choice exams — your code compiles, your board powers on without short-circuiting, and your machine navigates the obstacle course.
           </p>
         </div>
 
         {/* Section 2: 5-Stage Engineering Pipeline */}
-        <div className="mb-24 p-8 sm:p-10 rounded-3xl bg-canvas-surface border border-subtle">
-          <span className="text-[11px] font-mono uppercase tracking-widest text-apple-blue font-bold block mb-2">
+        <SpotlightCard className="mb-24 p-8 sm:p-10 rounded-3xl">
+          <span className="text-[11px] font-mono uppercase tracking-widest text-ink-tertiary font-bold block mb-2">
             THE METHODOLOGY
           </span>
-          <h2 className="text-[24px] font-display font-bold text-ink-primary mb-8">
+          <h2 className="text-[26px] font-display font-bold text-ink-primary mb-8 tracking-tight">
             5-Stage Engineering Pipeline
           </h2>
 
@@ -116,62 +117,62 @@ export default function LearnPage() {
             {pipelineStages.map((stage, idx) => (
               <div key={stage.title} className="p-4 rounded-2xl bg-canvas border border-subtle flex flex-col justify-between">
                 <div>
-                  <span className="text-[18px] font-mono font-bold text-apple-blue">{stage.num}</span>
-                  <h3 className="text-[15px] font-display font-semibold text-ink-primary mt-1">{stage.title}</h3>
-                  <p className="text-[12px] text-ink-secondary mt-2 leading-relaxed">{stage.desc}</p>
+                  <span className="text-[20px] font-mono font-bold text-ink-primary">{stage.num}</span>
+                  <h3 className="text-[15px] font-display font-bold text-ink-primary mt-1">{stage.title}</h3>
+                  <p className="text-[12.5px] text-ink-secondary mt-2 leading-relaxed">{stage.desc}</p>
                 </div>
                 {idx < pipelineStages.length - 1 && (
                   <div className="hidden md:flex justify-end text-ink-tertiary mt-4">
-                    <ChevronRight className="h-4 w-4 text-apple-blue/40" />
+                    <ChevronRight className="h-4 w-4 text-ink-tertiary" />
                   </div>
                 )}
               </div>
             ))}
           </div>
-        </div>
+        </SpotlightCard>
 
         {/* Section 3: The 4 Tracks */}
         <div className="mb-24">
           <div className="mb-10">
-            <span className="text-[11px] font-mono uppercase tracking-widest text-apple-blue font-semibold">
+            <span className="text-[11px] font-mono uppercase tracking-widest text-ink-tertiary font-bold">
               CURRICULUM SPECIALIZATIONS
             </span>
-            <h2 className="text-[28px] font-display font-bold text-ink-primary mt-1">
+            <h2 className="text-[28px] font-display font-bold text-ink-primary mt-1 tracking-tight">
               Four Specialized Tracks
             </h2>
-            <p className="text-[15px] text-ink-secondary mt-2 max-w-[620px]">
+            <p className="text-[15.5px] text-ink-secondary mt-2 max-w-[620px]">
               Every recruit chooses a primary track while collaborating on interdisciplinary teams.
             </p>
           </div>
 
           <div className="space-y-8">
             {tracks.map((track, i) => (
-              <div
-                key={track.title + i}
-                className="p-8 sm:p-10 rounded-3xl bg-canvas-surface border border-subtle hover:border-apple-blue/30 transition-colors"
+              <SpotlightCard
+                key={`${track.title}-${i}`}
+                className="p-8 sm:p-10 rounded-3xl"
               >
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
                   {/* Left Column: Track Info */}
                   <div className="lg:col-span-5 flex flex-col justify-between">
                     <div>
-                      <div className="inline-flex items-center gap-2 px-3 py-1 rounded-pill bg-canvas border border-subtle text-[11px] font-mono text-apple-blue mb-4">
+                      <div className="inline-flex items-center gap-2 px-3 py-1 rounded-pill bg-canvas border border-subtle text-[11px] font-mono text-ink-secondary mb-4">
                         <span>{track.level}</span>
                       </div>
                       <h3 className="text-[24px] sm:text-[28px] font-display font-bold text-ink-primary leading-tight">
                         {track.title}
                       </h3>
-                      <p className="mt-4 text-[14.5px] text-ink-secondary leading-relaxed">
+                      <p className="mt-4 text-[15px] text-ink-secondary leading-relaxed">
                         {track.summary}
                       </p>
                     </div>
 
                     <div className="mt-6 pt-6 border-t border-subtle">
-                      <span className="text-[11px] font-mono uppercase tracking-wider text-ink-tertiary block mb-3">
+                      <span className="text-[11px] font-mono uppercase tracking-wider text-ink-tertiary block mb-3 font-bold">
                         Lab Instruments &amp; Toolchain
                       </span>
                       <div className="flex flex-wrap gap-1.5">
                         {track.tools.map((tool) => (
-                          <span key={tool} className="px-2.5 py-1 rounded-lg bg-canvas border border-subtle text-[11px] font-mono text-apple-blue">
+                          <span key={tool} className="px-3 py-1 rounded-full bg-white/[0.06] border border-white/10 text-[11.5px] font-medium text-ink-secondary hover:text-ink-primary hover:border-white/20 transition-colors">
                             {tool}
                           </span>
                         ))}
@@ -180,61 +181,61 @@ export default function LearnPage() {
                   </div>
 
                   {/* Right Column: Concrete Outcomes */}
-                  <div className="lg:col-span-7 p-6 sm:p-8 rounded-2xl bg-canvas border border-subtle flex flex-col justify-between">
+                  <div className="lg:col-span-7 p-6 sm:p-8 rounded-2xl bg-white/[0.04] border border-white/10 flex flex-col justify-between">
                     <div>
-                      <span className="text-[11px] font-mono uppercase tracking-widest text-apple-blue font-bold block mb-4">
+                      <span className="text-[11px] font-mono uppercase tracking-widest text-ink-tertiary font-bold block mb-4">
                         TANGIBLE CAPABILITIES YOU WILL MASTER
                       </span>
                       <ul className="space-y-3.5 list-none p-0 m-0">
                         {track.outcomes.map((outcome, oIdx) => (
-                          <li key={oIdx} className="flex items-start gap-3 text-[13.5px] text-ink-secondary leading-relaxed">
-                            <CheckCircle2 className="h-4 w-4 text-[var(--status-emerald)] shrink-0 mt-0.5" />
+                          <li key={oIdx} className="flex items-start gap-3 text-[14px] text-ink-secondary leading-relaxed">
+                            <CheckCircle2 className="h-4 w-4 text-ink-primary shrink-0 mt-0.5" />
                             <span>{outcome}</span>
                           </li>
                         ))}
                       </ul>
                     </div>
 
-                    <div className="mt-8 pt-4 border-t border-subtle/50 flex items-center justify-between text-[12.5px]">
+                    <div className="mt-8 pt-4 border-t border-subtle/50 flex items-center justify-between text-[13px]">
                       <span className="text-ink-tertiary font-mono">Location: DIA Labs C-302</span>
                       <Link href="/join" className="text-apple-blue hover:underline inline-flex items-center gap-1 font-semibold min-h-[44px]">
                         <span>Enroll via Cohort 2026</span>
-                        <ArrowRight className="h-3 w-3" />
+                        <ArrowRight className="h-3.5 w-3.5" />
                       </Link>
                     </div>
                   </div>
                 </div>
-              </div>
+              </SpotlightCard>
             ))}
           </div>
         </div>
 
         {/* Section 4: What You Build & CTA */}
-        <div className="p-8 sm:p-12 rounded-3xl bg-canvas-surface border border-subtle text-center">
-          <span className="text-[11px] font-mono uppercase tracking-widest text-apple-blue font-semibold">
+        <SpotlightCard className="p-8 sm:p-12 rounded-3xl text-center">
+          <span className="text-[11px] font-mono uppercase tracking-widest text-ink-tertiary font-bold">
             PROOF OF WORK
           </span>
-          <h2 className="text-[28px] font-display font-bold text-ink-primary mt-2">
+          <h2 className="text-[28px] sm:text-[34px] font-display font-bold text-ink-primary mt-2 tracking-tight">
             Curriculum builds real machines, not toys.
           </h2>
-          <p className="mt-3 text-[15px] text-ink-secondary max-w-[600px] mx-auto">
+          <p className="mt-3 text-[15.5px] text-ink-secondary max-w-[600px] mx-auto">
             Explore past student machines or apply for the next intake cycle.
           </p>
           <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-4">
             <Link
               href="/projects"
-              className="inline-flex items-center justify-center min-h-[44px] px-6 rounded-pill bg-canvas-surface hover:bg-canvas-elevated text-ink-primary border border-subtle text-[14px] font-medium transition-colors"
+              className="inline-flex items-center justify-center min-h-[48px] px-7 rounded-pill bg-canvas-surface hover:bg-canvas-elevated text-ink-primary border border-subtle text-[14px] font-medium transition-colors active:scale-95"
             >
               Explore Hardware Archive
             </Link>
             <Link
               href="/join"
-              className="inline-flex items-center justify-center min-h-[44px] px-6 rounded-pill bg-[#0071E3] hover:bg-[#0077ED] text-white text-[14px] font-medium transition-colors"
+              className="inline-flex items-center justify-center min-h-[48px] px-8 rounded-pill bg-ink-primary text-canvas hover:opacity-90 text-[14.5px] font-semibold transition-all active:scale-95 shadow-md"
             >
               Apply for Cohort 2026 →
             </Link>
           </div>
-        </div>
+        </SpotlightCard>
       </div>
     </div>
   );

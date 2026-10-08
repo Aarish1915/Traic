@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { ArrowRight, Trophy, Medal } from 'lucide-react';
+import { SpotlightCard } from '@/components/SpotlightCard';
 
 export const metadata = {
   title: 'National Track Record & IP Honors — TRAIC',
@@ -99,17 +100,17 @@ export default async function AchievementsPage() {
   const companies = ['Texas Instruments', 'Qualcomm', 'Bosch Engineering', 'ISRO', 'NVIDIA'];
 
   return (
-    <div className="min-h-screen bg-canvas text-ink-primary pt-32 pb-24 px-4">
+    <div className="min-h-screen bg-canvas text-ink-primary pt-32 pb-24 px-4 selection:bg-neutral-700 selection:text-white">
       <div className="w-full max-w-apple mx-auto">
         {/* Section 1: Hero */}
         <div className="text-center max-w-[820px] mx-auto mb-20">
-          <span className="text-[11px] font-mono uppercase tracking-widest text-apple-blue font-semibold">
+          <span className="text-[11px] font-mono uppercase tracking-widest text-ink-tertiary font-bold">
             NATIONAL TRACK RECORD &amp; IP
           </span>
-          <h1 className="text-[36px] sm:text-[52px] font-display font-bold tracking-tight text-ink-primary mt-2 leading-[1.08]">
+          <h1 className="text-[38px] sm:text-[54px] font-display font-extrabold tracking-[-0.035em] text-ink-primary mt-2 leading-[1.08]">
             We compete. We win. We file patents.
           </h1>
-          <p className="mt-4 text-[16px] sm:text-[18px] text-ink-secondary leading-relaxed">
+          <p className="mt-4 text-[17px] sm:text-[19px] text-ink-secondary leading-relaxed max-w-[720px] mx-auto">
             Our teams represent COER University at India's highest collegiate engineering stages. We do not participate for participation certificates — we build to set the national benchmark.
           </p>
         </div>
@@ -118,10 +119,10 @@ export default async function AchievementsPage() {
         <div className="mb-24">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
             {/* Big Award Card: SIH 2024 (7 Cols) */}
-            <div className="lg:col-span-7 p-8 sm:p-12 rounded-3xl bg-canvas-surface border border-subtle flex flex-col justify-between hover:border-apple-blue/40 transition-colors">
+            <SpotlightCard className="lg:col-span-7 p-8 sm:p-12 rounded-3xl flex flex-col justify-between">
               <div>
                 <div className="flex items-center justify-between gap-2 mb-6">
-                  <span className="px-3 py-1 rounded-pill bg-apple-blue/15 text-apple-blue border border-apple-blue/30 text-[11px] font-mono font-bold uppercase">
+                  <span className="px-3 py-1 rounded-pill bg-canvas border border-subtle text-ink-primary text-[11px] font-mono font-bold uppercase tracking-wider">
                     1ST PLACE NATIONAL CHAMPIONS
                   </span>
                   <span className="text-[12px] font-mono text-ink-tertiary">2024</span>
@@ -129,30 +130,30 @@ export default async function AchievementsPage() {
                 <h2 className="text-[28px] sm:text-[34px] font-display font-bold text-ink-primary leading-tight">
                   Smart India Hackathon 2024
                 </h2>
-                <p className="text-[13px] font-mono text-apple-blue mt-1">
+                <p className="text-[13.5px] font-mono text-ink-secondary mt-1 font-medium">
                   Ministry of Education &amp; AICTE Hardware Edition
                 </p>
-                <p className="mt-6 text-[15px] text-ink-secondary leading-relaxed">
+                <p className="mt-6 text-[15.5px] text-ink-secondary leading-relaxed">
                   Competed against 2,400+ national universities in the Hardware Grand Finale. Fabricated an autonomous pipeline inspection crawler inside the 36-hour live sprint with operational ultrasonic sensor thickness scanning and CAN-FD telemetry.
                 </p>
               </div>
 
               <div className="mt-8 pt-6 border-t border-subtle flex flex-wrap items-center justify-between gap-4 text-[13px]">
                 <div className="flex items-center gap-2 text-ink-primary font-mono font-medium">
-                  <Trophy className="h-4 w-4 text-apple-blue" />
-                  <span>Prize: ₹1,00,000 + Prototype Incubation Grant</span>
+                  <Trophy className="h-4 w-4 text-ink-primary" />
+                  <span>Prize: ₹1,00,000 + Incubation Grant</span>
                 </div>
                 <span className="text-ink-tertiary font-mono">Status: Verified</span>
               </div>
-            </div>
+            </SpotlightCard>
 
             {/* Right Column: 2 Cards (5 Cols) */}
             <div className="lg:col-span-5 flex flex-col gap-6">
               {/* Robocon Card */}
-              <div className="p-8 rounded-3xl bg-canvas-surface border border-subtle flex flex-col justify-between hover:border-apple-blue/30 transition-colors">
+              <SpotlightCard className="p-8 rounded-3xl flex flex-col justify-between">
                 <div>
                   <div className="flex items-center justify-between mb-4">
-                    <span className="px-2.5 py-0.5 rounded-pill bg-canvas border border-subtle text-[10.5px] font-mono text-apple-blue font-bold uppercase">
+                    <span className="px-2.5 py-0.5 rounded-pill bg-canvas border border-subtle text-[10.5px] font-mono text-ink-primary font-bold uppercase">
                       ALL-INDIA RANK 4
                     </span>
                     <span className="text-[11px] font-mono text-ink-tertiary">2024</span>
@@ -161,20 +162,20 @@ export default async function AchievementsPage() {
                     DD Robocon India National Finals
                   </h3>
                   <p className="text-[12px] font-mono text-ink-tertiary mt-0.5">Doordarshan &amp; IIT Delhi</p>
-                  <p className="mt-3 text-[13.5px] text-ink-secondary leading-relaxed">
+                  <p className="mt-3 text-[14px] text-ink-secondary leading-relaxed">
                     Designed high-power brushless flywheel shooting system with closed-loop PID control and sub-0.1mm launch trajectory repeatability.
                   </p>
                 </div>
-                <div className="mt-6 pt-4 border-t border-subtle text-[11px] font-mono text-apple-blue">
+                <div className="mt-6 pt-4 border-t border-subtle text-[11px] font-mono text-ink-secondary">
                   Awarded Best Mechanical System Architecture
                 </div>
-              </div>
+              </SpotlightCard>
 
               {/* Patent Card */}
-              <div className="p-8 rounded-3xl bg-canvas-surface border border-subtle flex flex-col justify-between hover:border-apple-blue/30 transition-colors">
+              <SpotlightCard className="p-8 rounded-3xl flex flex-col justify-between">
                 <div>
                   <div className="flex items-center justify-between mb-4">
-                    <span className="px-2.5 py-0.5 rounded-pill bg-canvas border border-subtle text-[10.5px] font-mono text-apple-blue font-bold uppercase">
+                    <span className="px-2.5 py-0.5 rounded-pill bg-canvas border border-subtle text-[10.5px] font-mono text-ink-primary font-bold uppercase">
                       PATENT FILED
                     </span>
                     <span className="text-[11px] font-mono text-ink-tertiary">2024</span>
@@ -183,15 +184,15 @@ export default async function AchievementsPage() {
                     IPO Docket No. 2024110892
                   </h3>
                   <p className="text-[12px] font-mono text-ink-tertiary mt-0.5">Indian Patent Office, New Delhi</p>
-                  <p className="mt-3 text-[13.5px] text-ink-secondary leading-relaxed">
+                  <p className="mt-3 text-[14px] text-ink-secondary leading-relaxed">
                     &ldquo;Distributed Fault-Tolerant CAN-FD Communication Bus for Multi-Rotor UAV Safety Interlocks&rdquo;.
                   </p>
                 </div>
-                <div className="mt-6 pt-4 border-t border-subtle text-[11px] font-mono text-[var(--status-emerald)] flex items-center gap-1.5">
-                  <span className="w-1.5 h-1.5 rounded-full bg-[var(--status-emerald)]" />
+                <div className="mt-6 pt-4 border-t border-subtle text-[11px] font-mono text-ink-secondary flex items-center gap-1.5">
+                  <span className="w-1.5 h-1.5 rounded-full bg-ink-primary/70" />
                   <span>Official Application Published</span>
                 </div>
-              </div>
+              </SpotlightCard>
             </div>
           </div>
         </div>
@@ -199,23 +200,23 @@ export default async function AchievementsPage() {
         {/* Section 3: All Achievements Grid */}
         <div className="mb-24">
           <div className="mb-8">
-            <span className="text-[11px] font-mono uppercase tracking-widest text-apple-blue font-semibold">
+            <span className="text-[11px] font-mono uppercase tracking-widest text-ink-tertiary font-bold">
               HONORS DIRECTORY
             </span>
-            <h2 className="text-[26px] font-display font-bold text-ink-primary mt-1">
+            <h2 className="text-[28px] font-display font-bold text-ink-primary mt-1 tracking-tight">
               All Laurels &amp; Recognitions
             </h2>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {achievements.map((item, idx) => (
-              <div
-                key={item.title + idx}
-                className="p-6 rounded-3xl bg-canvas-surface border border-subtle flex flex-col justify-between hover:border-apple-blue/30 transition-colors"
+              <SpotlightCard
+                key={`${item.title}-${idx}`}
+                className="p-6 rounded-3xl flex flex-col justify-between"
               >
                 <div>
                   <div className="flex items-center justify-between mb-3">
-                    <span className="text-[10.5px] font-mono text-apple-blue uppercase font-bold tracking-wider">
+                    <span className="text-[10.5px] font-mono text-ink-tertiary uppercase font-bold tracking-wider">
                       {item.level}
                     </span>
                     <span className="text-[11px] font-mono text-ink-tertiary">{item.year}</span>
@@ -225,43 +226,43 @@ export default async function AchievementsPage() {
                     {item.title}
                   </h3>
 
-                  <p className="text-[12.5px] font-medium text-ink-secondary mt-1">
+                  <p className="text-[13px] font-medium text-ink-secondary mt-1">
                     {item.eventName}
                   </p>
 
-                  <p className="mt-3 text-[13.5px] text-ink-secondary leading-relaxed">
+                  <p className="mt-3 text-[14px] text-ink-secondary leading-relaxed">
                     {item.description}
                   </p>
                 </div>
 
                 {item.rank && (
-                  <div className="mt-6 pt-4 border-t border-subtle flex items-center gap-2 text-[12px] font-mono text-apple-blue">
-                    <Medal className="h-3.5 w-3.5" />
+                  <div className="mt-6 pt-4 border-t border-subtle flex items-center gap-2 text-[12px] font-mono text-ink-secondary">
+                    <Medal className="h-3.5 w-3.5 text-ink-tertiary" />
                     <span>{item.rank}</span>
                   </div>
                 )}
-              </div>
+              </SpotlightCard>
             ))}
           </div>
         </div>
 
         {/* Section 4: Alumni Placement Strip */}
-        <div className="mb-20 p-8 rounded-3xl bg-canvas-surface border border-subtle text-center">
-          <span className="text-[11px] font-mono uppercase tracking-wider text-ink-tertiary block mb-4">
+        <SpotlightCard className="mb-20 p-8 rounded-3xl text-center">
+          <span className="text-[11px] font-mono uppercase tracking-wider text-ink-tertiary font-bold block mb-4">
             WHERE OUR CHAMPIONSHIP BUILDERS WORK TODAY
           </span>
           <div className="flex flex-wrap items-center justify-center gap-6 sm:gap-12 font-display font-bold text-[16px] sm:text-[18px] text-ink-primary">
             {companies.map((c) => (
-              <span key={c} className="hover:text-apple-blue transition-colors">{c}</span>
+              <span key={c} className="hover:text-ink-primary transition-colors">{c}</span>
             ))}
           </div>
           <div className="mt-6">
-            <Link href="/alumni" className="text-[13px] font-medium text-apple-blue hover:underline inline-flex items-center gap-1 min-h-[44px]">
+            <Link href="/alumni" className="text-[13.5px] font-medium text-apple-blue hover:underline inline-flex items-center gap-1 min-h-[44px]">
               <span>View full Alumni Network</span>
               <ArrowRight className="h-3.5 w-3.5" />
             </Link>
           </div>
-        </div>
+        </SpotlightCard>
       </div>
     </div>
   );

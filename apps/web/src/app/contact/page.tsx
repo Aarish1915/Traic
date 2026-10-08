@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { Mail, MapPin, CheckCircle2, AlertCircle, Clock } from 'lucide-react';
+import { SpotlightCard } from '@/components/SpotlightCard';
 
 export default function ContactPage() {
   const [submitted, setSubmitted] = useState(false);
@@ -79,17 +80,17 @@ export default function ContactPage() {
   };
 
   return (
-    <div className="min-h-screen bg-canvas text-ink-primary pt-32 pb-24 px-4">
+    <div className="min-h-screen bg-canvas text-ink-primary pt-32 pb-24 px-4 selection:bg-neutral-700 selection:text-white">
       <div className="w-full max-w-apple mx-auto">
         {/* Header */}
         <div className="max-w-3xl mb-16">
-          <span className="text-[11px] font-mono uppercase tracking-widest text-apple-blue font-semibold">
+          <span className="text-[11px] font-mono uppercase tracking-widest text-ink-tertiary font-bold">
             COMMUNICATIONS &amp; INQUIRIES
           </span>
-          <h1 className="text-[36px] sm:text-[52px] font-display font-bold tracking-tight text-ink-primary mt-2 leading-[1.08]">
+          <h1 className="text-[38px] sm:text-[54px] font-display font-extrabold tracking-[-0.035em] text-ink-primary mt-2 leading-[1.08]">
             Get in touch with DIA Labs.
           </h1>
-          <p className="mt-4 text-[16px] text-ink-secondary leading-relaxed">
+          <p className="mt-4 text-[17px] text-ink-secondary leading-relaxed">
             Whether you are an industry partner looking to sponsor an autonomous hardware challenge, an applicant with questions, or an engineering researcher seeking collaboration.
           </p>
         </div>
@@ -97,18 +98,18 @@ export default function ContactPage() {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
           {/* Left Column: Direct Contact & Facility Details */}
           <div className="lg:col-span-5 space-y-6">
-            <div className="p-8 rounded-3xl bg-canvas-surface border border-subtle">
-              <h2 className="text-[20px] font-display font-bold text-ink-primary mb-6">
+            <SpotlightCard className="p-8 rounded-3xl">
+              <h2 className="text-[20px] font-display font-bold text-ink-primary mb-6 tracking-tight">
                 Laboratory Headquarters
               </h2>
 
               <div className="space-y-6 text-[14px]">
                 <div className="flex items-start gap-4">
-                  <div className="w-10 h-10 rounded-xl bg-canvas border border-subtle flex items-center justify-center text-apple-blue shrink-0">
+                  <div className="w-10 h-10 rounded-xl bg-canvas border border-subtle flex items-center justify-center text-ink-primary shrink-0 shadow-sm">
                     <MapPin className="h-5 w-5" />
                   </div>
                   <div>
-                    <span className="text-[11px] font-mono uppercase text-ink-tertiary block mb-1">
+                    <span className="text-[11px] font-mono uppercase text-ink-tertiary block mb-1 font-bold">
                       Physical Location
                     </span>
                     <p className="text-ink-primary font-medium leading-relaxed whitespace-pre-line">
@@ -118,16 +119,16 @@ export default function ContactPage() {
                 </div>
 
                 <div className="flex items-start gap-4">
-                  <div className="w-10 h-10 rounded-xl bg-canvas border border-subtle flex items-center justify-center text-apple-blue shrink-0">
+                  <div className="w-10 h-10 rounded-xl bg-canvas border border-subtle flex items-center justify-center text-ink-primary shrink-0 shadow-sm">
                     <Mail className="h-5 w-5" />
                   </div>
                   <div>
-                    <span className="text-[11px] font-mono uppercase text-ink-tertiary block mb-1">
+                    <span className="text-[11px] font-mono uppercase text-ink-tertiary block mb-1 font-bold">
                       Official Inquiries
                     </span>
                     <a
                       href={`mailto:${siteSettings.contactEmail}`}
-                      className="text-apple-blue hover:underline font-mono text-[13.5px] min-h-[44px] inline-flex items-center"
+                      className="text-apple-blue hover:underline font-mono text-[13.5px] min-h-[44px] inline-flex items-center font-medium"
                     >
                       {siteSettings.contactEmail}
                     </a>
@@ -135,11 +136,11 @@ export default function ContactPage() {
                 </div>
 
                 <div className="flex items-start gap-4">
-                  <div className="w-10 h-10 rounded-xl bg-canvas border border-subtle flex items-center justify-center text-apple-blue shrink-0">
+                  <div className="w-10 h-10 rounded-xl bg-canvas border border-subtle flex items-center justify-center text-ink-primary shrink-0 shadow-sm">
                     <Clock className="h-5 w-5" />
                   </div>
                   <div>
-                    <span className="text-[11px] font-mono uppercase text-ink-tertiary block mb-1">
+                    <span className="text-[11px] font-mono uppercase text-ink-tertiary block mb-1 font-bold">
                       Bench Access Schedule
                     </span>
                     <p className="text-ink-secondary leading-relaxed">
@@ -149,28 +150,28 @@ export default function ContactPage() {
                   </div>
                 </div>
               </div>
-            </div>
+            </SpotlightCard>
 
-            <div className="p-6 rounded-3xl bg-canvas-surface border border-subtle text-[13px] text-ink-secondary leading-relaxed">
-              <span className="text-[11px] font-mono uppercase tracking-wider text-apple-blue font-bold block mb-2">
+            <SpotlightCard className="p-6 rounded-3xl text-[13.5px] text-ink-secondary leading-relaxed">
+              <span className="text-[11px] font-mono uppercase tracking-wider text-ink-tertiary font-bold block mb-2">
                 ACADEMIC &amp; SPONSORSHIP LIAISON
               </span>
               Official university purchase orders, component donations, or grant proposals should be directed to the faculty advisory board via institutional mail.
-            </div>
+            </SpotlightCard>
           </div>
 
           {/* Right Column: Contact Dispatch Form */}
           <div className="lg:col-span-7">
-            <div className="p-8 sm:p-10 rounded-3xl bg-canvas-surface border border-subtle">
+            <SpotlightCard className="p-8 sm:p-10 rounded-3xl">
               {submitted ? (
                 <div className="text-center py-10">
-                  <div className="w-14 h-14 rounded-full bg-apple-blue/15 text-apple-blue flex items-center justify-center mx-auto mb-4 border border-apple-blue/30">
-                    <CheckCircle2 className="h-7 w-7 text-apple-blue" />
+                  <div className="w-14 h-14 rounded-full bg-white/[0.08] border border-white/15 text-ink-primary flex items-center justify-center mx-auto mb-4 shadow-sm">
+                    <CheckCircle2 className="h-7 w-7 text-ink-primary" />
                   </div>
-                  <h3 className="text-[22px] font-display font-bold text-ink-primary">
+                  <h3 className="text-[22px] sm:text-[26px] font-display font-bold text-ink-primary tracking-tight">
                     Message Dispatched
                   </h3>
-                  <p className="mt-2 text-[14.5px] text-ink-secondary max-w-[440px] mx-auto leading-relaxed">
+                  <p className="mt-2 text-[15px] text-ink-secondary max-w-[440px] mx-auto leading-relaxed">
                     Thank you for reaching out. A coordinator from DIA Labs will review your note and respond within 24 to 48 hours.
                   </p>
                   <button
@@ -178,7 +179,7 @@ export default function ContactPage() {
                       setSubmitted(false);
                       setFormData({ name: '', email: '', subject: '', message: '', honeypot: '', dpdpConsent: false });
                     }}
-                    className="mt-6 inline-flex items-center justify-center min-h-[44px] px-6 rounded-pill bg-canvas hover:bg-canvas-elevated text-apple-blue border border-subtle text-[13px] font-semibold transition-colors cursor-pointer"
+                    className="mt-6 inline-flex items-center justify-center min-h-[44px] px-6 rounded-pill bg-canvas-surface hover:bg-canvas-elevated text-ink-primary border border-subtle text-[13.5px] font-medium transition-all active:scale-95 cursor-pointer shadow-sm"
                   >
                     Send Another Note
                   </button>
@@ -186,16 +187,16 @@ export default function ContactPage() {
               ) : (
                 <form onSubmit={handleSubmit} className="space-y-5">
                   <div>
-                    <h2 className="text-[22px] font-display font-bold text-ink-primary">
+                    <h2 className="text-[22px] sm:text-[26px] font-display font-bold text-ink-primary tracking-tight">
                       Dispatch a Message
                     </h2>
-                    <p className="text-[13px] text-ink-secondary mt-1">
+                    <p className="text-[13.5px] text-ink-secondary mt-1">
                       Our communications coordinator monitors this inbox daily.
                     </p>
                   </div>
 
                   {errorMsg && (
-                    <div className="p-4 rounded-xl bg-red-500/10 border border-red-500/30 text-red-500 text-[13px] flex items-center gap-2">
+                    <div className="p-4 rounded-xl bg-red-500/10 border border-red-500/30 text-red-400 text-[13px] flex items-center gap-2">
                       <AlertCircle className="h-4 w-4 shrink-0" />
                       <span>{errorMsg}</span>
                     </div>
@@ -216,7 +217,7 @@ export default function ContactPage() {
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
-                      <label htmlFor="name" className="text-[11px] font-mono text-ink-tertiary uppercase block mb-1">
+                      <label htmlFor="name" className="text-[11px] font-mono text-ink-tertiary uppercase block mb-1 font-bold">
                         Your Name *
                       </label>
                       <input
@@ -226,12 +227,12 @@ export default function ContactPage() {
                         value={formData.name}
                         onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                         placeholder="e.g. Dr. Ramesh Sharma"
-                        className="w-full px-4 min-h-[44px] rounded-xl bg-canvas border border-subtle text-[14px] text-ink-primary focus:border-apple-blue focus:outline-none"
+                        className="w-full px-4 min-h-[46px] rounded-xl bg-canvas border border-subtle text-[14px] text-ink-primary focus:border-ink-primary focus:outline-none"
                       />
                     </div>
 
                     <div>
-                      <label htmlFor="email" className="text-[11px] font-mono text-ink-tertiary uppercase block mb-1">
+                      <label htmlFor="email" className="text-[11px] font-mono text-ink-tertiary uppercase block mb-1 font-bold">
                         Email Address *
                       </label>
                       <input
@@ -241,13 +242,13 @@ export default function ContactPage() {
                         value={formData.email}
                         onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                         placeholder="you@domain.com"
-                        className="w-full px-4 min-h-[44px] rounded-xl bg-canvas border border-subtle text-[14px] text-ink-primary focus:border-apple-blue focus:outline-none"
+                        className="w-full px-4 min-h-[46px] rounded-xl bg-canvas border border-subtle text-[14px] text-ink-primary focus:border-ink-primary focus:outline-none"
                       />
                     </div>
                   </div>
 
                   <div>
-                    <label htmlFor="subject" className="text-[11px] font-mono text-ink-tertiary uppercase block mb-1">
+                    <label htmlFor="subject" className="text-[11px] font-mono text-ink-tertiary uppercase block mb-1 font-bold">
                       Subject / Topic *
                     </label>
                     <input
@@ -257,12 +258,12 @@ export default function ContactPage() {
                       value={formData.subject}
                       onChange={(e) => setFormData({ ...formData, subject: e.target.value })}
                       placeholder="e.g. Industry Hardware Sponsorship / Robocon Collaboration"
-                      className="w-full px-4 min-h-[44px] rounded-xl bg-canvas border border-subtle text-[14px] text-ink-primary focus:border-apple-blue focus:outline-none"
+                      className="w-full px-4 min-h-[46px] rounded-xl bg-canvas border border-subtle text-[14px] text-ink-primary focus:border-ink-primary focus:outline-none"
                     />
                   </div>
 
                   <div>
-                    <label htmlFor="message" className="text-[11px] font-mono text-ink-tertiary uppercase block mb-1">
+                    <label htmlFor="message" className="text-[11px] font-mono text-ink-tertiary uppercase block mb-1 font-bold">
                       Message *
                     </label>
                     <textarea
@@ -272,7 +273,7 @@ export default function ContactPage() {
                       value={formData.message}
                       onChange={(e) => setFormData({ ...formData, message: e.target.value })}
                       placeholder="Please include project background, timeline, or relevant technical requirements."
-                      className="w-full p-4 rounded-xl bg-canvas border border-subtle text-[14px] text-ink-primary focus:border-apple-blue focus:outline-none resize-none leading-relaxed"
+                      className="w-full p-4 rounded-xl bg-canvas border border-subtle text-[14px] text-ink-primary focus:border-ink-primary focus:outline-none resize-none leading-relaxed"
                     />
                   </div>
 
@@ -286,7 +287,7 @@ export default function ContactPage() {
                         required
                         checked={formData.dpdpConsent}
                         onChange={(e) => setFormData({ ...formData, dpdpConsent: e.target.checked })}
-                        className="mt-0.5 rounded border-subtle bg-canvas text-apple-blue focus:ring-apple-blue h-4 w-4"
+                        className="mt-0.5 rounded border-subtle bg-canvas text-ink-primary focus:ring-ink-primary h-4 w-4"
                       />
                       <span>
                         I consent to TRAIC storing my message and contact info for communication purposes under the DPDP Act 2023.
@@ -297,13 +298,13 @@ export default function ContactPage() {
                   <button
                     type="submit"
                     disabled={loading || !formData.dpdpConsent}
-                    className="w-full min-h-[44px] h-12 rounded-pill bg-[#0071E3] hover:bg-[#0077ED] disabled:opacity-50 text-white font-semibold text-[14px] transition-colors cursor-pointer"
+                    className="w-full min-h-[48px] h-12 rounded-pill bg-ink-primary text-canvas hover:opacity-90 disabled:opacity-50 font-semibold text-[14.5px] transition-all active:scale-95 shadow-md cursor-pointer"
                   >
                     {loading ? 'Transmitting Note...' : 'Dispatch Message →'}
                   </button>
                 </form>
               )}
-            </div>
+            </SpotlightCard>
           </div>
         </div>
       </div>

@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { ArrowUp } from 'lucide-react';
-import { IconLogo } from './SFSymbols';
+import { TraicLogo } from './TraicLogo';
 import { ThemeToggle } from './ThemeToggle';
 
 export function AppleFooter() {
@@ -13,21 +13,21 @@ export function AppleFooter() {
   };
 
   return (
-    <footer className="border-t border-separator bg-canvas pt-16 pb-28 md:pb-16 text-ink-secondary" aria-label="Footer">
+    <footer className="border-t border-subtle bg-canvas pt-16 pb-28 md:pb-16 text-ink-secondary selection:bg-neutral-700 selection:text-white" aria-label="Footer">
       <div className="w-full max-w-apple mx-auto px-4">
         {/* Main 4-Column Grid */}
         <div className="grid grid-cols-1 md:grid-cols-12 gap-10 pb-12 border-b border-subtle">
           {/* Brand Identity & Mission */}
           <div className="md:col-span-4">
             <Link href="/" className="inline-flex items-center gap-3 group min-h-[44px]">
-              <div className="w-9 h-9 rounded-xl bg-canvas-surface border border-subtle flex items-center justify-center text-apple-blue shadow-sm group-hover:border-apple-blue/40 transition-colors">
-                <IconLogo size={20} />
+              <div className="w-9 h-9 rounded-xl bg-canvas-surface border border-subtle flex items-center justify-center text-ink-primary shadow-sm group-hover:border-ink-primary/40 transition-colors">
+                <TraicLogo size={20} />
               </div>
               <div className="flex flex-col">
-                <span className="text-[17px] font-semibold tracking-tight text-ink-primary group-hover:text-apple-blue transition-colors">
+                <span className="text-[17px] font-bold tracking-tight text-ink-primary group-hover:text-ink-primary transition-colors">
                   TRAIC
                 </span>
-                <span className="text-[11px] font-mono tracking-widest text-ink-tertiary uppercase">
+                <span className="text-[10.5px] font-mono tracking-widest text-ink-tertiary uppercase">
                   Robotics &amp; AI Community
                 </span>
               </div>
@@ -43,7 +43,7 @@ export function AppleFooter() {
                 href="https://github.com/traiccoer2025-code"
                 target="_blank"
                 rel="noreferrer"
-                className="w-11 h-11 rounded-pill bg-canvas-surface border border-subtle flex items-center justify-center hover:border-apple-blue hover:text-apple-blue transition-colors cursor-pointer"
+                className="w-11 h-11 rounded-pill bg-canvas-surface border border-subtle flex items-center justify-center text-ink-secondary hover:text-ink-primary transition-all active:scale-95 cursor-pointer shadow-sm"
                 aria-label="GitHub Organization"
               >
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
@@ -54,7 +54,7 @@ export function AppleFooter() {
                 href="https://linkedin.com"
                 target="_blank"
                 rel="noreferrer"
-                className="w-11 h-11 rounded-pill bg-canvas-surface border border-subtle flex items-center justify-center hover:border-apple-blue hover:text-apple-blue transition-colors cursor-pointer"
+                className="w-11 h-11 rounded-pill bg-canvas-surface border border-subtle flex items-center justify-center text-ink-secondary hover:text-ink-primary transition-all active:scale-95 cursor-pointer shadow-sm"
                 aria-label="LinkedIn Profile"
               >
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
@@ -65,7 +65,7 @@ export function AppleFooter() {
                 href="https://instagram.com"
                 target="_blank"
                 rel="noreferrer"
-                className="w-11 h-11 rounded-pill bg-canvas-surface border border-subtle flex items-center justify-center hover:border-apple-blue hover:text-apple-blue transition-colors cursor-pointer"
+                className="w-11 h-11 rounded-pill bg-canvas-surface border border-subtle flex items-center justify-center text-ink-secondary hover:text-ink-primary transition-all active:scale-95 cursor-pointer shadow-sm"
                 aria-label="Instagram Profile"
               >
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
@@ -77,32 +77,32 @@ export function AppleFooter() {
 
           {/* Column 2: Platform & Systems */}
           <div className="md:col-span-3">
-            <h4 className="text-[12px] font-mono uppercase tracking-[0.1em] text-ink-primary font-semibold mb-4">
+            <h4 className="text-[12px] font-mono uppercase tracking-[0.1em] text-ink-primary font-bold mb-4">
               Hardware &amp; Work
             </h4>
             <ul className="space-y-3 text-[14px] list-none p-0 m-0">
               <li>
-                <Link href="/projects" className="hover:text-apple-blue transition-colors min-h-[44px] inline-flex items-center">
+                <Link href="/projects" className="hover:text-ink-primary transition-colors min-h-[44px] inline-flex items-center">
                   Hardware Archive
                 </Link>
               </li>
               <li>
-                <Link href="/gear" className="hover:text-apple-blue transition-colors min-h-[44px] inline-flex items-center">
+                <Link href="/gear" className="hover:text-ink-primary transition-colors min-h-[44px] inline-flex items-center">
                   DIA Labs Instruments
                 </Link>
               </li>
               <li>
-                <Link href="/self-host" className="hover:text-apple-blue transition-colors min-h-[44px] inline-flex items-center">
+                <Link href="/self-host" className="hover:text-ink-primary transition-colors min-h-[44px] inline-flex items-center">
                   Systems Sovereignty
                 </Link>
               </li>
               <li>
-                <Link href="/achievements" className="hover:text-apple-blue transition-colors min-h-[44px] inline-flex items-center">
+                <Link href="/achievements" className="hover:text-ink-primary transition-colors min-h-[44px] inline-flex items-center">
                   Verified Honors
                 </Link>
               </li>
               <li>
-                <Link href="/learn" className="hover:text-apple-blue transition-colors min-h-[44px] inline-flex items-center">
+                <Link href="/learn" className="hover:text-ink-primary transition-colors min-h-[44px] inline-flex items-center">
                   Apprenticeship Tracks
                 </Link>
               </li>
@@ -111,32 +111,32 @@ export function AppleFooter() {
 
           {/* Column 3: Community & Governance */}
           <div className="md:col-span-2">
-            <h4 className="text-[12px] font-mono uppercase tracking-[0.1em] text-ink-primary font-semibold mb-4">
+            <h4 className="text-[12px] font-mono uppercase tracking-[0.1em] text-ink-primary font-bold mb-4">
               Community
             </h4>
             <ul className="space-y-3 text-[14px] list-none p-0 m-0">
               <li>
-                <Link href="/about" className="hover:text-apple-blue transition-colors min-h-[44px] inline-flex items-center">
+                <Link href="/about" className="hover:text-ink-primary transition-colors min-h-[44px] inline-flex items-center">
                   About &amp; Creed
                 </Link>
               </li>
               <li>
-                <Link href="/team" className="hover:text-apple-blue transition-colors min-h-[44px] inline-flex items-center">
+                <Link href="/team" className="hover:text-ink-primary transition-colors min-h-[44px] inline-flex items-center">
                   Active Builders
                 </Link>
               </li>
               <li>
-                <Link href="/alumni" className="hover:text-apple-blue transition-colors min-h-[44px] inline-flex items-center">
+                <Link href="/alumni" className="hover:text-ink-primary transition-colors min-h-[44px] inline-flex items-center">
                   Alumni Placements
                 </Link>
               </li>
               <li>
-                <Link href="/events" className="hover:text-apple-blue transition-colors min-h-[44px] inline-flex items-center">
+                <Link href="/events" className="hover:text-ink-primary transition-colors min-h-[44px] inline-flex items-center">
                   Workshops &amp; Hackathons
                 </Link>
               </li>
               <li>
-                <Link href="/gallery" className="hover:text-apple-blue transition-colors min-h-[44px] inline-flex items-center">
+                <Link href="/gallery" className="hover:text-ink-primary transition-colors min-h-[44px] inline-flex items-center">
                   Lab Archives
                 </Link>
               </li>
@@ -145,7 +145,7 @@ export function AppleFooter() {
 
           {/* Column 4: Physical Facility */}
           <div className="md:col-span-3">
-            <h4 className="text-[12px] font-mono uppercase tracking-[0.1em] text-ink-primary font-semibold mb-4">
+            <h4 className="text-[12px] font-mono uppercase tracking-[0.1em] text-ink-primary font-bold mb-4">
               Facility &amp; Admissions
             </h4>
             <p className="text-[13.5px] text-ink-secondary leading-[1.6]">
@@ -155,8 +155,8 @@ export function AppleFooter() {
               Uttarakhand 247667, India
             </p>
             <div className="mt-4 flex flex-col gap-2">
-              <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-pill bg-canvas-surface border border-subtle text-[11px] font-mono text-[var(--status-emerald)] w-fit">
-                <span className="w-1.5 h-1.5 rounded-full bg-[var(--status-emerald)] animate-pulse" />
+              <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-pill bg-canvas-surface border border-subtle text-[11px] font-mono text-ink-secondary w-fit">
+                <span className="w-1.5 h-1.5 rounded-full bg-ink-primary/70 animate-pulse" />
                 <span>Lab Operational 24/7</span>
               </div>
               <Link
@@ -174,7 +174,7 @@ export function AppleFooter() {
           <p>© {new Date().getFullYear()} TRAIC — DIA Labs, COER University. Open access collegiate research community.</p>
           <div className="flex items-center gap-5 flex-wrap">
             <Link href="/contact" className="hover:text-ink-primary transition-colors min-h-[44px] inline-flex items-center">
-              Dispatch Dispatcher
+              Dispatch Message
             </Link>
             <Link href="/self-host" className="hover:text-ink-primary transition-colors min-h-[44px] inline-flex items-center">
               Systems Topology
@@ -188,7 +188,7 @@ export function AppleFooter() {
               aria-label="Back to top"
             >
               <span>Back to Top</span>
-              <ArrowUp className="h-3.5 w-3.5 text-apple-blue" />
+              <ArrowUp className="h-3.5 w-3.5 text-ink-tertiary" />
             </button>
           </div>
         </div>

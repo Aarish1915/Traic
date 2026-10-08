@@ -5,7 +5,7 @@ export class EventRepo {
   static async findAll(publishedOnly: boolean) {
     return prisma.event.findMany({
       where: publishedOnly ? { published: true } : {},
-      orderBy: { date: 'desc' },
+      orderBy: { startsAt: 'desc' },
     });
   }
 

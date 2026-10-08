@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { ShieldCheck, AlertCircle, FileCheck } from 'lucide-react';
+import { SpotlightCard } from '@/components/SpotlightCard';
 import type { TrackInterest } from '@traic/shared';
 
 export default function JoinPage() {
@@ -145,18 +146,18 @@ export default function JoinPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-canvas text-ink-primary pt-32 pb-24 px-4">
+    <div className="min-h-screen bg-canvas text-ink-primary pt-32 pb-24 px-4 selection:bg-neutral-700 selection:text-white">
       <div className="w-full max-w-apple mx-auto">
         {/* Header Hero */}
         <div className="text-center max-w-[800px] mx-auto mb-16">
-          <span className="inline-block px-3.5 py-1.5 rounded-pill bg-canvas-surface border border-subtle text-apple-blue text-[12px] font-mono font-medium tracking-wide uppercase mb-4">
+          <span className="inline-block px-3.5 py-1.5 rounded-pill bg-canvas-surface border border-subtle text-ink-secondary text-[11px] font-mono font-bold tracking-wide uppercase mb-4 shadow-sm">
             COHORT 2026 ADMISSIONS DOSSIER
           </span>
-          <h1 className="text-[38px] sm:text-[54px] font-display font-bold tracking-tight text-ink-primary leading-tight">
+          <h1 className="text-[38px] sm:text-[54px] font-display font-extrabold tracking-[-0.035em] text-ink-primary leading-[1.08]">
             Build Hardware. Ship Silicon. <br />
             Join the TRAIC Collective.
           </h1>
-          <p className="mt-5 text-[16px] sm:text-[18px] text-ink-secondary leading-relaxed max-w-[640px] mx-auto">
+          <p className="mt-5 text-[17px] sm:text-[19px] text-ink-secondary leading-relaxed max-w-[640px] mx-auto">
             We do not evaluate grades or pedigree. We evaluate what you have soldered, coded, or designed with your own hands.
           </p>
         </div>
@@ -164,13 +165,13 @@ export default function JoinPage() {
         {/* Benefits Grid */}
         <div className="mb-20">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            {benefits.map((b) => (
-              <div key={b.title} className="p-6 rounded-3xl bg-canvas-surface border border-subtle flex flex-col justify-between">
+            {benefits.map((b, bIdx) => (
+              <SpotlightCard key={`${b.title}-${bIdx}`} className="p-6 rounded-3xl flex flex-col justify-between">
                 <div>
-                  <h3 className="text-[16px] font-display font-semibold text-ink-primary">{b.title}</h3>
-                  <p className="mt-2 text-[13px] text-ink-secondary leading-relaxed">{b.desc}</p>
+                  <h3 className="text-[16px] font-display font-bold text-ink-primary">{b.title}</h3>
+                  <p className="mt-2 text-[13.5px] text-ink-secondary leading-relaxed">{b.desc}</p>
                 </div>
-              </div>
+              </SpotlightCard>
             ))}
           </div>
         </div>
@@ -178,38 +179,38 @@ export default function JoinPage() {
         {/* 3-Phase Selection Roadmap */}
         <div className="mb-20">
           <div className="mb-8">
-            <span className="text-[11px] font-mono uppercase tracking-widest text-apple-blue font-semibold">
+            <span className="text-[11px] font-mono uppercase tracking-widest text-ink-tertiary font-bold">
               SELECTION PROTOCOL
             </span>
-            <h2 className="text-[26px] font-display font-bold text-ink-primary mt-1">
+            <h2 className="text-[28px] font-display font-bold text-ink-primary mt-1 tracking-tight">
               Three-Phase Induction
             </h2>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {phases.map((p) => (
-              <div key={p.phase} className="p-6 rounded-3xl bg-canvas-surface border border-subtle flex flex-col justify-between">
+            {phases.map((p, pIdx) => (
+              <SpotlightCard key={`${p.phase}-${pIdx}`} className="p-6 rounded-3xl flex flex-col justify-between">
                 <div>
-                  <span className="text-[20px] font-mono font-bold text-apple-blue">PHASE {p.phase}</span>
+                  <span className="text-[20px] font-mono font-bold text-ink-primary">PHASE {p.phase}</span>
                   <h3 className="text-[18px] font-display font-bold text-ink-primary mt-1">{p.title}</h3>
-                  <p className="mt-2.5 text-[13.5px] text-ink-secondary leading-relaxed">{p.desc}</p>
+                  <p className="mt-2.5 text-[14px] text-ink-secondary leading-relaxed">{p.desc}</p>
                 </div>
-              </div>
+              </SpotlightCard>
             ))}
           </div>
         </div>
 
         {/* Application Form */}
-        <div className="max-w-[780px] mx-auto p-8 sm:p-12 rounded-3xl bg-canvas-surface border border-subtle">
+        <SpotlightCard className="max-w-[780px] mx-auto p-8 sm:p-12 rounded-3xl">
           {submitted ? (
             <div className="text-center py-8">
-              <div className="w-16 h-16 rounded-full bg-apple-blue/15 text-apple-blue flex items-center justify-center mx-auto mb-6 border border-apple-blue/30">
-                <FileCheck className="h-8 w-8 text-apple-blue" />
+              <div className="w-16 h-16 rounded-full bg-canvas border border-subtle text-ink-primary flex items-center justify-center mx-auto mb-6 shadow-sm">
+                <FileCheck className="h-8 w-8 text-ink-primary" />
               </div>
-              <h2 className="text-[28px] font-display font-bold text-ink-primary">
+              <h2 className="text-[28px] sm:text-[34px] font-display font-bold text-ink-primary tracking-tight">
                 Application Registered Live
               </h2>
-              <p className="mt-3 text-[15px] text-ink-secondary max-w-[500px] mx-auto leading-relaxed">
+              <p className="mt-3 text-[15.5px] text-ink-secondary max-w-[500px] mx-auto leading-relaxed">
                 Your dossier has entered the DIA Labs recruitment queue. Save your statutory reference code below for tracking.
               </p>
 
@@ -217,7 +218,7 @@ export default function JoinPage() {
                 <span className="text-[11px] font-mono text-ink-tertiary uppercase block mb-1">
                   OFFICIAL ADMISSION RECEIPT
                 </span>
-                <span className="text-[22px] font-mono font-bold text-apple-blue tracking-wider">
+                <span className="text-[24px] font-mono font-bold text-ink-primary tracking-wider">
                   {receiptCode}
                 </span>
               </div>
@@ -229,7 +230,7 @@ export default function JoinPage() {
               <div className="mt-8">
                 <Link
                   href="/"
-                  className="inline-flex items-center justify-center min-h-[44px] px-8 rounded-pill bg-[#0071E3] hover:bg-[#0077ED] text-white text-[14px] font-semibold transition-colors"
+                  className="inline-flex items-center justify-center min-h-[48px] px-8 rounded-pill bg-ink-primary text-canvas hover:opacity-90 font-semibold text-[14.5px] transition-all active:scale-95 shadow-md"
                 >
                   Return to Homepage
                 </Link>
@@ -238,22 +239,22 @@ export default function JoinPage() {
           ) : (
             <form onSubmit={handleSubmit} className="space-y-6">
               <div>
-                <div className="flex items-center gap-2 mb-2 text-apple-blue">
-                  <ShieldCheck className="h-5 w-5" />
+                <div className="flex items-center gap-2 mb-2 text-ink-primary">
+                  <ShieldCheck className="h-5 w-5 text-ink-primary" />
                   <span className="text-[11px] font-mono uppercase tracking-wider font-bold">
                     OFFICIAL COHORT ADMISSIONS PORTAL
                   </span>
                 </div>
-                <h2 className="text-[26px] font-display font-bold text-ink-primary">
+                <h2 className="text-[26px] sm:text-[30px] font-display font-bold text-ink-primary tracking-tight">
                   Candidate Dossier
                 </h2>
-                <p className="text-[13px] text-ink-secondary mt-1">
+                <p className="text-[13.5px] text-ink-secondary mt-1">
                   All fields marked with an asterisk (*) are strictly required. Data is directly reviewed by TRAIC leads.
                 </p>
               </div>
 
               {errorMsg && (
-                <div className="p-4 rounded-xl bg-red-500/10 border border-red-500/30 text-red-500 text-[13px] flex items-center gap-2">
+                <div className="p-4 rounded-xl bg-red-500/10 border border-red-500/30 text-red-400 text-[13px] flex items-center gap-2">
                   <AlertCircle className="h-4 w-4 shrink-0" />
                   <span>{errorMsg}</span>
                 </div>
@@ -275,7 +276,7 @@ export default function JoinPage() {
               {/* Name & Student Roll */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label htmlFor="name" className="text-[11px] font-mono text-ink-tertiary uppercase block mb-1.5">
+                  <label htmlFor="name" className="text-[11px] font-mono text-ink-tertiary uppercase block mb-1.5 font-bold">
                     Full Legal Name *
                   </label>
                   <input
@@ -285,12 +286,12 @@ export default function JoinPage() {
                     value={formData.fullName}
                     onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
                     placeholder="e.g. Aarish Ali"
-                    className="w-full px-4 min-h-[44px] rounded-xl bg-canvas border border-subtle text-[14px] text-ink-primary focus:border-apple-blue focus:outline-none"
+                    className="w-full px-4 min-h-[46px] rounded-xl bg-canvas border border-subtle text-[14px] text-ink-primary focus:border-ink-primary focus:outline-none"
                   />
                 </div>
 
                 <div>
-                  <label htmlFor="rollNumber" className="text-[11px] font-mono text-ink-tertiary uppercase block mb-1.5">
+                  <label htmlFor="rollNumber" className="text-[11px] font-mono text-ink-tertiary uppercase block mb-1.5 font-bold">
                     University Roll Number / Student ID *
                   </label>
                   <input
@@ -300,7 +301,7 @@ export default function JoinPage() {
                     value={formData.studentId}
                     onChange={(e) => setFormData({ ...formData, studentId: e.target.value })}
                     placeholder="e.g. 2025ECE044"
-                    className="w-full px-4 min-h-[44px] rounded-xl bg-canvas border border-subtle text-[14px] text-ink-primary focus:border-apple-blue focus:outline-none"
+                    className="w-full px-4 min-h-[46px] rounded-xl bg-canvas border border-subtle text-[14px] text-ink-primary focus:border-ink-primary focus:outline-none"
                   />
                 </div>
               </div>
@@ -308,7 +309,7 @@ export default function JoinPage() {
               {/* Contact Information (Email & Phone) */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label htmlFor="email" className="text-[11px] font-mono text-ink-tertiary uppercase block mb-1.5">
+                  <label htmlFor="email" className="text-[11px] font-mono text-ink-tertiary uppercase block mb-1.5 font-bold">
                     Email Address *
                   </label>
                   <input
@@ -318,12 +319,12 @@ export default function JoinPage() {
                     value={formData.email}
                     onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                     placeholder="you@coer.ac.in"
-                    className="w-full px-4 min-h-[44px] rounded-xl bg-canvas border border-subtle text-[14px] text-ink-primary focus:border-apple-blue focus:outline-none"
+                    className="w-full px-4 min-h-[46px] rounded-xl bg-canvas border border-subtle text-[14px] text-ink-primary focus:border-ink-primary focus:outline-none"
                   />
                 </div>
 
                 <div>
-                  <label htmlFor="phone" className="text-[11px] font-mono text-ink-tertiary uppercase block mb-1.5">
+                  <label htmlFor="phone" className="text-[11px] font-mono text-ink-tertiary uppercase block mb-1.5 font-bold">
                     Phone / WhatsApp Number *
                   </label>
                   <input
@@ -333,7 +334,7 @@ export default function JoinPage() {
                     value={formData.phone}
                     onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
                     placeholder="+91 98765 43210"
-                    className="w-full px-4 min-h-[44px] rounded-xl bg-canvas border border-subtle text-[14px] text-ink-primary focus:border-apple-blue focus:outline-none"
+                    className="w-full px-4 min-h-[46px] rounded-xl bg-canvas border border-subtle text-[14px] text-ink-primary focus:border-ink-primary focus:outline-none"
                   />
                 </div>
               </div>
@@ -341,14 +342,14 @@ export default function JoinPage() {
               {/* Academic Branch & Year */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label htmlFor="branch" className="text-[11px] font-mono text-ink-tertiary uppercase block mb-1.5">
+                  <label htmlFor="branch" className="text-[11px] font-mono text-ink-tertiary uppercase block mb-1.5 font-bold">
                     Academic Branch / Major *
                   </label>
                   <select
                     id="branch"
                     value={formData.branch}
                     onChange={(e) => setFormData({ ...formData, branch: e.target.value })}
-                    className="w-full px-4 min-h-[44px] rounded-xl bg-canvas border border-subtle text-[14px] text-ink-primary focus:border-apple-blue focus:outline-none"
+                    className="w-full px-4 min-h-[46px] rounded-xl bg-canvas border border-subtle text-[14px] text-ink-primary focus:border-ink-primary focus:outline-none"
                   >
                     <option value="Electronics & Communication Engineering">Electronics & Communication (ECE)</option>
                     <option value="Computer Science & Engineering">Computer Science & Engineering (CSE)</option>
@@ -360,14 +361,14 @@ export default function JoinPage() {
                 </div>
 
                 <div>
-                  <label htmlFor="year" className="text-[11px] font-mono text-ink-tertiary uppercase block mb-1.5">
+                  <label htmlFor="year" className="text-[11px] font-mono text-ink-tertiary uppercase block mb-1.5 font-bold">
                     Current Year of Study *
                   </label>
                   <select
                     id="year"
                     value={formData.yearOfStudy}
                     onChange={(e) => setFormData({ ...formData, yearOfStudy: Number(e.target.value) })}
-                    className="w-full px-4 min-h-[44px] rounded-xl bg-canvas border border-subtle text-[14px] text-ink-primary focus:border-apple-blue focus:outline-none"
+                    className="w-full px-4 min-h-[46px] rounded-xl bg-canvas border border-subtle text-[14px] text-ink-primary focus:border-ink-primary focus:outline-none"
                   >
                     <option value={1}>1st Year (Freshman)</option>
                     <option value={2}>2nd Year (Sophomore)</option>
@@ -379,7 +380,7 @@ export default function JoinPage() {
 
               {/* Primary Track Selection */}
               <div>
-                <span className="text-[11px] font-mono text-ink-tertiary uppercase block mb-2">
+                <span className="text-[11px] font-mono text-ink-tertiary uppercase block mb-2 font-bold">
                   Primary Specialization Track *
                 </span>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
@@ -388,14 +389,14 @@ export default function JoinPage() {
                       type="button"
                       key={t.id}
                       onClick={() => setFormData({ ...formData, interest: t.id })}
-                      className={`min-h-[44px] p-3.5 rounded-xl border text-left transition-all cursor-pointer ${
+                      className={`min-h-[46px] p-3.5 rounded-xl border text-left transition-all active:scale-[0.98] cursor-pointer ${
                         formData.interest === t.id
-                          ? 'bg-apple-blue/15 border-apple-blue text-apple-blue'
+                          ? 'bg-ink-primary text-canvas border-transparent shadow-sm'
                           : 'bg-canvas border-subtle text-ink-secondary hover:text-ink-primary'
                       }`}
                     >
                       <div className="font-semibold text-[13.5px]">{t.label}</div>
-                      <div className="text-[11.5px] opacity-75 mt-0.5">{t.desc}</div>
+                      <div className="text-[11.5px] opacity-80 mt-0.5">{t.desc}</div>
                     </button>
                   ))}
                 </div>
@@ -403,7 +404,7 @@ export default function JoinPage() {
 
               {/* Skills Multi-Selector */}
               <div>
-                <label className="text-[11px] font-mono text-ink-tertiary uppercase block mb-1.5">
+                <label className="text-[11px] font-mono text-ink-tertiary uppercase block mb-1.5 font-bold">
                   Skills &amp; Technologies You Have Worked With (Click to toggle)
                 </label>
                 <div className="flex flex-wrap gap-2 mb-3">
@@ -414,9 +415,9 @@ export default function JoinPage() {
                         type="button"
                         key={skill}
                         onClick={() => toggleSkill(skill)}
-                        className={`min-h-[44px] px-4 py-2 rounded-pill text-[12px] font-medium transition-colors cursor-pointer border ${
+                        className={`min-h-[44px] px-4 py-2 rounded-pill text-[12px] font-medium transition-all active:scale-95 cursor-pointer border ${
                           isSelected
-                            ? 'bg-[#0071E3] text-white border-transparent shadow-sm'
+                            ? 'bg-ink-primary text-canvas border-transparent shadow-sm font-semibold'
                             : 'bg-canvas border-subtle text-ink-secondary hover:text-ink-primary'
                         }`}
                       >
@@ -433,13 +434,13 @@ export default function JoinPage() {
                   onChange={(e) => setFormData({ ...formData, customSkill: e.target.value })}
                   onKeyDown={handleAddCustomSkill}
                   placeholder="Type other skill and press Enter to add (e.g. OpenCV, Docker)..."
-                  className="w-full px-4 min-h-[44px] rounded-xl bg-canvas border border-subtle text-[13px] text-ink-primary focus:border-apple-blue focus:outline-none"
+                  className="w-full px-4 min-h-[46px] rounded-xl bg-canvas border border-subtle text-[13.5px] text-ink-primary focus:border-ink-primary focus:outline-none"
                 />
               </div>
 
               {/* Portfolio / GitHub */}
               <div>
-                <label htmlFor="githubOrPortfolio" className="text-[11px] font-mono text-ink-tertiary uppercase block mb-1.5">
+                <label htmlFor="githubOrPortfolio" className="text-[11px] font-mono text-ink-tertiary uppercase block mb-1.5 font-bold">
                   GitHub Profile, Portfolio, or Hardware Repository (Optional)
                 </label>
                 <input
@@ -448,13 +449,13 @@ export default function JoinPage() {
                   value={formData.githubOrPortfolio}
                   onChange={(e) => setFormData({ ...formData, githubOrPortfolio: e.target.value })}
                   placeholder="https://github.com/your-handle"
-                  className="w-full px-4 min-h-[44px] rounded-xl bg-canvas border border-subtle text-[14px] text-ink-primary focus:border-apple-blue focus:outline-none"
+                  className="w-full px-4 min-h-[46px] rounded-xl bg-canvas border border-subtle text-[14px] text-ink-primary focus:border-ink-primary focus:outline-none"
                 />
               </div>
 
               {/* Statement of Purpose */}
               <div>
-                <label htmlFor="problemStatement" className="text-[11px] font-mono text-ink-tertiary uppercase block mb-1.5">
+                <label htmlFor="problemStatement" className="text-[11px] font-mono text-ink-tertiary uppercase block mb-1.5 font-bold">
                   Statement of Purpose: What Have You Built or What Do You Want to Build? *
                 </label>
                 <textarea
@@ -464,7 +465,7 @@ export default function JoinPage() {
                   value={formData.statementOfPurpose}
                   onChange={(e) => setFormData({ ...formData, statementOfPurpose: e.target.value })}
                   placeholder="Describe your technical projects, hardware hacks, or the hardest engineering problem you have diagnosed. Share what you want to achieve at TRAIC."
-                  className="w-full p-4 rounded-xl bg-canvas border border-subtle text-[13.5px] text-ink-primary focus:border-apple-blue focus:outline-none resize-none leading-relaxed"
+                  className="w-full p-4 rounded-xl bg-canvas border border-subtle text-[13.5px] text-ink-primary focus:border-ink-primary focus:outline-none resize-none leading-relaxed"
                 />
                 <span className="text-[11px] font-mono text-ink-tertiary text-right block mt-1">
                   {formData.statementOfPurpose.length} characters
@@ -481,7 +482,7 @@ export default function JoinPage() {
                     required
                     checked={formData.dpdpConsent}
                     onChange={(e) => setFormData({ ...formData, dpdpConsent: e.target.checked })}
-                    className="mt-1 rounded border-subtle bg-canvas text-apple-blue focus:ring-apple-blue h-4 w-4 shrink-0"
+                    className="mt-1 rounded border-subtle bg-canvas text-ink-primary focus:ring-ink-primary h-4 w-4 shrink-0"
                   />
                   <span>
                     <strong>Statutory DPDP Consent:</strong> I give TRAIC explicit consent to collect, process, and retain my application data for cohort admissions under the Digital Personal Data Protection Act 2023. My data will be kept secure and never sold or transferred to external commercial entities.
@@ -492,13 +493,13 @@ export default function JoinPage() {
               <button
                 type="submit"
                 disabled={loading || !formData.dpdpConsent}
-                className="w-full min-h-[44px] h-12 rounded-pill bg-[#0071E3] hover:bg-[#0077ED] disabled:opacity-50 text-white font-semibold text-[15px] transition-transform active:scale-95 shadow-md cursor-pointer"
+                className="w-full min-h-[48px] h-12 rounded-pill bg-ink-primary text-canvas hover:opacity-90 disabled:opacity-50 font-semibold text-[15px] transition-all active:scale-95 shadow-md cursor-pointer"
               >
                 {loading ? 'Registering Dossier...' : 'Submit Application to DIA Labs →'}
               </button>
             </form>
           )}
-        </div>
+        </SpotlightCard>
       </div>
     </div>
   );

@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { ArrowRight, Calendar, MapPin } from 'lucide-react';
+import { SpotlightCard } from '@/components/SpotlightCard';
 
 export const metadata = {
   title: 'Workshops, Hackathons & Bootcamps — TRAIC Events',
@@ -124,29 +125,29 @@ export default async function EventsPage() {
       <div className="w-full max-w-apple mx-auto">
         {/* Section 1: Hero */}
         <div className="max-w-3xl mb-14">
-          <span className="text-[11px] font-mono uppercase tracking-widest text-apple-blue font-semibold">
-            COMMUNITY EVENTS &amp; HACKATHONS
+          <span className="text-[11px] font-mono uppercase tracking-widest text-apple-blue font-bold">
+            COMMUNITY SESSIONS &amp; HACKATHONS
           </span>
-          <h1 className="text-[36px] sm:text-[52px] font-display font-bold tracking-tight text-ink-primary mt-2 leading-[1.08]">
-            Workshops, sprints, and hardware hackathons.
+          <h1 className="text-[38px] sm:text-[54px] font-display font-extrabold tracking-[-0.035em] text-ink-primary mt-2 leading-[1.04]">
+            Workshops, Sprints &amp; Hardware Hackathons
           </h1>
-          <p className="mt-4 text-[16px] text-ink-secondary leading-relaxed">
+          <p className="mt-4 text-[17px] text-ink-secondary leading-relaxed">
             Hands-on technical gatherings where students build real circuits, debug firmware, and pitch working physical prototypes.
           </p>
         </div>
 
         {/* Section 2: Featured Upcoming Event Card */}
         {featuredEvent && (
-          <div className="mb-20 p-8 sm:p-12 rounded-3xl bg-canvas-surface border border-subtle hover:border-apple-blue/40 transition-colors">
-            <div className="flex flex-wrap items-center gap-3 mb-4">
-              <span className="px-3 py-1 rounded-pill bg-apple-blue/15 text-apple-blue border border-apple-blue/30 text-[11px] font-mono font-bold uppercase">
+          <SpotlightCard className="mb-20 p-8 sm:p-12 rounded-3xl">
+            <div className="flex flex-wrap items-center gap-3 mb-5">
+              <span className="px-3 py-1 rounded-pill bg-canvas-surface border border-subtle text-ink-primary text-[11px] font-mono font-bold uppercase tracking-wider">
                 {featuredEvent.type}
               </span>
               <span className="px-3 py-1 rounded-pill bg-canvas border border-subtle text-ink-secondary text-[11px] font-mono">
                 {featuredEvent.mode}
               </span>
               {featuredEvent.prizePool && (
-                <span className="px-3 py-1 rounded-pill bg-[var(--status-emerald)]/15 text-[var(--status-emerald)] border border-[var(--status-emerald)]/30 text-[11px] font-mono font-bold">
+                <span className="px-3 py-1 rounded-pill bg-apple-blue/10 text-apple-blue border border-apple-blue/20 text-[11px] font-mono font-bold">
                   {featuredEvent.prizePool}
                 </span>
               )}
@@ -155,33 +156,33 @@ export default async function EventsPage() {
                   Team: {featuredEvent.teamSize}
                 </span>
               )}
-              <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-pill bg-canvas border border-subtle text-[11px] font-mono text-[var(--status-emerald)]">
-                <span className="w-1.5 h-1.5 rounded-full bg-[var(--status-emerald)] animate-pulse" />
+              <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-pill bg-canvas border border-subtle text-[11px] font-mono text-ink-secondary">
+                <span className="w-1.5 h-1.5 rounded-full bg-ink-primary/70 animate-pulse" />
                 <span>REGISTRATIONS OPEN</span>
               </div>
             </div>
 
-            <h2 className="text-[26px] sm:text-[34px] font-display font-bold text-ink-primary mt-2 leading-snug">
+            <h2 className="text-[26px] sm:text-[36px] font-display font-bold text-ink-primary mt-2 leading-snug tracking-tight">
               {featuredEvent.title}
             </h2>
 
-            <p className="mt-4 text-[15.5px] text-ink-secondary max-w-[780px] leading-relaxed">
+            <p className="mt-4 text-[16px] text-ink-secondary max-w-[800px] leading-relaxed">
               {featuredEvent.tagline || featuredEvent.descriptionMd}
             </p>
 
             {featuredEvent.tracks && featuredEvent.tracks.length > 0 && (
-              <div className="mt-4 flex flex-wrap gap-2">
-                {featuredEvent.tracks.map((trk) => (
-                  <span key={trk} className="px-2.5 py-0.5 rounded-full bg-canvas border border-subtle text-[11.5px] font-mono text-apple-blue font-medium">
+              <div className="mt-5 flex flex-wrap gap-2">
+                {featuredEvent.tracks.map((trk, trkIdx) => (
+                  <span key={`${trk}-${trkIdx}`} className="px-3 py-1 rounded-pill bg-canvas border border-subtle text-[11.5px] font-mono text-ink-secondary">
                     {trk}
                   </span>
                 ))}
               </div>
             )}
 
-            <div className="mt-6 flex flex-wrap items-center gap-6 text-[13px] font-mono text-ink-tertiary">
+            <div className="mt-6 flex flex-wrap items-center gap-6 text-[13px] font-mono text-ink-secondary">
               <span className="inline-flex items-center gap-2">
-                <Calendar className="h-4 w-4 text-apple-blue" />
+                <Calendar className="h-4 w-4 text-ink-tertiary" />
                 {new Date(featuredEvent.startsAt).toLocaleDateString('en-US', {
                   weekday: 'short',
                   month: 'short',
@@ -190,62 +191,63 @@ export default async function EventsPage() {
                 })}
               </span>
               <span className="inline-flex items-center gap-2">
-                <MapPin className="h-4 w-4 text-apple-blue" />
+                <MapPin className="h-4 w-4 text-ink-tertiary" />
                 {featuredEvent.venue}
               </span>
             </div>
 
             <div className="mt-8 pt-6 border-t border-subtle flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-              <span className="text-[13px] text-ink-secondary">
-                {featuredEvent.capacity ? `Seats strictly capped to ${featuredEvent.capacity} participants for bench safety.` : 'Seats strictly capped for laboratory bench safety.'}
+              <span className="text-[13px] text-ink-secondary font-mono">
+                {featuredEvent.capacity ? `Bench safety limit: ${featuredEvent.capacity} seats` : 'Strict laboratory bench capacity'}
               </span>
               <Link
                 href={`/events/${featuredEvent.slug}`}
-                className="inline-flex items-center justify-center min-h-[44px] px-8 rounded-pill bg-[#0071E3] hover:bg-[#0077ED] text-white font-medium text-[14px] transition-colors shadow-sm"
+                className="w-fit inline-flex items-center gap-2 min-h-[44px] px-6 rounded-pill bg-ink-primary text-canvas hover:opacity-90 font-medium text-[13.5px] active:scale-95 transition-all shadow-sm"
               >
-                Register Seat Now →
+                <span>Reserve Lab Bench</span>
+                <ArrowRight className="h-3.5 w-3.5" />
               </Link>
             </div>
-          </div>
+          </SpotlightCard>
         )}
 
         {/* Section 3: All Events Editorial List */}
         <div className="mb-20">
           <div className="mb-8">
-            <span className="text-[11px] font-mono uppercase tracking-widest text-apple-blue font-semibold">
+            <span className="text-[11px] font-mono uppercase tracking-widest text-apple-blue font-bold">
               SCHEDULE &amp; CALENDAR
             </span>
-            <h2 className="text-[26px] font-display font-bold text-ink-primary mt-1">
+            <h2 className="text-[28px] font-display font-bold text-ink-primary mt-1">
               Upcoming &amp; Scheduled Sessions
             </h2>
           </div>
 
           <div className="space-y-4">
-            {remainingEvents.map((evt) => (
-              <div
-                key={evt.slug}
-                className="p-6 rounded-2xl bg-canvas-surface border border-subtle flex flex-col md:flex-row md:items-center justify-between gap-6 hover:border-apple-blue/30 transition-colors"
+            {remainingEvents.map((evt, evtIdx) => (
+              <SpotlightCard
+                key={`${evt.slug}-${evtIdx}`}
+                className="p-6 rounded-2xl flex flex-col md:flex-row md:items-center justify-between gap-6"
               >
                 <div className="flex flex-col md:flex-row md:items-center gap-4 md:gap-8">
                   <div className="w-24 shrink-0 text-left md:text-center font-mono border-b md:border-b-0 md:border-r border-subtle pb-2 md:pb-0 md:pr-6">
                     <span className="text-[11px] text-ink-tertiary block uppercase">
                       {new Date(evt.startsAt).toLocaleDateString('en-US', { month: 'short' })}
                     </span>
-                    <span className="text-[24px] font-bold text-apple-blue leading-none">
+                    <span className="text-[26px] font-bold text-apple-blue leading-none">
                       {new Date(evt.startsAt).toLocaleDateString('en-US', { day: 'numeric' })}
                     </span>
                   </div>
 
                   <div>
                     <div className="flex flex-wrap items-center gap-2 mb-1.5">
-                      <span className="px-2 py-0.5 rounded-md bg-canvas border border-subtle text-[10px] font-mono text-apple-blue uppercase font-bold">
+                      <span className="px-2.5 py-0.5 rounded-pill bg-canvas border border-subtle text-[10.5px] font-mono text-ink-primary uppercase font-bold">
                         {evt.type}
                       </span>
                       <span className="text-[11px] font-mono text-ink-tertiary">
                         {evt.mode}
                       </span>
                       {evt.prizePool && (
-                        <span className="px-2 py-0.5 rounded-md bg-[var(--status-emerald)]/10 text-[var(--status-emerald)] border border-[var(--status-emerald)]/20 text-[10px] font-mono font-medium">
+                        <span className="px-2.5 py-0.5 rounded-pill bg-apple-blue/10 text-apple-blue border border-apple-blue/20 text-[10.5px] font-mono font-medium">
                           {evt.prizePool}
                         </span>
                       )}
@@ -254,12 +256,12 @@ export default async function EventsPage() {
                       {evt.title}
                     </h3>
                     {evt.tracks && evt.tracks.length > 0 && (
-                      <p className="mt-1 text-[12px] font-mono text-apple-blue">
+                      <p className="mt-1 text-[12px] font-mono text-ink-secondary">
                         Tracks: {evt.tracks.join(' · ')}
                       </p>
                     )}
                     <p className="mt-1 text-[13px] text-ink-secondary flex items-center gap-1.5">
-                      <MapPin className="h-3 w-3 text-apple-blue shrink-0" />
+                      <MapPin className="h-3.5 w-3.5 text-apple-blue shrink-0" />
                       <span>{evt.venue}</span>
                     </p>
                   </div>
@@ -268,13 +270,13 @@ export default async function EventsPage() {
                 <div className="shrink-0 flex items-center">
                   <Link
                     href={`/events/${evt.slug}`}
-                    className="inline-flex items-center justify-center min-h-[44px] px-6 rounded-pill bg-canvas hover:bg-canvas-elevated text-apple-blue border border-subtle text-[13px] font-medium transition-colors"
+                    className="inline-flex items-center justify-center min-h-[44px] px-6 rounded-pill bg-canvas-surface hover:bg-canvas-elevated text-ink-primary border border-subtle text-[13.5px] font-medium active:scale-95 transition-all"
                   >
                     <span>Details &amp; RSVP</span>
                     <ArrowRight className="ml-1.5 h-3.5 w-3.5" />
                   </Link>
                 </div>
-              </div>
+              </SpotlightCard>
             ))}
           </div>
         </div>

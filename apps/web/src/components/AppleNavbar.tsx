@@ -74,7 +74,7 @@ export function AppleNavbar() {
             <Link
               href="/join"
               onClick={() => setMobileOpen(false)}
-              className="hidden sm:inline-flex items-center justify-center min-h-[44px] px-5 rounded-pill bg-[#0071E3] hover:bg-[#0077ED] active:scale-95 text-white font-medium text-[13.5px] transition-all duration-200 shadow-sm"
+              className="hidden sm:inline-flex items-center justify-center min-h-[44px] px-5 rounded-pill bg-ink-primary text-canvas hover:opacity-90 active:scale-95 font-semibold text-[13.5px] transition-all duration-200 shadow-sm"
             >
               Apply Now
             </Link>

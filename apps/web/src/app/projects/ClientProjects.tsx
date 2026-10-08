@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { ArrowRight, FolderGit2 } from 'lucide-react';
+import { SpotlightCard } from '@/components/SpotlightCard';
 
 export interface ProjectItem {
   slug: string;
@@ -31,35 +32,35 @@ export function ClientProjects({ initialProjects }: { initialProjects: ProjectIt
   const featured = initialProjects.find((p) => p.featured) || initialProjects[0];
 
   return (
-    <div className="min-h-screen bg-canvas text-ink-primary pt-32 pb-24 px-4">
+    <div className="min-h-screen bg-canvas text-ink-primary pt-32 pb-24 px-4 selection:bg-neutral-700 selection:text-white">
       <div className="w-full max-w-apple mx-auto">
         {/* Section 1: Hero */}
         <div className="max-w-3xl mb-14">
-          <span className="text-[11px] font-mono uppercase tracking-widest text-apple-blue font-semibold">
+          <span className="text-[11px] font-mono uppercase tracking-widest text-ink-tertiary font-bold">
             HARDWARE ARCHIVE
           </span>
-          <h1 className="text-[36px] sm:text-[52px] font-display font-bold tracking-tight text-ink-primary mt-2 leading-[1.08]">
-            Machines we designed and built.
+          <h1 className="text-[38px] sm:text-[54px] font-display font-extrabold tracking-[-0.035em] text-ink-primary mt-2 leading-[1.04]">
+            Physical Machines &amp; Silicon Systems
           </h1>
-          <p className="mt-4 text-[16px] text-ink-secondary leading-relaxed">
-            Every entry in our hardware archive was designed, soldered, assembled, and firmware-programmed inside DIA Labs Block C-302.
+          <p className="mt-4 text-[17px] text-ink-secondary leading-relaxed">
+            Every machine cataloged below was engineered, soldered, routed, and firmware-programmed inside DIA Labs Block C-302.
           </p>
         </div>
 
         {/* Section 2: Featured Spotlight (12-Col Split) */}
         {featured && (
-          <div className="mb-20 rounded-3xl bg-canvas-surface border border-subtle overflow-hidden">
+          <SpotlightCard className="mb-20 rounded-3xl overflow-hidden">
             <div className="grid grid-cols-1 lg:grid-cols-12">
-              {/* Left 8 Cols: Architectural Schematic View */}
-              <div className="lg:col-span-8 p-8 sm:p-12 border-b lg:border-b-0 lg:border-r border-subtle apple-ambient-glow flex flex-col justify-between">
+              {/* Left 8 Cols: Architectural Overview */}
+              <div className="lg:col-span-8 p-8 sm:p-12 border-b lg:border-b-0 lg:border-r border-subtle flex flex-col justify-between">
                 <div>
-                  <div className="inline-flex items-center gap-2 px-3 py-1 rounded-pill bg-canvas border border-subtle text-[11px] font-mono text-apple-blue mb-4">
+                  <div className="inline-flex items-center gap-2 px-3 py-1 rounded-pill bg-canvas border border-subtle text-[11px] font-mono text-ink-secondary mb-4">
                     <span>FLAGSHIP SYSTEM // {featured.category}</span>
                   </div>
-                  <h2 className="text-[28px] sm:text-[36px] font-display font-bold text-ink-primary">
+                  <h2 className="text-[28px] sm:text-[38px] font-display font-bold text-ink-primary tracking-tight leading-tight">
                     {featured.title}
                   </h2>
-                  <p className="mt-4 text-[15.5px] text-ink-secondary max-w-[620px] leading-relaxed">
+                  <p className="mt-4 text-[16px] text-ink-secondary max-w-[640px] leading-relaxed">
                     {featured.tagline || featured.description}
                   </p>
                 </div>
@@ -76,26 +77,26 @@ export function ClientProjects({ initialProjects }: { initialProjects: ProjectIt
               {/* Right 4 Cols: Specs & Direct CTA */}
               <div className="lg:col-span-4 p-8 bg-canvas flex flex-col justify-between">
                 <div>
-                  <span className="text-[11px] font-mono uppercase tracking-wider text-ink-tertiary block mb-4">
-                    Hardware Specifications
+                  <span className="text-[11px] font-mono uppercase tracking-wider text-ink-tertiary font-bold block mb-4">
+                    HARDWARE SPECIFICATIONS
                   </span>
                   <div className="space-y-3">
                     {featured.specs ? (
                       Object.entries(featured.specs).slice(0, 4).map(([k, v]) => (
-                        <div key={k} className="p-3 rounded-xl bg-canvas-surface border border-subtle">
+                        <div key={k} className="p-3.5 rounded-xl bg-canvas-surface border border-subtle">
                           <span className="text-[10.5px] font-mono text-ink-tertiary uppercase block">{k}</span>
-                          <span className="text-[13px] font-medium text-ink-primary">{v}</span>
+                          <span className="text-[13.5px] font-medium text-ink-primary mt-0.5 block">{v}</span>
                         </div>
                       ))
                     ) : (
                       <>
-                        <div className="p-3 rounded-xl bg-canvas-surface border border-subtle">
+                        <div className="p-3.5 rounded-xl bg-canvas-surface border border-subtle">
                           <span className="text-[10.5px] font-mono text-ink-tertiary uppercase block">Compute Core</span>
-                          <span className="text-[13px] font-medium text-ink-primary">NVIDIA Jetson Orin + STM32H753</span>
+                          <span className="text-[13.5px] font-medium text-ink-primary mt-0.5 block">NVIDIA Jetson Orin + STM32H753</span>
                         </div>
-                        <div className="p-3 rounded-xl bg-canvas-surface border border-subtle">
+                        <div className="p-3.5 rounded-xl bg-canvas-surface border border-subtle">
                           <span className="text-[10.5px] font-mono text-ink-tertiary uppercase block">Perception Bus</span>
-                          <span className="text-[13px] font-medium text-ink-primary">ISO 11898 CAN-FD @ 5.0 Mbps</span>
+                          <span className="text-[13.5px] font-medium text-ink-primary mt-0.5 block">ISO 11898-1 CAN-FD @ 5.0 Mbps</span>
                         </div>
                       </>
                     )}
@@ -105,15 +106,15 @@ export function ClientProjects({ initialProjects }: { initialProjects: ProjectIt
                 <div className="mt-8 pt-6 border-t border-subtle">
                   <Link
                     href={`/projects/${featured.slug}`}
-                    className="w-full inline-flex items-center justify-center min-h-[44px] px-6 rounded-pill bg-[#0071E3] hover:bg-[#0077ED] text-white font-medium text-[13.5px] transition-colors"
+                    className="w-full inline-flex items-center justify-center min-h-[46px] px-6 rounded-pill bg-ink-primary text-canvas hover:opacity-90 font-semibold text-[14px] active:scale-95 transition-all shadow-md"
                   >
-                    View Engineering Deep Dive
+                    <span>View Engineering Deep Dive</span>
                     <ArrowRight className="ml-1.5 h-4 w-4" />
                   </Link>
                 </div>
               </div>
             </div>
-          </div>
+          </SpotlightCard>
         )}
 
         {/* Section 3: Category Filter */}
@@ -122,9 +123,9 @@ export function ClientProjects({ initialProjects }: { initialProjects: ProjectIt
             <button
               key={cat}
               onClick={() => setSelectedCategory(cat)}
-              className={`min-h-[44px] px-5 rounded-pill text-[13px] font-medium transition-colors cursor-pointer shrink-0 ${
+              className={`min-h-[44px] px-5 rounded-pill text-[13px] font-medium transition-all duration-200 cursor-pointer shrink-0 active:scale-95 ${
                 selectedCategory === cat
-                  ? 'bg-[#0071E3] text-white font-medium shadow-sm'
+                  ? 'bg-ink-primary text-canvas font-semibold shadow-sm'
                   : 'bg-canvas-surface hover:bg-canvas-elevated text-ink-secondary hover:text-ink-primary border border-subtle'
               }`}
             >
@@ -135,14 +136,14 @@ export function ClientProjects({ initialProjects }: { initialProjects: ProjectIt
 
         {/* Section 4: All Projects Asymmetric Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredProjects.map((project) => (
-            <div
-              key={project.slug}
-              className="p-6 rounded-3xl bg-canvas-surface border border-subtle flex flex-col justify-between hover:border-apple-blue/40 transition-colors"
+          {filteredProjects.map((project, pIdx) => (
+            <SpotlightCard
+              key={`${project.slug}-${pIdx}`}
+              className="p-7 rounded-3xl flex flex-col justify-between"
             >
               <div>
                 <div className="flex items-center justify-between mb-4">
-                  <span className="text-[10.5px] font-mono uppercase text-apple-blue tracking-wider font-semibold">
+                  <span className="text-[10.5px] font-mono uppercase text-ink-tertiary tracking-wider font-bold">
                     {project.category}
                   </span>
                   <span className="text-[11px] font-mono text-ink-tertiary">
@@ -154,23 +155,23 @@ export function ClientProjects({ initialProjects }: { initialProjects: ProjectIt
                   {project.title}
                 </h3>
 
-                <p className="mt-2.5 text-[13.5px] text-ink-secondary leading-relaxed line-clamp-3">
+                <p className="mt-2.5 text-[14px] text-ink-secondary leading-relaxed line-clamp-3">
                   {project.tagline || project.description}
                 </p>
 
                 <div className="mt-6 flex flex-wrap gap-1.5">
                   {project.tech.slice(0, 4).map((t) => (
-                    <span key={t} className="px-2 py-0.5 rounded-md bg-canvas border border-subtle text-[10.5px] font-mono text-ink-secondary">
+                    <span key={t} className="px-2.5 py-1 rounded-md bg-canvas border border-subtle text-[11px] font-mono text-ink-secondary">
                       {t}
                     </span>
                   ))}
                 </div>
               </div>
 
-              <div className="mt-8 pt-4 border-t border-subtle flex items-center justify-between">
+              <div className="mt-8 pt-5 border-t border-subtle flex items-center justify-between">
                 <Link
                   href={`/projects/${project.slug}`}
-                  className="text-[13px] font-medium text-apple-blue hover:underline inline-flex items-center gap-1 min-h-[44px]"
+                  className="text-[13.5px] font-semibold text-apple-blue hover:underline inline-flex items-center gap-1 min-h-[44px]"
                 >
                   <span>Read Specs</span>
                   <ArrowRight className="h-3 w-3" />
@@ -188,7 +189,7 @@ export function ClientProjects({ initialProjects }: { initialProjects: ProjectIt
                   </a>
                 )}
               </div>
-            </div>
+            </SpotlightCard>
           ))}
         </div>
       </div>

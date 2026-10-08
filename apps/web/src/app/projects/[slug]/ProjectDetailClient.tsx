@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { ArrowLeft, ExternalLink, FolderGit2, CheckCircle2, Users, Trophy } from 'lucide-react';
+import { SpotlightCard } from '@/components/SpotlightCard';
 
 export interface ProjectDetail {
   slug: string;
@@ -22,7 +23,7 @@ export interface ProjectDetail {
 
 export function ProjectDetailClient({ project }: { project: ProjectDetail }) {
   return (
-    <div className="min-h-screen bg-canvas text-ink-primary pt-32 pb-24 px-4">
+    <div className="min-h-screen bg-canvas text-ink-primary pt-32 pb-24 px-4 selection:bg-neutral-700 selection:text-white">
       <div className="w-full max-w-apple mx-auto">
         {/* Back Link */}
         <div className="mb-8">
@@ -38,19 +39,19 @@ export function ProjectDetailClient({ project }: { project: ProjectDetail }) {
         {/* Section 1: Hero & Title */}
         <div className="mb-14">
           <div className="flex flex-wrap items-center gap-3 mb-4">
-            <span className="px-3 py-1 rounded-pill bg-canvas-surface border border-subtle text-[11px] font-mono text-apple-blue uppercase tracking-wider font-semibold">
+            <span className="px-3 py-1 rounded-pill bg-canvas-surface border border-subtle text-[11px] font-mono text-ink-primary uppercase tracking-wider font-bold">
               {project.category}
             </span>
             <span className="text-[12px] font-mono text-ink-tertiary">
               CLASS OF {project.year}
             </span>
-            <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-pill bg-canvas-surface border border-subtle text-[11px] font-mono text-[var(--status-emerald)]">
-              <span className="w-1.5 h-1.5 rounded-full bg-[var(--status-emerald)] animate-pulse" />
-              <span>{project.status || 'OPERATIONAL'}</span>
+            <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-pill bg-canvas-surface border border-subtle text-[11px] font-mono text-ink-secondary">
+              <span className="w-1.5 h-1.5 rounded-full bg-ink-primary/70 animate-pulse" />
+              <span>{project.status || 'ACTIVE'}</span>
             </div>
           </div>
 
-          <h1 className="text-[34px] sm:text-[48px] font-display font-bold tracking-tight text-ink-primary leading-tight">
+          <h1 className="text-[36px] sm:text-[50px] font-display font-extrabold tracking-[-0.035em] text-ink-primary leading-[1.08]">
             {project.title}
           </h1>
 
@@ -64,9 +65,9 @@ export function ProjectDetailClient({ project }: { project: ProjectDetail }) {
                 href={project.repoUrl}
                 target="_blank"
                 rel="noreferrer"
-                className="inline-flex items-center gap-2 min-h-[44px] px-5 rounded-pill bg-canvas-surface hover:bg-canvas-elevated text-ink-primary border border-subtle text-[13px] font-medium transition-colors"
+                className="inline-flex items-center gap-2 min-h-[44px] px-5 rounded-pill bg-canvas-surface hover:bg-canvas-elevated text-ink-primary border border-subtle text-[13px] font-medium transition-all active:scale-95"
               >
-                <FolderGit2 className="h-4 w-4 text-apple-blue" />
+                <FolderGit2 className="h-4 w-4 text-ink-tertiary" />
                 <span>View CAD &amp; Code Repository</span>
               </a>
             )}
@@ -75,7 +76,7 @@ export function ProjectDetailClient({ project }: { project: ProjectDetail }) {
                 href={project.demoUrl}
                 target="_blank"
                 rel="noreferrer"
-                className="inline-flex items-center gap-2 min-h-[44px] px-5 rounded-pill bg-[#0071E3] hover:bg-[#0077ED] text-white text-[13px] font-medium transition-colors"
+                className="inline-flex items-center gap-2 min-h-[44px] px-6 rounded-pill bg-ink-primary text-canvas hover:opacity-90 text-[13.5px] font-semibold transition-all active:scale-95 shadow-md"
               >
                 <span>Live System Demo</span>
                 <ExternalLink className="h-4 w-4" />
@@ -87,45 +88,45 @@ export function ProjectDetailClient({ project }: { project: ProjectDetail }) {
         {/* Section 2: 2-Col Split — Architecture Schematic Left, Specs Right */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 mb-16">
           {/* Architecture Schematic Box */}
-          <div className="lg:col-span-7 p-8 sm:p-10 rounded-3xl bg-canvas-surface border border-subtle apple-ambient-glow flex flex-col justify-between">
+          <SpotlightCard className="lg:col-span-7 p-8 sm:p-10 rounded-3xl flex flex-col justify-between">
             <div>
-              <span className="text-[11px] font-mono uppercase tracking-widest text-apple-blue font-bold block mb-4">
+              <span className="text-[11px] font-mono uppercase tracking-widest text-ink-tertiary font-bold block mb-4">
                 SYSTEM ARCHITECTURE &amp; TOPOLOGY
               </span>
               <h3 className="text-[22px] font-display font-bold text-ink-primary mb-3">
                 Distributed Real-Time Control Loop
               </h3>
-              <p className="text-[14px] text-ink-secondary leading-relaxed mb-6">
+              <p className="text-[14.5px] text-ink-secondary leading-relaxed mb-6">
                 Dual-tier computing hierarchy separating real-time deterministic motor actuation from high-throughput neural perception. The ARM Cortex-M7 core processes optical encoder interrupts and wheel odometry at 1 kHz, while the Linux coprocessor streams 30 FPS depth frames across an isolated internal bus.
               </p>
             </div>
 
-            <div className="p-4 rounded-2xl bg-canvas/90 border border-subtle text-[12px] font-mono text-ink-secondary space-y-2">
-              <div className="flex items-center justify-between text-apple-blue">
+            <div className="p-4 rounded-2xl bg-canvas border border-subtle text-[12px] font-mono text-ink-secondary space-y-2">
+              <div className="flex items-center justify-between text-ink-primary font-medium">
                 <span>[HIGH SPEED SENSING]</span>
                 <span>LiDAR + RealSense D435i</span>
               </div>
-              <div className="pl-4 border-l-2 border-apple-blue/40">
+              <div className="pl-4 border-l-2 border-subtle text-ink-tertiary">
                 ↓ USB 3.0 / PCIe Gen 2
               </div>
               <div className="flex items-center justify-between text-ink-primary font-bold">
                 <span>[NEURAL ACCELERATOR]</span>
                 <span>Hailo-8 NPU (26 TOPS)</span>
               </div>
-              <div className="pl-4 border-l-2 border-apple-blue/40">
+              <div className="pl-4 border-l-2 border-subtle text-ink-tertiary">
                 ↓ ISO 11898 CAN-FD @ 5.0 Mbps
               </div>
-              <div className="flex items-center justify-between text-apple-blue">
+              <div className="flex items-center justify-between text-ink-primary font-medium">
                 <span>[REAL-TIME CONTROLLER]</span>
                 <span>STM32H753 @ 480 MHz (FreeRTOS)</span>
               </div>
             </div>
-          </div>
+          </SpotlightCard>
 
           {/* Hardware Specifications */}
-          <div className="lg:col-span-5 p-8 rounded-3xl bg-canvas-surface border border-subtle flex flex-col justify-between">
+          <SpotlightCard className="lg:col-span-5 p-8 rounded-3xl flex flex-col justify-between">
             <div>
-              <span className="text-[11px] font-mono uppercase tracking-widest text-ink-tertiary font-semibold block mb-4">
+              <span className="text-[11px] font-mono uppercase tracking-widest text-ink-tertiary font-bold block mb-4">
                 TECHNICAL BENCHMARKS
               </span>
               <div className="space-y-3">
@@ -138,7 +139,7 @@ export function ProjectDetailClient({ project }: { project: ProjectDetail }) {
                 ]).map((spec) => (
                   <div key={spec.label} className="p-3.5 rounded-xl bg-canvas border border-subtle">
                     <span className="text-[10.5px] font-mono text-ink-tertiary uppercase block">{spec.label}</span>
-                    <span className="text-[13.5px] font-medium text-ink-primary mt-0.5">{spec.value}</span>
+                    <span className="text-[13.5px] font-medium text-ink-primary mt-0.5 block">{spec.value}</span>
                   </div>
                 ))}
               </div>
@@ -147,18 +148,18 @@ export function ProjectDetailClient({ project }: { project: ProjectDetail }) {
             <div className="mt-8 pt-4 border-t border-subtle text-[11px] font-mono text-ink-tertiary">
               Verified inside DIA Labs Chamber C-302
             </div>
-          </div>
+          </SpotlightCard>
         </div>
 
         {/* Section 3: Engineering Narrative */}
-        <div className="mb-16 p-8 sm:p-12 rounded-3xl bg-canvas-surface border border-subtle">
-          <span className="text-[11px] font-mono uppercase tracking-widest text-apple-blue font-semibold block mb-2">
+        <SpotlightCard className="mb-16 p-8 sm:p-12 rounded-3xl">
+          <span className="text-[11px] font-mono uppercase tracking-widest text-ink-tertiary font-bold block mb-2">
             DESIGN JOURNEY
           </span>
-          <h2 className="text-[26px] font-display font-bold text-ink-primary mb-6">
+          <h2 className="text-[26px] sm:text-[30px] font-display font-bold text-ink-primary mb-6 tracking-tight">
             Problem Formulation &amp; Solution
           </h2>
-          <div className="prose prose-invert max-w-none text-[15px] text-ink-secondary leading-relaxed space-y-4">
+          <div className="max-w-none text-[15.5px] text-ink-secondary leading-relaxed space-y-4">
             <p>
               Standard commercial robotic rovers suffer from severe latency jitter when running perception and motor PID controls on a unified single-board computer. Under heavy neural inference loads, thread contention routinely causes skipped encoder ticks and erratic trajectory drifts.
             </p>
@@ -166,15 +167,15 @@ export function ProjectDetailClient({ project }: { project: ProjectDetail }) {
               We solved this by establishing a decoupled dual-tier architecture. High-level path planning and Point Cloud Library (PCL) voxel filtering run on the Linux coprocessor. Trajectory setpoints are packed into 64-byte CAN-FD frames with CRC-16 checksums and dispatched to the bare-metal STM32 microcontroller. The microcontroller operates a closed-loop FreeRTOS task with hard 1ms execution deadlines, ensuring sub-millimeter positioning accuracy even during CPU throttling events.
             </p>
           </div>
-        </div>
+        </SpotlightCard>
 
         {/* Section 4: Silicon Bill of Materials */}
         <div className="mb-16">
           <div className="mb-6">
-            <span className="text-[11px] font-mono uppercase tracking-widest text-apple-blue font-semibold">
+            <span className="text-[11px] font-mono uppercase tracking-widest text-ink-tertiary font-bold">
               HARDWARE BOM
             </span>
-            <h2 className="text-[24px] font-display font-bold text-ink-primary mt-1">
+            <h2 className="text-[26px] font-display font-bold text-ink-primary mt-1 tracking-tight">
               Silicon Bill of Materials
             </h2>
           </div>
@@ -188,11 +189,13 @@ export function ProjectDetailClient({ project }: { project: ProjectDetail }) {
               { component: 'Buck Regulator', partNumber: 'LMR33630', function: 'Synchronous Step-Down 36V to 5V 3A' },
               { component: 'Digital IMU', partNumber: 'BMI088', function: '6-Axis Low-Noise Automotive Gyro + Accel' },
             ]).map((item, idx) => (
-              <div key={idx} className="p-5 rounded-2xl bg-canvas-surface border border-subtle">
-                <span className="text-[11px] font-mono text-apple-blue font-bold block">{item.partNumber}</span>
-                <h4 className="text-[14px] font-semibold text-ink-primary mt-1">{item.component}</h4>
-                <p className="text-[12px] text-ink-secondary mt-1">{item.function}</p>
-              </div>
+              <SpotlightCard key={idx} className="p-5 rounded-2xl flex flex-col justify-between">
+                <div>
+                  <span className="text-[11px] font-mono text-ink-primary font-bold block">{item.partNumber}</span>
+                  <h4 className="text-[14px] font-semibold text-ink-primary mt-1">{item.component}</h4>
+                  <p className="text-[12px] text-ink-secondary mt-1">{item.function}</p>
+                </div>
+              </SpotlightCard>
             ))}
           </div>
         </div>
@@ -200,10 +203,10 @@ export function ProjectDetailClient({ project }: { project: ProjectDetail }) {
         {/* Section 5: Team & Honors */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-16">
           {/* Builders */}
-          <div className="p-6 sm:p-8 rounded-3xl bg-canvas-surface border border-subtle">
-            <div className="flex items-center gap-2 mb-4 text-apple-blue">
+          <SpotlightCard className="p-6 sm:p-8 rounded-3xl">
+            <div className="flex items-center gap-2 mb-4 text-ink-primary">
               <Users className="h-5 w-5" />
-              <h3 className="text-[17px] font-display font-semibold text-ink-primary">Engineering Cadre</h3>
+              <h3 className="text-[17px] font-display font-bold text-ink-primary">Engineering Cadre</h3>
             </div>
             <div className="space-y-3">
               {(project.team && project.team.length > 0 ? project.team : [
@@ -217,26 +220,26 @@ export function ProjectDetailClient({ project }: { project: ProjectDetail }) {
                 </div>
               ))}
             </div>
-          </div>
+          </SpotlightCard>
 
           {/* Honors */}
-          <div className="p-6 sm:p-8 rounded-3xl bg-canvas-surface border border-subtle">
-            <div className="flex items-center gap-2 mb-4 text-apple-blue">
+          <SpotlightCard className="p-6 sm:p-8 rounded-3xl">
+            <div className="flex items-center gap-2 mb-4 text-ink-primary">
               <Trophy className="h-5 w-5" />
-              <h3 className="text-[17px] font-display font-semibold text-ink-primary">National Accolades</h3>
+              <h3 className="text-[17px] font-display font-bold text-ink-primary">National Accolades</h3>
             </div>
             <div className="space-y-3">
               {(project.awards && project.awards.length > 0 ? project.awards : [
                 'Smart India Hackathon 2024 — 1st Place National Champions',
                 'Patent Filed — Indian Patent Office Docket No. 2024110892',
               ]).map((a, idx) => (
-                <div key={idx} className="p-3.5 rounded-xl bg-canvas border border-subtle flex items-start gap-2.5">
-                  <CheckCircle2 className="h-4 w-4 text-[var(--status-emerald)] shrink-0 mt-0.5" />
+                <div key={idx} className="p-3.5 rounded-xl bg-white/[0.04] border border-white/10 flex items-start gap-2.5">
+                  <CheckCircle2 className="h-4 w-4 text-ink-primary shrink-0 mt-0.5" />
                   <span className="text-[13px] font-medium text-ink-primary">{a}</span>
                 </div>
               ))}
             </div>
-          </div>
+          </SpotlightCard>
         </div>
       </div>
     </div>
